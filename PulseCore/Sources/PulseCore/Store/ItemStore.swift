@@ -209,6 +209,32 @@ public actor ItemStore {
         return result
     }
 
+    /// Turns a `snoozed` item whose snooze has elapsed back into `open`.
+    ///
+    /// Reads already treat an expired snooze as `open` (`effectiveStatus`), so
+    /// this is pure normalisation: it exists so a capture pass leaves storage in
+    /// the state the board is displaying, instead of an expiry that has to be
+    /// re-evaluated on every read forever. Returns the ids it changed.
+    @discardableResult
+    public func normalizeExpiredSnoozes(at instant: Date) -> [PulseItem.ID] {
+        var changed: [PulseItem.ID] = []
+        for id in order {
+            guard var item = storage[id], item.status == .snoozed else { continue }
+            guard item.effectiveStatus(at: instant) == .open else { continue }
+            item.status = .open
+            item.snoozedUntil = nil
+            item.updatedAt = instant
+            item.lastChangedBy = "capture"
+            Self.pushHistory(
+                on: &item,
+                entry: HistoryEntry(at: instant, by: "capture", change: "snooze-expired")
+            )
+            storage[id] = item
+            changed.append(id)
+        }
+        return changed
+    }
+
     // MARK: - User write path
 
     /// Applies a user transition: done, dismiss, snooze or reopen.
