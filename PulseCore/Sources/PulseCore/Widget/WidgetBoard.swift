@@ -1,5 +1,5 @@
 import Foundation
-import PulseCore
+
 
 /// The widget-facing projection of one item. Only the fields a widget needs, so
 /// a future field addition in `PulseItem` cannot silently bloat the cache or
@@ -12,6 +12,13 @@ public struct WidgetItem: Codable, Sendable, Hashable, Identifiable {
     public var due: Date?
     public var horizon: String
 
+    /// Attendee display names for a calendar item, for the Live Activity's people line
+    /// (#31). Optional so a projection written by an older build still decodes, and nil
+    /// for anything without people -- which is most items.
+    public var people: [String]?
+
+    /// The projection's only production initialiser: the app builds one from a real
+    /// item. `sampleID`-style construction below exists for previews and tests.
     public init(item: PulseItem, horizon: Horizon) {
         id = item.id
         title = item.title
@@ -19,6 +26,28 @@ public struct WidgetItem: Codable, Sendable, Hashable, Identifiable {
         priority = item.priority.rawValue
         due = item.due
         self.horizon = horizon.rawValue
+        people = item.people.isEmpty ? nil : item.people
+    }
+
+    /// Previews, placeholder renders and tests only. Named `sampleID` rather than a
+    /// plain memberwise init so it is obvious at a call site that no real item
+    /// produced this value.
+    public init(
+        sampleID id: String,
+        title: String,
+        kind: String,
+        priority: String,
+        due: Date? = nil,
+        horizon: String,
+        people: [String]? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.kind = kind
+        self.priority = priority
+        self.due = due
+        self.horizon = horizon
+        self.people = people
     }
 }
 

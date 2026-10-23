@@ -1,4 +1,5 @@
 import Foundation
+import PulseCore
 
 /// A tiny keyed store over `UserDefaults(suiteName:)`, so the last-viewed marker
 /// and the board filter are visible to the widget extension (#21).

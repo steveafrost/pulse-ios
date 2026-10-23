@@ -1,6 +1,9 @@
 import Foundation
 import Observation
 import PulseCore
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 /// The board's state owner (#17). `@MainActor @Observable`, so views read
 /// properties and call intents, and nothing here touches EventKit, disk or the
@@ -22,6 +25,12 @@ public final class BoardViewModel {
     /// and the debug screen keep working with no container at all -- the board
     /// functioned before sync existed and must not depend on it.
     public private(set) var sync: SyncCoordinator?
+
+    #if canImport(ActivityKit) && os(iOS)
+    /// The Live Activity owner (#31), when this build has one. Optional so previews
+    /// and tests run without ActivityKit and without the app group.
+    var liveActivity: ImminentMeetingController?
+    #endif
 
     /// Injectable clock. A preview pins it; the app passes `Date.init`.
     private let clock: @Sendable () -> Date
@@ -326,8 +335,22 @@ public final class BoardViewModel {
         return .ready
     }
 
+    /// Writes the widget projection and tells WidgetKit the board moved (#29).
+    ///
+    /// `WidgetCenter.reloadAllTimelines()` is what makes a Done tap show up on the
+    /// Home Screen within a second instead of waiting out the 15-minute timeline
+    /// policy. It is coalesced with the write: one reload per persisted board, not one
+    /// per mutation, so a burst of Done taps does not queue a burst of reloads.
     private func persist() {
         try? persistence.save(board: board, generatedAt: nowDate)
+        #if canImport(WidgetKit)
+        WidgetCenter.shared.reloadAllTimelines()
+        #endif
+        #if canImport(ActivityKit) && os(iOS)
+        // #31: a capture pass or a mutation can make the next meeting imminent, or
+        // end the one that was running.
+        Task { @MainActor in await liveActivity?.sync() }
+        #endif
     }
 
     private func persistFilter() {

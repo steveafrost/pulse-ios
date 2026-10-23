@@ -29,8 +29,11 @@ struct WidgetBoardTests {
         #expect(json["generatedAt"] != nil)
         #expect(json["nowCount"] as? Int == 1)
         let items = try #require(json["items"] as? [[String: Any]])
+        // `people` joined the projection for the Live Activity's attendee line (#31).
+        // It is optional, so an item without attendee names omits the key entirely
+        // rather than writing null -- which is what keeps the cache small.
         let fields = Set(items[0].keys)
-        #expect(fields == ["id", "title", "kind", "priority", "due", "horizon"])
+        #expect(fields == ["id", "title", "kind", "priority", "due", "horizon", "people"])
     }
 
     @Test("Order follows horizon order")

@@ -1,4 +1,5 @@
 import Foundation
+import PulseCore
 import Testing
 @testable import Pulse
 

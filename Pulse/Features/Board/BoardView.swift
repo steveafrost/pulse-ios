@@ -13,6 +13,10 @@ public struct BoardView: View {
     let permission: PermissionCoordinator
     var onOpenSettings: () -> Void
 
+    /// #29: an item id arrived from a widget tap (`pulse://item/<id>`). Consumed once
+    /// on appear, then the board routes to that item's detail.
+    var deepLinkItemID: String?
+
     @Environment(\.pulseMotion) private var motion
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
@@ -20,11 +24,13 @@ public struct BoardView: View {
     public init(
         model: BoardViewModel,
         permission: PermissionCoordinator,
-        onOpenSettings: @escaping () -> Void = {}
+        onOpenSettings: @escaping () -> Void = {},
+        deepLinkItemID: String? = nil
     ) {
         _model = State(initialValue: model)
         self.permission = permission
         self.onOpenSettings = onOpenSettings
+        self.deepLinkItemID = deepLinkItemID
     }
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -80,13 +86,26 @@ public struct BoardView: View {
             .sheet(isPresented: $isClosedPresented) {
                 ClosedItemsView(model: model.closedModel())
             }
-            .task { await load() }
+            .task {
+                await load()
+                routeDeepLinkIfNeeded()
+            }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .background { Task { await model.markSeen() } }
             }
             .accessibilityIdentifier("board.root")
         }
         .pulseMotionScope()
+    }
+
+    /// Opens the item a widget row pointed at, if the board still has it.
+    ///
+    /// Resolved from the board rather than from the id alone, so a link to an item that
+    /// was closed from the Mac since the widget rendered simply opens the board instead
+    /// of a sheet with no backing item.
+    private func routeDeepLinkIfNeeded() {
+        guard let id = deepLinkItemID else { return }
+        route = Horizon.allCases.flatMap { model.board[$0] ?? [] }.first { $0.id == id }
     }
 
     // MARK: Content

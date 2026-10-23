@@ -30,6 +30,11 @@ struct PulseApp: App {
         sync.onStoreChanged = { await model.reloadAfterSync() }
         sync.onPublished = { model.refreshSyncStatus() }
 
+        #if canImport(ActivityKit) && os(iOS)
+        // #31: one owner for the single Live Activity, kicked by every persist.
+        model.liveActivity = ImminentMeetingController()
+        #endif
+
         _model = State(initialValue: model)
 
         // Registration must happen before launch finishes; BGTaskScheduler traps on
@@ -37,6 +42,23 @@ struct PulseApp: App {
         BackgroundRefresh.register()
         BackgroundRefresh.attach(coordinator: sync)
     }
+
+    /// #29: the widget's deep links. `pulse://board` is the whole-widget tap and needs
+    /// no navigation; `pulse://item/<id>` opens that item's detail. An id the board no
+    /// longer has is ignored rather than opening an empty sheet -- the item may have
+    /// been closed from the Mac a second ago.
+    @MainActor
+    private func handle(_ url: URL) {
+        guard url.scheme == "pulse" else { return }
+        if url.host == "item" {
+            let id = url.pathComponents.dropFirst().joined()
+            guard !id.isEmpty else { return }
+            pendingItemID = id.removingPercentEncoding ?? id
+        }
+    }
+
+    /// Read by `BoardView` on appear, then cleared.
+    @State private var pendingItemID: String?
 
     var body: some Scene {
         WindowGroup {
@@ -46,10 +68,12 @@ struct PulseApp: App {
             BoardView(
                 model: model,
                 permission: permission,
-                onOpenSettings: AppLinks.openSettings
+                onOpenSettings: AppLinks.openSettings,
+                deepLinkItemID: pendingItemID
             )
             .pulseSyncPolling(model.sync)
             .task { await permission.load() }
+            .onOpenURL { url in handle(url) }
             #endif
         }
     }
