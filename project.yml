@@ -54,6 +54,8 @@ targets:
     entitlements:
       path: Pulse/Pulse.entitlements
       properties:
+        com.apple.security.application-groups:
+          - group.com.steveafrost.pulse
         com.apple.developer.icloud-container-identifiers:
           - iCloud.com.steveafrost.pulse
         com.apple.developer.icloud-services:
