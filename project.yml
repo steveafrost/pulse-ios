@@ -1,0 +1,119 @@
+name: Pulse
+options:
+  bundleIdPrefix: com.steveafrost
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: 4QJ25Y85MX
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+packages:
+  PulseCore:
+    path: PulseCore
+
+targets:
+  Pulse:
+    type: application
+    platform: iOS
+    sources:
+      - path: Pulse
+    dependencies:
+      - package: PulseCore
+      - target: PulseWidgets
+        embed: true
+    info:
+      path: Pulse/Info.plist
+      properties:
+        CFBundleDisplayName: Pulse
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        UILaunchScreen:
+          UIColorName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        ITSAppUsesNonExemptEncryption: false
+        NSCalendarsFullAccessUsageDescription: Pulse reads your calendar to show what needs a reply, a decision or your attention. Nothing leaves your device.
+        NSRemindersFullAccessUsageDescription: Pulse reads your reminders so overdue and due-today tasks show up on your board. Nothing leaves your device.
+        NSSupportsLiveActivities: true
+        UIBackgroundModes:
+          - fetch
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.steveafrost.pulse.refresh
+        CFBundleURLTypes:
+          - CFBundleURLName: com.steveafrost.pulse
+            CFBundleURLSchemes: [pulse]
+    entitlements:
+      path: Pulse/Pulse.entitlements
+      properties:
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.com.steveafrost.pulse
+        com.apple.developer.icloud-services:
+          - CloudDocuments
+        com.apple.developer.ubiquity-container-identifiers:
+          - iCloud.com.steveafrost.pulse
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.pulse
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+
+  PulseWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PulseWidgets
+    dependencies:
+      - package: PulseCore
+    info:
+      path: PulseWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Pulse
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: PulseWidgets/PulseWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.steveafrost.pulse
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.pulse.widgets
+
+  PulseTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: PulseTests
+    dependencies:
+      - package: PulseCore
+      - target: Pulse
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.pulse.tests
+
+schemes:
+  Pulse:
+    build:
+      targets:
+        Pulse: all
+        PulseWidgets: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - PulseTests
+    archive:
+      config: Release

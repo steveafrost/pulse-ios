@@ -1,0 +1,33 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.xcodeproj/project.xcworkspace/xcuserdata/
+.swiftpm/
+.build/
+Package.resolved
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+*.ipa
+*.dSYM.zip
+
+# Asc / secrets
+.asc/
+.env
+*.p8
+*.p12
+*.mobileprovision
+
+# macOS
+.DS_Store
+
+# XcodeGen output
+Pulse.xcodeproj/
+Pulse/Info.plist
+PulseWidgets/Info.plist
