@@ -21,12 +21,21 @@ public struct CaptureStatusCapsule: View {
                     .font(PulseTypography.captureCapsule)
                     .foregroundStyle(tint)
                     .accessibilityHidden(true)
-                Text(status.text(now: now))
-                    .font(PulseTypography.captureCapsule)
-                    .foregroundStyle(status.isFailed ? PulseColor.statusError : PulseColor.textSecondary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .contentTransition(.numericText())
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(status.text(now: now))
+                        .font(PulseTypography.captureCapsule)
+                        .foregroundStyle(status.isFailed ? PulseColor.statusError : PulseColor.textSecondary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .contentTransition(.numericText())
+                    if let syncText = status.syncText {
+                        Text(syncText)
+                            .font(PulseTypography.captureCapsule)
+                            .foregroundStyle(PulseColor.textTertiary)
+                            .lineLimit(1)
+                            .accessibilityHidden(true)
+                    }
+                }
             }
             .padding(.horizontal, PulseSpacing.s)
             .padding(.vertical, PulseSpacing.xs)
@@ -58,6 +67,8 @@ public struct CaptureStatusCapsule: View {
         if status.isFailed { return "Couldn't refresh. Try again." }
         if status.isCapturing { return "Capturing" }
         guard let date = status.lastCapturedAt else { return "Not captured yet" }
-        return "\(status.itemCount) items, updated \(PulseDateFormat.relative(date, now: now))"
+        let base = "\(status.itemCount) items, updated \(PulseDateFormat.relative(date, now: now))"
+        guard let syncText = status.syncText else { return base }
+        return "\(base). Mac mirror: \(syncText)"
     }
 }

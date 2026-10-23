@@ -18,6 +18,11 @@ public final class BoardViewModel {
     private let calendar: Calendar
     private let markSeenOnLoad: Bool
 
+    /// The sync loop, when the app is running with one. Optional so previews, tests
+    /// and the debug screen keep working with no container at all -- the board
+    /// functioned before sync existed and must not depend on it.
+    public private(set) var sync: SyncCoordinator?
+
     /// Injectable clock. A preview pins it; the app passes `Date.init`.
     private let clock: @Sendable () -> Date
 
@@ -48,7 +53,8 @@ public final class BoardViewModel {
         permissionState: PermissionState = PermissionState(),
         calendar: Calendar = .current,
         clock: @escaping @Sendable () -> Date = { Date() },
-        markSeenOnLoad: Bool = true
+        markSeenOnLoad: Bool = true,
+        sync: SyncCoordinator? = nil
     ) {
         self.store = store
         self.capture = capture
@@ -58,6 +64,7 @@ public final class BoardViewModel {
         self.calendar = calendar
         self.clock = clock
         self.markSeenOnLoad = markSeenOnLoad
+        self.sync = sync
         self.filter = Self.restoreFilter(shared)
     }
 
@@ -144,7 +151,8 @@ public final class BoardViewModel {
         board = await store.board(at: now, calendar: calendar)
         captureStatus = CaptureStatusModel(
             phase: .idle(shared.date(.lastCaptureAt)),
-            itemCount: totalCount
+            itemCount: totalCount,
+            syncText: syncStatusText
         )
         state = Self.state(
             board: board,
@@ -158,7 +166,7 @@ public final class BoardViewModel {
 
     /// The FAB and the capsule: a full capture pass.
     public func refresh() async {
-        captureStatus = CaptureStatusModel(phase: .capturing, itemCount: totalCount)
+        captureStatus = CaptureStatusModel(phase: .capturing, itemCount: totalCount, syncText: syncStatusText)
         let now = nowDate
         let outcome = await capture.capture(now: now)
         if !outcome.detected.isEmpty {
@@ -166,9 +174,12 @@ public final class BoardViewModel {
         }
         shared.set(outcome.ranAt, for: .lastCaptureAt)
         board = await store.board(at: nowDate, calendar: calendar)
+        // The Mac mirror sees every capture pass, not just user actions.
+        sync?.publishSoon()
         captureStatus = CaptureStatusModel(
             phase: outcome.failures.isEmpty ? .idle(outcome.ranAt) : .failed(outcome.ranAt),
-            itemCount: totalCount
+            itemCount: totalCount,
+            syncText: syncStatusText
         )
         state = Self.state(
             board: board,
@@ -194,6 +205,19 @@ public final class BoardViewModel {
         recomputeState()
     }
 
+    /// The sync state the capsule appends to the capture line, or `nil` when this
+    /// build has no container.
+    public var syncStatusText: String? {
+        guard let sync else { return nil }
+        switch sync.phase {
+        case .syncing: return "Syncing\u{2026}"
+        case .failed(let message): return message
+        case .idle:
+            guard let published = sync.lastPublishedAt else { return nil }
+            return "Mac \u{00B7} \(PulseDateFormat.relative(published, now: nowDate))"
+        }
+    }
+
     /// §7.2: Done from the FAB, a row control or the overflow menu. Optimistic:
     /// the board is re-read from the store straight away.
     public func complete(_ item: PulseItem) async {
@@ -212,12 +236,38 @@ public final class BoardViewModel {
         await perform(item, verb: .reopen, until: nil, reason: reason)
     }
 
+    /// Recomputes only the capsule's sync line, e.g. after a publish advances
+    /// `lastPublishedAt` without changing any item.
+    public func refreshSyncStatus() {
+        captureStatus = CaptureStatusModel(
+            phase: captureStatus.phase,
+            itemCount: captureStatus.itemCount,
+            syncText: syncStatusText
+        )
+    }
+
+    /// Re-reads the board after the sync layer applied a mirror command, so a Done
+    /// tapped on the Mac appears without waiting for the next capture pass.
+    public func reloadAfterSync() async {
+        board = await store.board(at: nowDate, calendar: calendar)
+        captureStatus = CaptureStatusModel(
+            phase: captureStatus.phase,
+            itemCount: totalCount,
+            syncText: syncStatusText
+        )
+        recomputeState()
+        persist()
+    }
+
     /// Marks the board seen. §5.2 newness clears when the board is left.
     public func markSeen() async {
         guard markSeenOnLoad else { return }
         let seen = await store.markSeen(at: nowDate)
         lastViewedAt = seen
         shared.set(seen, for: .lastViewedAt)
+        // `lastViewedAt` is part of the envelope, so the Mac can dim what the user
+        // has already seen.
+        sync?.publishSoon()
     }
 
     private func perform(_ item: PulseItem, verb: ItemActionVerb, until: Date?, reason: String?) async {
@@ -237,6 +287,8 @@ public final class BoardViewModel {
         board = await store.board(at: nowDate, calendar: calendar)
         recomputeState()
         persist()
+        // Debounced: a burst of Done taps writes one snapshot.
+        sync?.publishSoon()
     }
 
     // MARK: State derivation

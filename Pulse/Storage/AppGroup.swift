@@ -55,6 +55,17 @@ public struct PulsePaths: Sendable {
     public var commandsAckURL: URL { appGroupRoot.appendingPathComponent("commands.ack.jsonl") }
     /// The widget's read-only board cache.
     public var boardURL: URL { appGroupRoot.appendingPathComponent("board.json") }
+    /// How far into `commands.jsonl` this device has read.
+    ///
+    /// Device-local bookkeeping, so it sits in the group container root rather than
+    /// in `Documents/Pulse/`: the data contract pins that directory to exactly the
+    /// three transport files the Mac plugin enumerates.
+    public var commandCursorURL: URL { root.appendingPathComponent("commands.cursor") }
+    /// The bounded on-device sync log, for the debug sheet.
+    ///
+    /// In the group root for the same reason as the cursor: `Documents/Pulse/` is
+    /// the shared transport, and this file is ours alone.
+    public var syncLogURL: URL { root.appendingPathComponent("sync.log") }
 
     /// Creates the directory if it is missing. Safe to call repeatedly.
     @discardableResult

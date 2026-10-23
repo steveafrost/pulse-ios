@@ -169,10 +169,15 @@ public struct CaptureStatusModel: Sendable, Hashable {
 
     public var phase: Phase
     public var itemCount: Int
+    /// The sync line under the capture line, e.g. "Mac · 2m ago", "Syncing…", or
+    /// the failure that stopped publishing. `nil` when this build has no container,
+    /// so the capsule renders exactly as it did before sync existed.
+    public var syncText: String?
 
-    public init(phase: Phase, itemCount: Int) {
+    public init(phase: Phase, itemCount: Int, syncText: String? = nil) {
         self.phase = phase
         self.itemCount = itemCount
+        self.syncText = syncText
     }
 
     public var lastCapturedAt: Date? {

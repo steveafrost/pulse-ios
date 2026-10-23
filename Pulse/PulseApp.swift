@@ -8,13 +8,34 @@ struct PulseApp: App {
 
     init() {
         let shared = SharedStore()
-        let store = StoreAdapter(DemoSeed.store())
-        _model = State(initialValue: BoardViewModel(
+        let domain = DemoSeed.store()
+        let store = StoreAdapter(domain)
+
+        // One coordinator for the whole app: it is the only writer of the
+        // transport files, so nothing else may construct a SnapshotWriter.
+        let sync = SyncCoordinator.live(store: domain, paths: PulsePaths())
+        let capture = DemoSeed.capture(store: domain)
+
+        let model = BoardViewModel(
             store: store,
-            capture: PreviewCapture(),
+            capture: capture.providing,
             persistence: AppGroupBoardPersistence(),
-            shared: shared
-        ))
+            shared: shared,
+            sync: sync
+        )
+
+        // The two directions the sync layer needs back into the UI, kept as
+        // closures so `Pulse` is not a dependency of the sync types.
+        sync.captureHandler = { await capture.runFull() }
+        sync.onStoreChanged = { await model.reloadAfterSync() }
+        sync.onPublished = { model.refreshSyncStatus() }
+
+        _model = State(initialValue: model)
+
+        // Registration must happen before launch finishes; BGTaskScheduler traps on
+        // a late or duplicate register, so `register()` is idempotent.
+        BackgroundRefresh.register()
+        BackgroundRefresh.attach(coordinator: sync)
     }
 
     var body: some Scene {
@@ -27,6 +48,7 @@ struct PulseApp: App {
                 permission: permission,
                 onOpenSettings: AppLinks.openSettings
             )
+            .pulseSyncPolling(model.sync)
             .task { await permission.load() }
             #endif
         }
@@ -48,6 +70,7 @@ struct DemoRoot: View {
         switch screen {
         case .board, .empty, .loading:
             BoardView(model: model, permission: permission, onOpenSettings: AppLinks.openSettings)
+                .pulseSyncPolling(model.sync)
                 .task { await permission.load() }
         case .detail:
             ItemDetailView(model: model.detailModel(for: Fixtures.withThreeQuickActions))
@@ -66,11 +89,14 @@ struct DemoRoot: View {
 }
 #endif
 
-/// EventKit wiring belongs to the capture milestone; until it lands the board
-/// captures nothing, which is the honest state for a device with no sources.
-private struct PreviewCapture: CaptureProviding {
-    func capture(now: Date) async -> CaptureOutcome {
-        CaptureOutcome.empty(at: now)
+extension DemoSeed {
+    /// The capture wiring for this build: real EventKit sources on iOS, nothing on
+    /// any other platform. Both shapes carry the same two entry points so the
+    /// coordinator and the board do not have to care which one they got.
+    struct Capture {
+        var providing: any CaptureProviding
+        var runFull: @MainActor () async -> Bool
+        var runIncremental: @MainActor () async -> Bool
     }
 }
 
@@ -100,6 +126,43 @@ enum DemoSeed {
         if args.contains("-PulseDemoEmpty") { return ItemStore() }
         #endif
         return ItemStore()
+    }
+
+    /// Real capture on iOS; an empty pass everywhere else (macOS previews, the
+    /// gallery). A device with no permission still gets a pass -- it reports the
+    /// denial as a source failure, which is the banner the board expects.
+    static func capture(store: ItemStore) -> Capture {
+        #if os(iOS)
+        let engine = CaptureEngine(
+            sources: [
+                EventKitSource(provider: EventKitEventProvider()),
+                RemindersSource(provider: EventKitReminderProvider()),
+            ],
+            store: store,
+            now: { Date() }
+        )
+        let adapter = EngineCapture(engine: engine)
+        return Capture(
+            providing: adapter,
+            runFull: { await adapter.runFull() },
+            runIncremental: { await adapter.runIncremental() }
+        )
+        #else
+        let empty = EmptyCapture()
+        return Capture(
+            providing: empty,
+            runFull: { false },
+            runIncremental: { false }
+        )
+        #endif
+    }
+}
+
+/// The no-source capture: reports success with nothing found, which is the honest
+/// state for a platform without EventKit.
+struct EmptyCapture: CaptureProviding {
+    func capture(now: Date) async -> CaptureOutcome {
+        CaptureOutcome.empty(at: now)
     }
 }
 

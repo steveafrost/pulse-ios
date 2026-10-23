@@ -21,17 +21,26 @@ public actor ItemStore {
     private var order: [PulseItem.ID] = []
     /// Set by `markSeen`, read by the snapshot writer.
     private var lastViewedAt: Date?
+    /// The recent capture runs, newest first, read by `makeSnapshot`.
+    ///
+    /// Kept here rather than in the sync layer because the run list is part of the
+    /// snapshot's content, and the store is the one thing both the capture engine
+    /// and the sync coordinator already share. Capped by `maxRuns`.
+    private var runs: [CaptureRun] = []
+    /// How many runs the snapshot keeps. Matches `SnapshotWriter.maxRuns`.
+    public static let maxRuns = 12
 
     public init() {}
 
     /// Seeds a store from an already-decoded item list, e.g. the last snapshot.
     /// Later duplicates replace earlier ones; order of first appearance is kept.
-    public init(items: [PulseItem], lastViewedAt: Date? = nil) {
+    public init(items: [PulseItem], lastViewedAt: Date? = nil, runs: [CaptureRun] = []) {
         for item in items {
             if storage[item.id] == nil { order.append(item.id) }
             storage[item.id] = item
         }
         self.lastViewedAt = lastViewedAt
+        self.runs = Array(runs.prefix(Self.maxRuns))
     }
 
     // MARK: - Reads
@@ -94,6 +103,17 @@ public actor ItemStore {
     }
 
     public func lastViewed() -> Date? { lastViewedAt }
+
+    /// The recent capture runs, newest first.
+    public func recentRuns() -> [CaptureRun] { runs }
+
+    /// Records a finished capture pass for the snapshot's `runs` array. Newest
+    /// first, capped at `maxRuns` so the envelope cannot grow without bound.
+    @discardableResult
+    public func record(run: CaptureRun) -> [CaptureRun] {
+        runs = Array(([run] + runs).prefix(Self.maxRuns))
+        return runs
+    }
 
     public func count() -> Int { storage.count }
 
@@ -306,7 +326,7 @@ public actor ItemStore {
         now instant: Date,
         deviceName: String,
         schemaVersion: Int = PulseSnapshot.currentSchemaVersion,
-        runs: [CaptureRun] = [],
+        runs: [CaptureRun]? = nil,
         draft: PulseDraft? = nil
     ) -> PulseSnapshot {
         let snapshot = PulseSnapshot(
@@ -315,7 +335,7 @@ public actor ItemStore {
             deviceName: deviceName,
             lastViewedAt: lastViewedAt,
             items: allItems(),
-            runs: runs,
+            runs: runs ?? self.runs,
             draft: draft
         )
         return snapshot.pruningClosedItems(olderThan: instant)
