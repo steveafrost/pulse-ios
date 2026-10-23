@@ -1,0 +1,99 @@
+# SwiftLint — Pulse iOS
+#
+# Philosophy: catch bugs, not aesthetics. Anything purely stylistic is delegated
+# to SwiftFormat (see .swiftformat) or relaxed here, so the two tools never
+# argue. Run with `swiftlint --strict` (warnings become errors) via
+# `bash Scripts/lint.sh`.
+
+included:
+  - Pulse
+  - PulseWidgets
+  - PulseTests
+  - PulseCore/Sources
+  - PulseCore/Tests
+
+excluded:
+  - PulseCore/.build
+  - .build
+  - DerivedData
+  - build
+  - Pulse.xcodeproj
+
+# Correctness rules worth the noise. This is the point of `--strict`: an
+# accidental `!`, `try!` or `as!` in the store actor is a crash waiting for the
+# wrong calendar state.
+opt_in_rules:
+  - force_unwrapping
+  - force_try
+  - force_cast
+  - explicit_init
+  - redundant_type_annotation
+  - sorted_imports
+  - empty_count
+  - first_where
+  - contains_over_first_not_nil
+  - overridden_super_call
+  - prohibited_super_call
+  - unowned_variable_capture
+  - weak_delegate
+  - toggle_bool
+  - joined_default_parameter
+  - prefer_self_type_over_type_of_self
+  - redundant_nil_coalescing
+  - collection_alignment
+  - identical_operands
+  - empty_string
+  - legacy_constructor
+
+disabled_rules:
+  # SwiftFormat owns trailing commas (`--commas inline`). Running both means one
+  # tool always "fails" the other's output.
+  - trailing_comma
+  # `todo`-style nags: this repo tracks milestones with inline MARK/TODO, so the
+  # rule fires constantly on intentional breadcrumbs.
+  - todo
+  # SwiftUI `var body: some View` is a long declarative expression; body-length
+  # and identifier rules produce only false positives against view code.
+  - explicit_acl
+  - explicit_top_level_acl
+  - identifier_name
+  - nesting
+  - opening_brace
+
+# Import sorting has exactly one owner: sorted_imports above. SwiftFormat's
+# sortImports is disabled in .swiftformat so the two cannot oscillate.
+#
+# unused_import only runs under `swiftlint analyze` (it needs a compiler log),
+# so it is declared here rather than in opt_in_rules. Scripts/lint.sh runs the
+# plain linter; `swiftlint analyze --compiler-log-path <log>` enables this rule.
+analyzer_rules:
+  - unused_import
+
+# 120 columns, matching .swiftformat --maxwidth.
+line_length:
+  warning: 120
+  error: 160
+  ignores_urls: true
+  ignores_interpolated_strings: true
+  ignores_comments: false
+
+# Generous limits: test files carry fixture data, and SwiftUI views are large
+# single expressions. These catch runaway files, not normal code.
+type_body_length:
+  warning: 400
+  error: 600
+
+file_length:
+  warning: 600
+  error: 1000
+  ignore_comment_only_lines: true
+
+function_body_length:
+  warning: 80
+  error: 120
+
+cyclomatic_complexity:
+  warning: 20
+  error: 40
+
+reporter: "xcode"

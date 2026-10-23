@@ -1,5 +1,5 @@
-import SwiftUI
 import PulseCore
+import SwiftUI
 
 @main
 struct PulseApp: App {

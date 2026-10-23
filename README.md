@@ -22,6 +22,8 @@ docs/           Architecture, data contract, design spec
 
 The Xcode project is generated — do not edit `Pulse.xcodeproj` by hand.
 
+Agent and subagent conventions for this repo: [`.github/AGENT-WORKFLOW.md`](.github/AGENT-WORKFLOW.md).
+
 ```sh
 brew install xcodegen
 xcodegen generate

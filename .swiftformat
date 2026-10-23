@@ -1,0 +1,40 @@
+# SwiftFormat — Pulse iOS
+#
+# Keep this file small. It is the formatting contract; SwiftLint owns
+# correctness rules. Run `swiftformat --lint .` (see Scripts/lint.sh).
+
+--swiftversion 6
+
+# 4 spaces, no tabs.
+--indent 4
+--indentcase false
+--tabwidth unspecified
+--smarttabs disabled
+
+# 120 columns, matching line_length in .swiftlint.yml.
+--maxwidth 120
+
+# Commas inline: `[1, 2, 3]` never `[1, 2, 3,]`. SwiftLint's trailing_comma
+# rule is disabled so the two do not fight.
+--commas inline
+
+# Strip unused closure arguments only — gratuitous `_ in` in closures is noise,
+# but an unused function parameter is still part of the signature.
+--stripunusedargs closure-only
+
+# Import sorting has exactly one owner: SwiftLint's sorted_imports rule.
+# SwiftFormat's sortImports is disabled so the two cannot oscillate.
+--disable sortImports,sortedImports
+
+# House style.
+--self remove
+--header strip
+--emptybraces no-space
+--semicolons inline
+--wrapcollections before-first
+--closingparen balanced
+--wraparguments before-first
+--wrapconditions preserve
+
+# Generated / vendored output must never be formatted.
+--exclude PulseCore/.build,.build,DerivedData,build,Pulse.xcodeproj

@@ -1,6 +1,6 @@
-import WidgetKit
-import SwiftUI
 import PulseCore
+import SwiftUI
+import WidgetKit
 
 struct PulseEntry: TimelineEntry {
     let date: Date

@@ -1,0 +1,7 @@
+# Normalize line endings. Swift sources, configs and docs are LF everywhere;
+# the only CRLF files we might see come from pasted Windows snippets.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.xcassets/** binary

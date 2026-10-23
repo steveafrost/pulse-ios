@@ -1,0 +1,158 @@
+name: CI
+
+# Two independent jobs, deliberately not chained with `needs:`.
+#
+#   core — the fast gate. `swift test` on the PulseCore package, no simulator,
+#          no Xcode project. This is the job to mark as a *required* status
+#          check in branch protection.
+#   app  — xcodegen generate + xcodebuild for an iOS simulator. Slower and more
+#          environment-sensitive (simulator runtimes, Xcode version), so it runs
+#          in parallel rather than gating `core`.
+#
+# Why `app` is not "required when core passes": GitHub status checks are
+# per-job, and `needs:` would serialise the two, doubling wall-clock time for no
+# extra signal — a broken project.yml does not become visible only after core
+# goes green. Keep them independent; if `app` proves flaky, mark `core` as the
+# only required check and treat `app` as signal, not a gate. Do NOT add
+# `needs: core` to `app`; it hides app failures behind core failures.
+#
+# Updating the Xcode major version: set XCODE_MAJOR in the `env` block below.
+# The select step picks the newest installed Xcode with that major and warns
+# (rather than failing) when the runner image has moved on.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# One run per ref. A rapid follow-up commit cancels the superseded run so we
+# never pay for a result nobody will read.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  XCODE_MAJOR: "26"
+
+jobs:
+  core:
+    name: core (swift test)
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode ${{ env.XCODE_MAJOR }}
+        run: |
+          # Pick the newest installed Xcode matching the pinned major. If none
+          # matches, keep the runner default and warn loudly instead of failing —
+          # that keeps CI green while a pin update is pending.
+          shopt -s nullglob
+          candidates=(/Applications/Xcode_"${XCODE_MAJOR}"*.app)
+          if [ "${#candidates[@]}" -gt 0 ]; then
+            candidate="$(printf '%s\n' "${candidates[@]}" | sort -V | tail -1)"
+            sudo xcode-select -s "${candidate}/Contents/Developer"
+            echo "selected ${candidate}"
+          else
+            echo "::warning::No Xcode ${XCODE_MAJOR}.x found; using runner default. Update XCODE_MAJOR in .github/workflows/ci.yml."
+          fi
+          xcodebuild -version
+          swift --version
+
+      - name: Cache SwiftPM build
+        uses: actions/cache@v4
+        with:
+          path: PulseCore/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('PulseCore/Package.resolved', 'PulseCore/Package.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: swift test
+        working-directory: PulseCore
+        run: swift test --parallel
+
+  app:
+    name: app (xcodegen + simulator build)
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode ${{ env.XCODE_MAJOR }}
+        run: |
+          shopt -s nullglob
+          candidates=(/Applications/Xcode_"${XCODE_MAJOR}"*.app)
+          if [ "${#candidates[@]}" -gt 0 ]; then
+            candidate="$(printf '%s\n' "${candidates[@]}" | sort -V | tail -1)"
+            sudo xcode-select -s "${candidate}/Contents/Developer"
+            echo "selected ${candidate}"
+          else
+            echo "::warning::No Xcode ${XCODE_MAJOR}.x found; using runner default. Update XCODE_MAJOR in .github/workflows/ci.yml."
+          fi
+          xcodebuild -version
+
+      - name: Cache SwiftPM build
+        uses: actions/cache@v4
+        with:
+          path: PulseCore/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('PulseCore/Package.resolved', 'PulseCore/Package.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build for iOS Simulator
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -scheme Pulse \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee "$RUNNER_TEMP/xcodebuild.log"
+
+      - name: Upload build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: ${{ runner.temp }}/xcodebuild.log
+          if-no-files-found: warn
+          retention-days: 14
+
+  lint:
+    # Non-blocking by design. The tree is not lint-clean yet (PulseCore is being
+    # written concurrently), so a hard failure here would block every PR for
+    # reasons unrelated to correctness. Flip `continue-on-error` to false — and
+    # drop this comment — once `bash Scripts/lint.sh` exits 0 on main.
+    name: lint (swiftlint + swiftformat)
+    runs-on: macos-15
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode ${{ env.XCODE_MAJOR }}
+        run: |
+          shopt -s nullglob
+          candidates=(/Applications/Xcode_"${XCODE_MAJOR}"*.app)
+          if [ "${#candidates[@]}" -gt 0 ]; then
+            candidate="$(printf '%s\n' "${candidates[@]}" | sort -V | tail -1)"
+            sudo xcode-select -s "${candidate}/Contents/Developer"
+          else
+            echo "::warning::No Xcode ${XCODE_MAJOR}.x found; using runner default."
+          fi
+
+      - name: Install linters
+        run: brew install swiftlint swiftformat
+
+      - name: Lint
+        run: bash Scripts/lint.sh

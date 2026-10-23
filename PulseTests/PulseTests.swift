@@ -1,6 +1,6 @@
-import Testing
 @testable import Pulse
 import PulseCore
+import Testing
 
 @Suite("App scaffold")
 struct PulseAppTests {
