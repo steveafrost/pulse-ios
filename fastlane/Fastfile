@@ -1,0 +1,202 @@
+# fastlane/Fastfile — Pulse iOS release lanes (issues #36, #37)
+#
+# Lanes:
+#   build_only  archive + export, no bump, no upload  (the proof-of-life lane)
+#   test        the CI simulator test run
+#   beta        bump -> generate -> archive -> export -> upload to TestFlight
+#   groups      create/find the internal beta group and add testers (asc)
+#   metadata    print the App Store text that must be pasted into App Store Connect
+#
+# There is no `pilot`/`deliver` here on purpose: Apple's own `asc` CLI is already
+# authenticated on this machine and owns the API calls, so the lanes shell out to
+# it instead of keeping a second credential path. See docs/RELEASE.md.
+
+require 'json'
+
+ROOT          = File.expand_path('..', __dir__)
+PROJECT       = 'Pulse.xcodeproj'
+SCHEME        = 'Pulse'
+TEAM_ID       = ENV.fetch('PULSE_TEAM_ID', '4QJ25Y85MX')
+BUNDLE_ID     = 'com.steveafrost.pulse'
+BUILD_DIR     = File.join(ROOT, 'build')
+ARCHIVE_PATH  = File.join(BUILD_DIR, 'Pulse.xcarchive')
+EXPORT_PATH   = File.join(BUILD_DIR, 'export')
+EXPORT_PLIST  = File.join(ROOT, 'fastlane', 'ExportOptions.plist')
+DOTENV_PATH   = File.join(ROOT, 'fastlane', '.env')
+SIMULATOR     = 'iPhone 17 Pro'
+
+def read_setting(key)
+  yml = File.read(File.join(ROOT, 'project.yml'))
+  yml[/^\s*#{key}:\s*"?'?([^"\n']+)"?'?\s*$/, 1]&.strip
+end
+
+# Reads the gitignored env file if present so `fastlane beta` works without
+# `dotenv` being a dependency. Real environment variables always win.
+def load_dotenv
+  return unless File.exist?(DOTENV_PATH)
+
+  File.readlines(DOTENV_PATH).each do |line|
+    line = line.strip
+    next if line.empty? || line.start_with?('#') || !line.include?('=')
+
+    key, value = line.split('=', 2)
+    key = key.strip
+    next if key.empty? || ENV.key?(key)
+
+    ENV[key] = value.strip.gsub(/\A["']|["']\z/, '')
+  end
+end
+
+def have_credentials?
+  return true if !ENV['ASC_KEY_ID'].to_s.empty? && !ENV['ASC_ISSUER_ID'].to_s.empty?
+
+  out = `asc auth list 2>/dev/null`
+  out.include?('"isActive":true') || out.include?('"isActive": true')
+end
+
+# Fail before the four-minute archive rather than after it.
+def require_asc_auth!
+  load_dotenv
+  app_id = ENV['PULSE_ASC_APP_ID'].to_s.strip
+  if app_id.empty?
+    UI.user_error!(<<~MSG)
+      PULSE_ASC_APP_ID is empty - there is no App Store Connect app record for
+      #{BUNDLE_ID}, so there is nothing to upload to.
+
+      Create it first: App Store Connect -> My Apps -> + -> New App
+        Platform: iOS
+        Name:     Pulse — What Needs You
+        Bundle:   #{BUNDLE_ID}
+        SKU:      pulse-ios-001
+
+      Then add PULSE_ASC_APP_ID=<numeric id> to the gitignored fastlane env file
+      (see fastlane/.env.example). Nothing was built or uploaded.
+    MSG
+  end
+
+  unless have_credentials?
+    UI.user_error!(<<~MSG)
+      No App Store Connect credentials found.
+
+      On this Mac:  asc auth login --key-id 38R6G5B784 \\
+                        --issuer-id 4e8ddd0a-9e6c-4877-ae9d-3f7168c02256 \\
+                        --key-path /path/to/AuthKey_38R6G5B784.p8
+
+      In CI:        export ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_PATH
+                    (see fastlane/.env.example)
+      Nothing was uploaded.
+    MSG
+  end
+  app_id
+end
+
+platform :ios do
+  before_all do
+    load_dotenv
+  end
+
+  desc 'Simulator test run (what CI does)'
+  lane :test do
+    UI.message('==> xcodegen generate')
+    sh("cd #{ROOT.shellescape} && xcodegen generate")
+    sh("cd #{ROOT.shellescape} && xcodebuild test " \
+       "-project #{PROJECT} -scheme #{SCHEME} " \
+       "-destination 'platform=iOS Simulator,name=#{SIMULATOR}' " \
+       "-derivedDataPath /tmp/pulse-fastlane-test " \
+       'CODE_SIGNING_ALLOWED=NO')
+  end
+
+  desc 'Archive and export an App Store Connect .ipa, without bumping or uploading'
+  lane :build_only do
+    version = read_setting('MARKETING_VERSION') or UI.user_error!('MARKETING_VERSION missing from project.yml')
+    build   = read_setting('CURRENT_PROJECT_VERSION') or UI.user_error!('CURRENT_PROJECT_VERSION missing from project.yml')
+
+    UI.message('==> xcodegen generate')
+    sh("cd #{ROOT.shellescape} && xcodegen generate")
+
+    FileUtils.rm_rf(ARCHIVE_PATH)
+    FileUtils.rm_rf(EXPORT_PATH)
+    FileUtils.mkdir_p(BUILD_DIR)
+
+    UI.message("==> archive #{version} (#{build})")
+    sh("cd #{ROOT.shellescape} && xcodebuild archive " \
+       "-project #{PROJECT} -scheme #{SCHEME} -configuration Release " \
+       "-destination 'generic/platform=iOS' " \
+       "-archivePath #{ARCHIVE_PATH.shellescape} " \
+       "-allowProvisioningUpdates " \
+       "DEVELOPMENT_TEAM=#{TEAM_ID} CODE_SIGN_STYLE=Automatic")
+
+    UI.message('==> export .ipa')
+    sh("cd #{ROOT.shellescape} && xcodebuild -exportArchive " \
+       "-archivePath #{ARCHIVE_PATH.shellescape} " \
+       "-exportPath #{EXPORT_PATH.shellescape} " \
+       "-exportOptionsPlist #{EXPORT_PLIST.shellescape} " \
+       '-allowProvisioningUpdates')
+
+    ipa = Dir[File.join(EXPORT_PATH, '*.ipa')].first
+    UI.user_error!("export produced no .ipa in #{EXPORT_PATH}") if ipa.nil?
+
+    size = File.size(ipa)
+    UI.success("ipa: #{ipa} (#{format('%.1f', size / 1024.0 / 1024.0)} MB, version #{version} build #{build})")
+    { ipa: ipa, version: version, build: build, size: size }
+  end
+
+  desc 'Bump the build number, archive, export and upload to TestFlight'
+  lane :beta do
+    app_id = require_asc_auth! # first: fail before the archive
+
+    build = `#{File.join(ROOT, 'Scripts', 'bump-build.sh').shellescape}`.strip
+    UI.user_error!('bump-build.sh produced no number') unless build =~ /\A\d+\z/
+    UI.message("==> build number is now #{build}")
+
+    result = build_only
+
+    UI.message("==> upload to TestFlight (app #{app_id}, build #{build})")
+    sh("cd #{ROOT.shellescape} && ./Scripts/upload-testflight.sh #{result[:ipa].shellescape}")
+
+    UI.success("build #{build} uploaded; TestFlight processing is asynchronous (5-30 min). Watch it with:")
+    UI.message("  asc builds list --app-id #{app_id} --pretty")
+    result.merge(build: build)
+  end
+
+  desc 'Create/find the internal beta group and add testers (asc)'
+  lane :groups do
+    load_dotenv
+    app_id = ENV['PULSE_ASC_APP_ID'].to_s.strip
+    UI.user_error!('PULSE_ASC_APP_ID is empty - create the app record first (docs/APPSTORE-SETUP.md §3).') if app_id.empty?
+    UI.user_error!('No App Store Connect credentials - see the `fastlane beta` error for the login command.') unless have_credentials?
+
+    groups = JSON.parse(`asc testflight groups list --app-id #{app_id}`)['data'] || []
+    group = groups.find { |g| g['name'] == 'Pulse Beta' }
+
+    group ||= begin
+      UI.message('creating internal group "Pulse Beta"')
+      JSON.parse(`asc testflight groups create --app-id #{app_id} --name 'Pulse Beta' --internal`)['data']
+    end
+
+    UI.success("beta group: #{group['id']} (#{group['name']})")
+
+    # Testers may be supplied as PULSE_BETA_TESTERS=a@b.c,d@e.f. No address is ever
+    # invented: an empty list means "add them in App Store Connect".
+    ENV.fetch('PULSE_BETA_TESTERS', '').split(',').map(&:strip).reject(&:empty?).each do |email|
+      UI.message("adding tester #{email}")
+      sh("asc testflight testers add --beta-group-id #{group['id']} --email #{email.shellescape}")
+    end
+
+    if ENV.fetch('PULSE_BETA_TESTERS', '').strip.empty?
+      UI.message('PULSE_BETA_TESTERS unset - add internal testers in App Store Connect ' \
+                 '(TestFlight -> Internal Testing -> Pulse Beta -> +).')
+    end
+    group
+  end
+
+  desc 'Print where the App Store metadata lives (asc has no version-text write path yet)'
+  lane :metadata do
+    path = File.join(ROOT, 'docs', 'APPSTORE-METADATA.md')
+    UI.user_error!("missing #{path}") unless File.exist?(path)
+    UI.message('asc v0.18.2 can write version localization text only once an app record')
+    UI.message('and an App Store version exist (asc version-localizations update). Neither does.')
+    UI.message("Paste from: #{path}")
+    UI.command("open #{path.shellescape}") if ENV['FASTLANE_OPEN'].to_s == '1'
+  end
+end

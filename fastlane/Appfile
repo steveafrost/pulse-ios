@@ -1,0 +1,10 @@
+# fastlane/Appfile — Pulse iOS
+#
+# The identifiers are already registered in the developer portal
+# (docs/APPSTORE-SETUP.md §1). Team id is the seed id from the Apple account.
+app_identifier("com.steveafrost.pulse")
+team_id("4QJ25Y85MX")
+
+# No apple_id / itc_team_id: every App Store Connect call goes through the `asc`
+# CLI, which holds its own API-key auth (or reads it from ASC_* env vars). Fastlane
+# never prompts for an Apple ID, and no password is stored in this repo.

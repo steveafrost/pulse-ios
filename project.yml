@@ -13,8 +13,21 @@ settings:
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_STRICT_CONCURRENCY: complete
+    # Single source of truth for the version pair. MARKETING_VERSION is edited by
+    # hand; CURRENT_PROJECT_VERSION is bumped by Scripts/bump-build.sh and by the
+    # fastlane beta lane. Never hardcode either in Info.plist (see docs/RELEASE.md).
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
+  # Release hardening (issue #35). Release-only: whole-module optimization makes
+  # Debug slow and undebuggable, and dSYMs are only wanted for shipped builds.
+  configs:
+    Release:
+      SWIFT_COMPILATION_MODE: wholemodule
+      SWIFT_OPTIMIZATION_LEVEL: "-O"
+      DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+      ENABLE_NS_ASSERTIONS: NO
+      VALIDATE_PRODUCT: YES
+      ENABLE_TESTABILITY: NO
 
 packages:
   PulseCore:
@@ -37,7 +50,7 @@ targets:
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen:
-          UIColorName: ""
+          UIColorName: LaunchBackground
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false

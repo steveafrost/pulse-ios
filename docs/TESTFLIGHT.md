@@ -1,0 +1,245 @@
+# TestFlight — Pulse Beta
+
+The internal TestFlight setup for Pulse: the group, who is in it, how a build gets
+there, and what testers should do with it.
+
+**Current state: blocked on one portal step.** The internal group cannot be
+created until an App Store Connect app record exists for
+`com.steveafrost.pulse`, and `asc` v0.18.2 has no subcommand that creates apps.
+Everything below is scripted and ready; it needs that one record.
+
+Status as of 23 October 2026:
+
+| Prerequisite | State |
+| --- | --- |
+| API key authenticated for team `4QJ25Y85MX` | done — key `38R6G5B784` |
+| Bundle IDs registered (`…pulse`, `…pulse.widgets`) | done |
+| App Groups + iCloud container entitlements in the archive | done — verified in the exported `.ipa` |
+| App Store Connect app record | **missing** — portal step, §1 |
+| Internal group `Pulse Beta` | blocked on the record — §2 |
+| A processed build | none yet; the `.ipa` is built and exported, not uploaded |
+
+---
+
+## 1. Unblock: create the app record (portal, once)
+
+`asc` cannot do this. There is no create-app endpoint in the public v1 API, and
+`asc apps` in 0.18.2 exposes only `list` and `update`:
+
+```console
+$ asc apps list | jq '.data | length'
+10
+$ asc apps list | jq -r '.data[].bundleId' | grep -c pulse
+0
+```
+
+Ten apps are in the account and none is Pulse. So:
+
+1. Open <https://appstoreconnect.apple.com/apps>
+2. **My Apps** → **+** → **New App**
+3. Fill exactly:
+
+   | Field | Value |
+   | --- | --- |
+   | Platform | iOS |
+   | Name | `Pulse — What Needs You` |
+   | Primary Language | English (U.S.) |
+   | Bundle ID | `Pulse` (`com.steveafrost.pulse`) |
+   | SKU | `pulse-ios-001` |
+   | User Access | Full Access |
+
+4. **Create**
+
+The name field will reject plain `Pulse` — it is already held by another
+developer. `Pulse — What Needs You` was confirmed available; see
+[`APPSTORE-SETUP.md`](APPSTORE-SETUP.md) §3.
+
+Then copy the numeric id out of the URL (`…/apps/<ID>/…`) and record it:
+
+```sh
+echo "PULSE_ASC_APP_ID=<ID>" >> fastlane/.env    # gitignored; see .env.example
+```
+
+Confirm it landed:
+
+```sh
+asc apps list --pretty | grep -A2 pulse
+```
+
+---
+
+## 2. Create the internal group
+
+Internal groups are the right choice for a first beta: testers are App Store
+Connect team members, so there is **no Beta App Review** and no build review
+before it appears. External testers need both, which delays the first build by
+days.
+
+```sh
+# one command, idempotent, creates the group only if it is missing
+PULSE_ASC_APP_ID=<ID> fastlane ios groups
+```
+
+Or by hand:
+
+```sh
+asc testflight groups create --app-id <ID> --name "Pulse Beta" --internal
+asc testflight groups list   --app-id <ID> --pretty
+```
+
+Expected result — `isInternalGroup: true`, and the group is attached to no builds
+until one is uploaded:
+
+```json
+{
+  "data": {
+    "id": "<GROUP_ID>",
+    "name": "Pulse Beta",
+    "isInternalGroup": true
+  }
+}
+```
+
+### Why "Pulse Beta" and not "Pulse Internal"
+
+The name shows in the TestFlight app under the app icon. `Pulse Beta` reads as a
+product stage; `Pulse Internal` reads as a team. Either works technically; the
+fastlane lane looks for the literal string `Pulse Beta`, so if you rename it,
+rename it in `fastlane/Fastfile` too (`groups` lane).
+
+---
+
+## 3. Invite testers
+
+Internal testers must already be on the App Store Connect team (Users and Access).
+You cannot invite an arbitrary address as an internal tester.
+
+```sh
+# per tester
+asc testflight testers add \
+  --beta-group-id <GROUP_ID> \
+  --email someone@example.com \
+  --first-name Ada --last-name Lovelace
+
+# or in bulk
+PULSE_ASC_APP_ID=<ID> PULSE_BETA_TESTERS="a@example.com,b@example.com" fastlane ios groups
+
+# confirm
+asc testflight testers list --beta-group-id <GROUP_ID> --pretty
+```
+
+No address is hardcoded anywhere in this repo. With `PULSE_BETA_TESTERS` unset the
+lane adds nobody and prints the click-path instead.
+
+Each tester gets an Apple email inviting them to test, and must accept it once.
+Then: **TestFlight app → Pulse → Install**. Builds then update automatically.
+
+**Tester list** (fill in as people are added — nothing is invented here):
+
+| Name | Email | Added | Accepted |
+| --- | --- | --- | --- |
+| _none yet_ | — | — | — |
+
+---
+
+## 4. Getting a build into the group
+
+Once §1 is done, this is the whole pipeline:
+
+```sh
+fastlane ios beta
+```
+
+That fails fast if `PULSE_ASC_APP_ID` or credentials are missing, otherwise:
+bump → generate → archive → export → upload. Processing takes 5–30 minutes.
+
+Then attach the build and write the notes:
+
+```sh
+asc builds list --app-id <ID> --pretty            # wait for processingState VALID
+asc builds add-beta-group --build-id <BUILD_ID> --beta-group-id <GROUP_ID>
+asc builds update-beta-notes --build-id <BUILD_ID> --locale en-US --notes "$(cat <<'TXT'
+Board ordering, Done and Snooze stickiness, snooze expiry, quick actions,
+Recently Closed, and the permission flow.
+TXT
+)"
+```
+
+If the internal group already contains the build (it does once a build is
+uploaded and the group is the only one), `add-beta-group` is unnecessary. It is
+idempotent either way.
+
+### What to test — build 1 (0.1.0, build 1)
+
+Paste into the build's Test Information → What to Test:
+
+```
+Thanks for testing the first Pulse build. Five things matter most:
+
+1. BOARD ORDER. Items should be grouped Now / Next / Later / Nice to Know and
+   ordered by urgency inside each group. Does the order match your intuition
+   about what you would do first?
+
+2. DONE STICKS. Tick an item, then pull to refresh. It must stay done. If it
+   comes back, that is the bug I most want to hear about.
+
+3. SNOOZE COMES BACK. Snooze something for an hour. It should leave the board and
+   return on its own when the hour is up — including if you kill the app.
+
+4. CLOSED IS RECOVERABLE. Everything you close should appear under the clock icon
+   (Recently Closed) for three days and be reopenable.
+
+5. THE PERMISSION FLOW. Fresh install, deny calendar, then grant it from the
+   preamble. Nothing should dead-end.
+
+Known gaps: no iPad layout, and the Lock Screen widgets are still in progress.
+```
+
+---
+
+## 5. Reading a build's status
+
+| Question | Command |
+| --- | --- |
+| Has Apple finished processing? | `asc builds list --app-id <ID> --pretty` → `processingState: VALID` |
+| What failed? | `asc builds uploads --app-id <ID> --pretty` → look for `INVALID` state |
+| Is the build in the group? | `asc builds list --app-id <ID> --pretty` → `betaGroups` |
+| Will the version submit cleanly? | `asc versions check-readiness --version-id <VERSION_ID>` |
+| Which build number is free? | `asc builds next-number --app-id <ID> --version 0.1.0 --platform ios` |
+
+The state that bites is `INVALID`, usually from a version mismatch between the app
+and the widget, or from an unsigned extension. Both are prevented here by
+`project.yml` defining the version pair once and by the widget inheriting it — see
+[`RELEASE.md`](RELEASE.md) §1.
+
+---
+
+## 6. Operational notes
+
+- **Build numbers never repeat.** TestFlight permanently rejects a duplicate. Use
+  `Scripts/bump-build.sh` or `fastlane ios beta`; never hand-edit
+  `CURRENT_PROJECT_VERSION` down.
+- **Internal builds expire after 90 days.** Testers see a warning at 60. Re-upload
+  rather than trying to renew.
+- **A build cannot be deleted,** only expired (TestFlight → the build → Expire
+  Build). It disappears from the group at once.
+- **Testers need the same Apple ID** for the App Store Connect team and the
+  TestFlight app, or the invitation will not resolve.
+- **Testers cannot use a build until the export compliance question is answered.**
+  `ITSAppUsesNonExemptEncryption = false` is set in `project.yml`, so it is
+  answered automatically. If a build still shows "Missing Compliance":
+  `asc builds set-encryption-compliance --build-id <BUILD_ID> --uses-non-exempt-encryption false`.
+
+---
+
+## 7. Checklist to first tester
+
+- [ ] App record created, `PULSE_ASC_APP_ID` recorded (§1)
+- [ ] Internal group `Pulse Beta` created (§2)
+- [ ] `fastlane ios beta` succeeded, upload accepted
+- [ ] Build reached `processingState: VALID`
+- [ ] Build attached to the group
+- [ ] "What to Test" notes set for build 1
+- [ ] At least one internal tester invited and accepted
+- [ ] Tester installed from TestFlight and saw a populated board
+- [ ] Feedback route agreed (issues on GitHub, or email — see [`SUPPORT.md`](SUPPORT.md))

@@ -11,6 +11,9 @@ Package.resolved
 
 # Fastlane
 fastlane/report.xml
+# `fastlane lanes` regenerates this boilerplate on every run; the real docs are
+# in docs/RELEASE.md.
+fastlane/README.md
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output/
@@ -19,6 +22,9 @@ fastlane/test_output/
 
 # Asc / secrets
 .asc/
+# The lanes read credentials from fastlane/.env (see fastlane/.env.example).
+# Never commit it, and never commit the .p8 it points at.
+fastlane/.env
 .env
 *.p8
 *.p12

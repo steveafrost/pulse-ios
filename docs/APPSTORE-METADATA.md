@@ -1,0 +1,363 @@
+# App Store metadata — Pulse
+
+Everything App Store Connect asks for on the version page, ready to paste.
+Verified against `asc` v0.18.2 and against build 1 (`0.1.0`) of the archive in
+§10 of `RELEASE.md`.
+
+Companion docs: [`APPSTORE-SETUP.md`](APPSTORE-SETUP.md) (account plumbing and
+portal click-paths) and [`PRIVACY.md`](PRIVACY.md) (the policy behind §5).
+
+---
+
+## 1. Names
+
+| Field | Value | Limit | Length |
+| --- | --- | --- | --- |
+| App Store name | `Pulse — What Needs You` | 30 | 22 |
+| Home Screen name (`CFBundleDisplayName`) | `Pulse` | — | 5 |
+| Bundle ID | `com.steveafrost.pulse` | — | — |
+| SKU | `pulse-ios-001` | — | — |
+| Subtitle | `Your day, ordered by urgency` | 30 | 28 |
+
+**The plain name `Pulse` is taken.** An exact-title app by `ua.com.pulse.app`
+sits in the US, GB, CA, AU, DE, FR and JP storefronts, and other developers hold
+near-identical titles. `Pulse — What Needs You` was verified free in US and GB
+(see `APPSTORE-SETUP.md` §3). The Home Screen label stays `Pulse`; that is
+independent of App Store name uniqueness, and `CFBundleDisplayName` already says
+so.
+
+`asc apps list` was re-run while writing this doc: no existing app record has
+bundle id `com.steveafrost.pulse`, so nothing is colliding with the new record.
+
+---
+
+## 2. Promotional text
+
+```
+See everything that needs a reply, a decision or your attention, ordered by urgency. From your calendar and reminders. No account, no server, no analytics.
+```
+
+155 characters (limit 170). Editable at any time without a new review, which is
+why it leads with the value proposition rather than a release note.
+
+---
+
+## 3. Description
+
+2 542 characters (limit 4 000). Product copy only: no placeholder text, no
+competitor claims, no pricing.
+
+```text
+Pulse answers one question: what needs me right now?
+
+Most task apps ask you to maintain them. Pulse doesn't. It reads the calendar and reminders already on your iPhone, works out what actually needs you, and puts it on one board in the order you'd want to deal with it.
+
+FOUR HORIZONS, ONE GLANCE
+
+Everything lands in one of four sections, decided by urgency rather than by a project you forgot to update:
+
+- Now - high priority, or due today
+- Next - due in the next three days
+- Later - everything further out
+- Nice to Know - worth a look, not worth acting on yet
+
+The board is quiet by design: one number on screen, the Now count. Urgency is shown by position, not by colour alone.
+
+DONE AND SNOOZE ACTUALLY STICK
+
+Tick something and it stays done, even when the next refresh runs. Snooze moves it out of the way for an hour, until tonight, or until tomorrow morning, and it comes back on its own when the snooze expires. Nothing silently reappears, and nothing silently disappears.
+
+- Tap a row for the full detail: source, quick actions, history
+- Swipe to snooze or dismiss
+- Every action is one gesture, and every one is reversible from Recently Closed for three days
+
+BUILT FOR YOUR WEEK, NOT YOUR INBOX
+
+- Quick actions for the things you do most: RSVP, open the thread, copy a link, complete a reminder
+- A Recently Closed review, so the thing you closed by accident is one tap away
+- A filter bar when you want one source at a time
+- Search when you know what you are looking for
+
+WIDGETS AND THE LOCK SCREEN
+
+Home Screen widgets in three sizes and all three Lock Screen families, plus a Live Activity for the meeting that is about to start. The widget reads the same board the app does, so it never gives a different answer.
+
+YOUR DATA STAYS YOURS
+
+Pulse has no account, no sign-up, and no server. There is nothing to log in to.
+
+- It reads only your Calendar and Reminders, and only on this device
+- No analytics, no tracking, no third-party SDKs
+- Your board syncs to your own private iCloud so it can reach your Mac, and to nobody else
+- Everything else is stored on the device and nowhere else
+
+If you delete the app, Pulse has nothing left to delete.
+
+WHO IT IS FOR
+
+People who already keep a calendar and a reminders list, and who want one honest view of what those two things are asking of them today - without another system to maintain.
+
+Pulse is a productivity app for iOS. It needs access to Calendar and Reminders to be useful; you can grant either, both, or neither, and turn them off again in Settings at any time.
+```
+
+---
+
+## 4. Keywords
+
+```
+tasks,agenda,todo,calendar,reminder,focus,priority,daily,planner,productivity,personal
+```
+
+86 characters (limit 100), comma-separated with no spaces. No word is repeated
+from the app name (`Pulse`, `What`, `Needs`, `You`) — that would waste
+characters, because App Store search already indexes the name and subtitle
+separately.
+
+---
+
+## 5. Privacy
+
+### App Privacy answers (App Store Connect → App Privacy)
+
+**Data Not Collected.**
+
+The questionnaire is a single question:
+
+> **Do you or your third-party partners collect data from this app?**
+> → **No, we do not collect data from this app**
+
+Save, then **Publish**. There are no data types to tick, no purposes to select,
+and no tracking section, because the first answer short-circuits everything
+else.
+
+Why this is true, per [`ARCHITECTURE.md`](ARCHITECTURE.md) §Privacy:
+
+| What a reviewer might ask | Why it is not "collected" |
+| --- | --- |
+| Calendar and reminders are read | Read on-device and stored on-device. Nothing is transmitted to the developer or any third party. |
+| There is an iCloud snapshot | It goes to **the user's own private iCloud container** (`iCloud.com.steveafrost.pulse`), under their Apple ID. The developer has no access, no server, and no key. Apple treats "data stored in the user's own iCloud, not accessible to the developer" as not collected by the developer. |
+| Any analytics or crash reporting? | None. No third-party SDKs, no telemetry, no crash reporter. |
+| Any account? | None. No sign-in, no email capture, no identifier. |
+
+If the App Privacy UI is unavailable (it is not settable by `asc` — the CLI has no
+`app-privacy` subcommand), this is the developer-portal step:
+**App Store Connect → your app → App Privacy → Get Started → "No, we do not collect
+data from this app" → Save → Publish.**
+
+### Privacy Policy URL
+
+`https://github.com/steveafrost/pulse-ios/blob/main/docs/PRIVACY.md`
+
+Apple requires a reachable URL even for Data Not Collected. The policy is
+committed at [`docs/PRIVACY.md`](PRIVACY.md) and rendered by GitHub. If a
+github.com URL is rejected at submission (some reviewers refuse them), the
+fallback is GitHub Pages on the same file —
+`https://steveafrost.github.io/pulse-ios/PRIVACY.html` — which needs Pages turned
+on for the repo first. See §7 for the switch.
+
+### App Privacy detail (the free-text field)
+
+> Pulse does not collect any data. Calendar and reminders are read on the device
+> and stay there. Your board is mirrored to your own private iCloud container so
+> it can reach your Mac; that copy belongs to your Apple ID and is never visible
+> to the developer. There is no account, no server, no analytics and no
+> third-party SDK.
+
+---
+
+## 6. Category, rating, URLs
+
+| Field | Value |
+| --- | --- |
+| Primary category | **Productivity** |
+| Secondary category | None |
+| Age rating | **4+** |
+| Support URL | `https://github.com/steveafrost/pulse-ios/issues` |
+| Marketing URL | `https://github.com/steveafrost/pulse-ios` |
+| Copyright | `2026 Steve Frost` |
+| Content rights | Does not use third-party content |
+
+### Age rating — the 4+ answers
+
+Every content question is **None** / **No**. There is no user-generated content,
+no messaging, no web browser, no ads, no gambling, no loot boxes, no age-gated
+content of any kind. The app displays only the user's own calendar and reminders.
+The full field-by-field answer list is in `APPSTORE-SETUP.md` §4.3.
+
+Accessibility has no bearing on the age rating, but for the record the app supports
+Dynamic Type through AX5 and VoiceOver (see `ACCESSIBILITY.md`).
+
+---
+
+## 7. Support and policy pages
+
+Two options, in order of preference:
+
+1. **Zero setup (recommended):** the committed markdown renders on GitHub.
+   - Support: `https://github.com/steveafrost/pulse-ios/blob/main/docs/SUPPORT.md`
+   - Privacy: `https://github.com/steveafrost/pulse-ios/blob/main/docs/PRIVACY.md`
+2. **GitHub Pages:** Settings → Pages → Source: *Deploy from a branch* →
+   branch `main`, folder `/docs` → Save. The pages then become
+   `https://steveafrost.github.io/pulse-ios/SUPPORT.html` and
+   `…/PRIVACY.html`. Use this if a reviewer rejects a github.com/blob URL.
+
+The URL actually entered in App Store Connect must be recorded here before
+submission, together with the date it was checked:
+
+| Field | URL entered | Checked |
+| --- | --- | --- |
+| Support URL | _fill at submission_ | — |
+| Privacy Policy URL | _fill at submission_ | — |
+
+---
+
+## 8. Screenshots
+
+### Required sizes — verified, not assumed
+
+`asc` v0.18.2 accepts these display types for `asc screenshot-sets create
+--display-type` (rejected types omitted):
+
+| Display type | Device | Pixels | Needed for Pulse |
+| --- | --- | --- | --- |
+| `APP_IPHONE_67` | iPhone 6.7"/6.9" | 1290×2796 or 1320×2868 | **Yes** — primary |
+| `APP_IPHONE_65` | iPhone 6.5" | 1242×2688 or 1284×2778 | Yes — fallback/compat |
+| `APP_IPHONE_61` | iPhone 6.1" | 1179×2556 | Optional |
+| `APP_IPHONE_58` | iPhone 5.8" | 1125×2436 | Not required |
+| `APP_IPAD_PRO_3GEN_129` | iPad Pro 13" | 2064×2752 | **No** — iPhone-only app |
+
+`APP_IPHONE_69` and `APP_IPHONE_66` are **rejected** by this API version
+(`Unknown display type`). So the 6.9" 1320×2868 captures produced here upload
+into the `APP_IPHONE_67` bucket — App Store Connect takes the 6.9" pixels there.
+That is what the captures in `docs/screenshots/` are sized for.
+
+The app ships `UIDeviceFamily = [1]` (iPhone only), so no iPad set is needed.
+Recorded as `supportsIPad: false`.
+
+### The shots captured
+
+All are real simulator captures of the debug fixture board, status bar pinned to
+9:41 with full battery and Wi-Fi, per `DESIGN.md` §12. No lorem, no mockups.
+
+| # | File | Pixels | Device | Shows |
+| --- | --- | --- | --- | --- |
+| 1 | `01-board-now-69.png` | 1320×2868 | iPhone 17 Pro Max | Board populated, Now expanded with 3 rows, filter bar, FAB |
+| 2 | `02-detail-quick-actions-69.png` | 1320×2868 | iPhone 17 Pro Max | Item detail sheet: header, quick actions, action bar |
+| 3 | `03-snooze-69.png` | 1320×2868 | iPhone 17 Pro Max | Snooze sheet with the three presets |
+| 4 | `04-closed-review-69.png` | 1320×2868 | iPhone 17 Pro Max | Recently Closed review with reopen |
+| 5 | `05-all-clear-69.png` | 1320×2868 | iPhone 17 Pro Max | "You're all clear" empty state with last-checked |
+| 6 | `06-permission-preamble-69.png` | 1320×2868 | iPhone 17 Pro Max | The permission preamble before any system prompt |
+| 7 | `07-board-dark-69.png` | 1320×2868 | iPhone 17 Pro Max | The board in dark appearance |
+| 8 | `08-board-61.png` | 1179×2556 | iPhone 16 | Board at default Dynamic Type, all four sections |
+
+Captured with:
+
+```sh
+D="Pulse 17 Pro Max"   # created from iPhone-17-Pro-Max + iOS 27 runtime
+xcrun simctl install  "$D" /tmp/pulse-shots/Build/Products/Debug-iphonesimulator/Pulse.app
+xcrun simctl privacy  "$D" grant calendar com.steveafrost.pulse
+xcrun simctl privacy  "$D" grant reminders com.steveafrost.pulse
+xcrun simctl status_bar "$D" override --time "9:41" --batteryState charged \
+    --batteryLevel 100 --wifiBars 3 --cellularBars 4
+xcrun simctl launch   "$D" com.steveafrost.pulse -PulseDemoBoard -PulseDemoScreen board
+xcrun simctl io       "$D" screenshot docs/screenshots/01-board-now-69.png
+```
+
+The other screens swap `-PulseDemoScreen` for `detail`, `snooze`, `closed`,
+`preamble`, and add `-PulseDemoEmpty` for the all-clear state. These flags are
+compiled out of Release (`#if DEBUG` in `PulseApp.swift`), so the fixture data
+cannot ship.
+
+### Not captured, and why
+
+`DESIGN.md` §12 lists 11 shots. The gaps:
+
+- **6.9" Live Activity and Lock Screen widgets (#9)** — waiting on the widget and
+  Live Activity target work landing in `PulseWidgets/`.
+- **iPad (#7, #8)** — no iPad support; `UIDeviceFamily` is iPhone-only.
+- **Completion moment (#3)** — a mid-animation frame; better captured on device.
+- **Reduce Transparency (#11)** — needs an accessibility setting toggle we have
+  not scripted yet.
+
+Upload once the app record exists:
+
+```sh
+asc screenshot-sets create --localization-id <LOC_ID> --display-type APP_IPHONE_67
+asc screenshots upload --set-id <SET_ID> --file docs/screenshots/01-board-now-69.png
+```
+
+---
+
+## 9. What's New — 1.0 template
+
+```
+First release.
+
+Pulse reads your calendar and reminders and puts what actually needs you on one
+board, in four horizons: Now, Next, Later and Nice to Know. Done and snooze stick,
+snooze comes back on its own, and everything is reversible from Recently Closed.
+
+Home Screen widgets in three sizes, all three Lock Screen families, and a Live
+Activity for the meeting that is about to start.
+
+No account, no server, no analytics. Your data stays on your device and in your
+own private iCloud.
+```
+
+For a 1.0 submission the What's New field is optional; App Store Connect shows
+"First release" if it is empty. Paste the block above so the release has a
+description rather than a placeholder.
+
+---
+
+## 10. Review notes
+
+Paste into **App Store Connect → App Version → App Review Information → Notes**:
+
+```
+No login or demo account is required. The app has no account system at all.
+
+Pulse reads the user's Calendar and Reminders to build one board of what needs
+attention. On first launch it shows a preamble explaining this, then raises the
+system prompts for Calendar ("Allow Full Access") and Reminders. Granting either,
+both, or neither works: with neither granted, the board shows the connect state
+from DESIGN.md 9.2 and the app remains usable.
+
+The same data is mirrored to the user's own private iCloud container
+(iCloud.com.steveafrost.pulse) so the board can be read on their Mac. The
+developer operates no server and cannot see that data. This is why the App Privacy
+answer is Data Not Collected.
+
+No in-app purchases, no subscriptions, no ads, no external links out except the
+Settings app.
+```
+
+Two things a reviewer is likely to test, and what they will see:
+
+1. **Denying both permissions.** No crash, no dead end: the board shows the
+   "Let's see what needs you" connect state with a button that re-opens Settings.
+2. **Killing and relaunching mid-snooze.** The snooze survives the relaunch and
+   expires on schedule. Losing state on relaunch would look like a bug.
+
+If a reviewer cannot see any items because the simulator or device has an empty
+calendar, that is expected — Pulse shows what the device holds and nothing else.
+
+---
+
+## 11. Pre-submission field checklist
+
+- [ ] App name `Pulse — What Needs You`
+- [ ] Subtitle `Your day, ordered by urgency`
+- [ ] Promotional text pasted (§2)
+- [ ] Description pasted (§3)
+- [ ] Keywords pasted (§4)
+- [ ] Support URL entered and loaded in a browser
+- [ ] Privacy Policy URL entered and loaded in a browser
+- [ ] Primary category Productivity, no secondary
+- [ ] Age rating completed to 4+
+- [ ] App Privacy published as Data Not Collected
+- [ ] Screenshots uploaded for `APP_IPHONE_67` (and `APP_IPHONE_65` if required)
+- [ ] Build selected for the version
+- [ ] Review notes pasted (§10)
+- [ ] `versions check-readiness` returns no blocking issues:
+      `asc versions check-readiness --version-id <VERSION_ID>`
