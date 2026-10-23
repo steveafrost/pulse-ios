@@ -219,8 +219,14 @@ public final class BoardViewModel {
     public var syncStatusText: String? {
         guard let sync else { return nil }
         switch sync.phase {
-        case .syncing: return "Syncing\u{2026}"
+        // §8.1: the capsule names the user's Mac, never the transport. "Syncing"
+        // and "publishing a snapshot" describe files; the user is sending their
+        // board to the Mac they set up.
+        case .syncing: return "Sending to your Mac\u{2026}"
         case .failed(let message): return message
+        // Never the "Mac · 2m ago" line here: that sentence is a claim the Mac
+        // has the data, and in this state it does not.
+        case .notConnected(let reason): return reason
         case .idle:
             guard let published = sync.lastPublishedAt else { return nil }
             return "Mac \u{00B7} \(PulseDateFormat.relative(published, now: nowDate))"
@@ -322,6 +328,11 @@ public final class BoardViewModel {
     ) -> BoardState {
         let all = Horizon.allCases.flatMap { board[$0] ?? [] }
         if all.isEmpty {
+            // §9.3: a paused source is the reason the board is empty, so it wins
+            // over "nothing needs you" and over the never-captured invitation.
+            if let paused = failures.first(where: \.isPermissionProblem) {
+                return .empty(.denied(paused.identity))
+            }
             return .empty(lastCapturedAt == nil ? .neverCaptured : .allClear)
         }
         if filter.apply(to: all).isEmpty, filter.isActive {

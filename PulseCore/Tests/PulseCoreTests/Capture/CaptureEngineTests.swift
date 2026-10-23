@@ -320,6 +320,99 @@ struct CaptureEngineTests {
         #expect(after?.resolution == "no longer detected")
     }
 
+    /// M7.1: the shared-link source runs in the same pass as Calendar and
+    /// Reminders, and `countsBySource` attributes each item to the source its id
+    /// prefix names -- not to the source's own `sourceID` (`.other`), which is the
+    /// one place this feature could silently miscount.
+    @Test("a pass over calendar, reminders and shared links reports every source's items and counts")
+    func allThreeSources() async {
+        let store = ItemStore()
+        let calendarSource = EventKitSource(provider: FakeEventProvider(events: [
+            EventFixture.event("CAL-1", title: "Retro", startsIn: 20 * 60, lasts: 10 * 60),
+        ]))
+        let remindersSource = RemindersSource(provider: FakeReminderProvider(reminders: [
+            ReminderSnapshot(identifier: "REM-1", title: "Pay invoice", dueDate: Fixture.now.addingTimeInterval(-3600)),
+        ]))
+        let sharedSource = SharedLinkSource(provider: FakeSharedLinkProvider(links: [
+            SharedLinkSnapshot(
+                url: "https://acme.slack.com/archives/C1/p1",
+                text: "Can you review this before Friday?",
+                sharedAt: Fixture.now
+            ),
+            SharedLinkSnapshot(url: "https://github.com/acme/api/pull/42", sharedAt: Fixture.now),
+            SharedLinkSnapshot(url: "https://mail.google.com/mail/u/0/#inbox/abc", sharedAt: Fixture.now),
+            SharedLinkSnapshot(url: "https://example.com/some/page", sharedAt: Fixture.now),
+        ]))
+
+        let engine = makeEngine(
+            sources: [calendarSource, remindersSource, sharedSource],
+            store: store
+        )
+        let report = await engine.run(mode: .full)
+
+        #expect(report.errors.isEmpty)
+        #expect(report.countsBySource[.calendar] == 1)
+        #expect(report.countsBySource[.other] == 2) // reminder + the bare link
+        #expect(report.countsBySource[.slack] == 1)
+        #expect(report.countsBySource[.github] == 1)
+        #expect(report.countsBySource[.gmail] == 1)
+        #expect(report.detectedCount == 6)
+        #expect(report.created.count == 6)
+        #expect(await store.count() == 6)
+
+        // Kinds land where the board expects them.
+        let items = await store.allItems()
+        #expect(items.contains { $0.source == .github && $0.kind == .review })
+        #expect(items.contains { $0.source == .gmail && $0.kind == .reply })
+        #expect(items.contains { $0.source == .slack && $0.kind == .reply })
+        #expect(items.contains { $0.source == .other && $0.kind == .fyi && $0.id.hasPrefix("other:link:") })
+    }
+
+    @Test("a shared-link source with no shares contributes nothing and reports nothing")
+    func sharedLinksEmpty() async {
+        let store = ItemStore()
+        let engine = makeEngine(
+            sources: [SharedLinkSource(provider: FakeSharedLinkProvider(links: []))],
+            store: store
+        )
+        let report = await engine.run(mode: .full)
+        #expect(report.errors.isEmpty)
+        #expect(report.detectedCount == 0)
+        #expect(await store.count() == 0)
+    }
+
+    @Test("an unreadable shared-link store is a failed source, not a dead pass")
+    func sharedLinksThrow() async {
+        let store = ItemStore()
+        let good = FakeSource(sourceID: .calendar, items: [Fixture.detected("calendar:event:A")])
+        let bad = SharedLinkSource(provider: FakeSharedLinkProvider(
+            links: [],
+            error: .underlying("shared links are unreadable")
+        ))
+        let engine = makeEngine(sources: [good, bad], store: store)
+        let report = await engine.run(mode: .full)
+
+        #expect(report.errors.count == 1)
+        #expect(report.errors.first?.isPermissionDenied == false)
+        #expect(report.pausedSources.isEmpty)
+        #expect(report.created.count == 1)
+    }
+
+    @Test("an unauthorised shared-link store is reported as paused, not failed")
+    func sharedLinksDenied() async {
+        let store = ItemStore()
+        // The app group is unreachable (a locked device, a revoked container): the
+        // provider surfaces it as `denied`, which must be a paused source.
+        let denied = SharedLinkSource(provider: FakeSharedLinkProvider(links: [], error: .denied(.other)))
+        let engine = makeEngine(sources: [denied], store: store)
+        let report = await engine.run(mode: .full)
+
+        #expect(report.errors.count == 1)
+        #expect(report.errors.first?.isPermissionDenied == true)
+        #expect(report.pausedSources == [.other])
+        #expect(report.detectedCount == 0)
+    }
+
     @Test("capture never reads the wall clock: a pass built on a fake instant reports that instant")
     func noWallClock() async {
         let store = ItemStore()

@@ -10,6 +10,7 @@ import Foundation
 /// | calendar conflict | `calendar:conflict:<YYYYMMDD>:<8-char hash of sorted participant set>` |
 /// | reminders | `reminders:reminder:<calendarItemIdentifier>` |
 /// | mail (share sheet) | `gmail:message:<rfc822 Message-ID>` |
+/// | shared link | `<source>:link:<8-char hash of the normalised URL>` |
 ///
 /// **Hash choice.** The conflict hash is the first 8 hex characters of
 /// SHA-256 over the UTF-8 encoding of the sorted participant identifiers joined
@@ -26,6 +27,9 @@ public enum ItemIdentity {
 
     /// How many hex characters of the digest the id carries.
     public static let conflictHashLength = 8
+
+    /// The same width for a shared link's id.
+    public static let sharedLinkHashLength = 8
 
     // MARK: - Builders
 
@@ -51,6 +55,117 @@ public enum ItemIdentity {
     /// `gmail:message:<rfc822 Message-ID>`.
     public static func mail(messageID: String) -> String {
         "gmail:message:\(messageID)"
+    }
+
+    /// `<source>:link:<hash>` for a link the user shared into Pulse (M7.1).
+    ///
+    /// The URL is normalised here rather than trusted from the caller: passing a raw
+    /// share would otherwise mint a different id for every `utm_` variant, which is
+    /// exactly the bug this template exists to avoid. Normalisation is idempotent,
+    /// so a caller that already normalised (as `SharedLinkSource` does) gets the
+    /// same id.
+    ///
+    /// A string that is not a parseable `http(s)` URL is still hashed, trimmed and
+    /// lowercased, so the function stays total; `SharedLinkSource` is where an
+    /// unusable URL is turned into `nil` instead of an item.
+    public static func sharedLink(source: Source, url: String) -> String {
+        let canonical = normalizedSharedURL(url)
+            ?? url.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return "\(source.rawValue):link:\(sharedLinkHash(canonical))"
+    }
+
+    /// The digest half of a shared-link id: SHA-256 over the normalised URL, hex,
+    /// truncated to `sharedLinkHashLength`.
+    ///
+    /// SHA-256 for the same reason as the conflict hash: this id is persisted,
+    /// synced to the Mac and compared across devices, so it must not depend on a
+    /// stdlib hash seed.
+    public static func sharedLinkHash(_ url: String, length: Int = sharedLinkHashLength) -> String {
+        let digest = SHA256.hash(data: Data(url.utf8))
+        let hex = digest.map { String(format: "%02x", $0) }.joined()
+        return String(hex.prefix(length))
+    }
+
+    /// The canonical form of a shared URL: the thing an id is hashed over.
+    ///
+    /// Returns `nil` when the string is not a usable `http(s)` URL, so a share of
+    /// something that is not a link produces no item instead of a junk one.
+    ///
+    /// Normalisation, and why each part:
+    ///   * scheme and host lowercased; host's leading `www.` dropped -- `https://`
+    ///     and `HTTPS://`, `www.x.com` and `x.com`, are the same page.
+    ///   * default ports (`:443` on https, `:80` on http) dropped.
+    ///   * a fragment (`#reply-42`) dropped: it addresses a position in a page, not
+    ///     a different thing, and Slack and GitHub both churn it. The one exception
+    ///     is a host on `fragmentCarriesIdentityHosts`: Gmail's message permalink is
+    ///     `mail.google.com/mail/u/0/#inbox/<id>`, where the fragment *is* the
+    ///     message, and dropping it would collapse every mail into one item.
+    ///   * tracking query parameters dropped (`utm_*`, `fbclid`, `gclid`,
+    ///     `mc_cid`, `mc_eid`, `igshid`, `si`, `ref_src`). Gmail and Slack append
+    ///     these on share; keeping them would make one message produce many items.
+    ///   * the remaining query parameters sorted, so `?a=1&b=2` and `?b=2&a=1` are
+    ///     one link.
+    ///   * a trailing slash dropped, so `https://x.com/` and `https://x.com` agree;
+    ///     an otherwise non-empty path is left as given, because a path *is* the
+    ///     identity (`/pull/1` and `/pull/2` are different reviews).
+    public static func normalizedSharedURL(_ raw: String) -> String? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, var components = URLComponents(string: trimmed) else { return nil }
+        guard let scheme = components.scheme?.lowercased(), scheme == "https" || scheme == "http" else {
+            return nil
+        }
+        guard var host = components.host?.lowercased(), !host.isEmpty else { return nil }
+        if host.hasPrefix("www.") { host.removeFirst(4) }
+        guard !host.isEmpty else { return nil }
+
+        components.scheme = scheme
+        components.host = host
+        if (scheme == "https" && components.port == 443) || (scheme == "http" && components.port == 80) {
+            components.port = nil
+        }
+        if !fragmentCarriesIdentity(host: host) { components.fragment = nil }
+
+        if let items = components.queryItems {
+            let kept = items
+                .filter { !isTrackingParameter($0.name) }
+                .sorted { lhs, rhs in
+                    lhs.name == rhs.name ? (lhs.value ?? "") < (rhs.value ?? "") : lhs.name < rhs.name
+                }
+            components.queryItems = kept.isEmpty ? nil : kept
+        }
+
+        // A trailing slash addresses the same resource (`/pull/3/` is `/pull/3`);
+        // trimming it also collapses the root path to `""`, so `https://x.com` and
+        // `https://x.com/` agree.
+        var path = components.path
+        while path.count > 1, path.hasSuffix("/") { path.removeLast() }
+        components.path = path == "/" ? "" : path
+
+        // `URLComponents` percent-encodes on the way out and can return nil for a
+        // malformed host; treat that as "not a link" rather than hashing a guess.
+        guard let string = components.string else { return nil }
+        return string
+    }
+
+    /// Hosts whose URL keeps its meaning in the fragment. Deliberately a short,
+    /// explicit list with a comment, not a pattern: silently keeping fragments
+    /// would undo the de-duplication for every other site.
+    public static let fragmentCarriesIdentityHosts: Set<String> = ["mail.google.com"]
+
+    /// Whether `host` needs its fragment kept. Suffix match, so a Gmail tenant host
+    /// (`mail.google.com`) and any future `mail.google.co.uk` style variant agree.
+    public static func fragmentCarriesIdentity(host: String) -> Bool {
+        fragmentCarriesIdentityHosts.contains { host == $0 || host.hasSuffix("." + $0) }
+    }
+
+    /// Whether a query parameter is a tracking tag rather than part of the identity.
+    ///
+    /// `utm_` is a prefix family; the rest are the single parameters the large
+    /// senders (Facebook, Google, Mailchimp, Instagram, Slack, Twitter) append.
+    public static func isTrackingParameter(_ name: String) -> Bool {
+        let lowered = name.lowercased()
+        if lowered.hasPrefix("utm_") { return true }
+        return ["fbclid", "gclid", "mc_cid", "mc_eid", "igshid", "si", "ref_src", "ref_url"].contains(lowered)
     }
 
     // MARK: - Hash

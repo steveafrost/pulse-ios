@@ -40,8 +40,20 @@ public struct ICloudContainer: CloudContainer, @unchecked Sendable {
         try? fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
     }
 
-    /// Resolves the user's ubiquity container. Throws `iCloudUnavailable` when
-    /// iCloud is not signed in or the entitlement is missing.
+    /// Resolves the user's ubiquity container.
+    ///
+    /// Throws `iCloudUnavailable` when `url(forUbiquityContainerIdentifier:)`
+    /// returns nil -- the signed-out, iCloud-Drive-off, and missing-entitlement
+    /// cases all arrive here, and on a simulator it is nil almost always. Throws
+    /// `iCloudDirectoryUnavailable` when the container resolved but
+    /// `Documents/Pulse/` could not be created inside it.
+    ///
+    /// The two are deliberately distinct. `nil` means "the account is the
+    /// problem"; a failed `createDirectory` means "the account is fine, the
+    /// filesystem is not" -- full storage, a read-only container, or a regular
+    /// file sitting where the directory belongs. `try?` here would collapse both
+    /// into "iCloud is unavailable", which would send a signed-in user with full
+    /// storage to the wrong Settings screen.
     public init(
         fileManager: FileManager = .default,
         containerIdentifier: String = ICloudContainer.containerIdentifier,
@@ -51,7 +63,11 @@ public struct ICloudContainer: CloudContainer, @unchecked Sendable {
             throw PulseSyncError.iCloudUnavailable
         }
         let root = base.appendingPathComponent(Self.transportDirectory, isDirectory: true)
-        try fileManager.createDirectory(at: root, withIntermediateDirectories: true)
+        do {
+            try fileManager.createDirectory(at: root, withIntermediateDirectories: true)
+        } catch {
+            throw PulseSyncError.iCloudDirectoryUnavailable(error.localizedDescription)
+        }
         self.init(containerURL: root, fileManager: fileManager, downloadTimeout: downloadTimeout)
     }
 

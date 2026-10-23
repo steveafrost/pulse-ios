@@ -61,6 +61,14 @@ public struct PulsePaths: Sendable {
     /// in `Documents/Pulse/`: the data contract pins that directory to exactly the
     /// three transport files the Mac plugin enumerates.
     public var commandCursorURL: URL { root.appendingPathComponent("commands.cursor") }
+    /// The Share Extension's inbox: one JSON object per line, one line per share
+    /// (M7.1). Append-only, and read by `FileSharedLinkProvider`.
+    ///
+    /// In the group root rather than `Documents/Pulse/` for the same reason as the
+    /// cursor: that directory is the Mac transport, and this file is the app group's
+    /// own hand-off between two processes of this app.
+    public var sharedLinksURL: URL { root.appendingPathComponent("shared-links.jsonl") }
+
     /// The bounded on-device sync log, for the debug sheet.
     ///
     /// In the group root for the same reason as the cursor: `Documents/Pulse/` is

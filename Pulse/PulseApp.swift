@@ -161,6 +161,11 @@ enum DemoSeed {
             sources: [
                 EventKitSource(provider: EventKitEventProvider()),
                 RemindersSource(provider: EventKitReminderProvider()),
+                // M7.1: the links the user shared from Slack, Gmail or GitHub via
+                // the Share Extension. No OAuth, no network -- what the user
+                // shared is what the board gets. See `docs/DEFERRED-SOURCES.md`
+                // for the API path that would replace it.
+                SharedLinkSource(provider: FileSharedLinkProvider()),
             ],
             store: store,
             now: { Date() }

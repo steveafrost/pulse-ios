@@ -69,6 +69,25 @@ public final class FakeSource: CaptureSource, @unchecked Sendable {
     }
 }
 
+/// A `SharedLinkSnapshot` provider backed by a literal array.
+///
+/// Keeps `SharedLinkSource` testable without the app group, a share sheet or a
+/// second process: the host and kind rules are pure functions over these.
+public struct FakeSharedLinkProvider: SharedLinkProviding {
+    public let links: [SharedLinkSnapshot]
+    public let error: CaptureError?
+
+    public init(links: [SharedLinkSnapshot], error: CaptureError? = nil) {
+        self.links = links
+        self.error = error
+    }
+
+    public func sharedLinks() throws -> [SharedLinkSnapshot] {
+        if let error { throw error }
+        return links
+    }
+}
+
 /// A `CalendarEventSnapshot` provider backed by a literal array.
 ///
 /// This is what keeps the detector rules testable: no EventKit, no permission

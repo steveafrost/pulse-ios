@@ -56,7 +56,9 @@ public struct ClosedItemsView: View {
                 }
             }
             if model.canLoadMore {
-                Button("Load more") { model.loadMore() }
+                // #19: a bare "Load more" leaves the user guessing; the count is
+                // already known from `allClosed`, so name it.
+                Button(BoardCopy.loadMore(model.remainingCount)) { model.loadMore() }
             }
         }
         .listStyle(.insetGrouped)

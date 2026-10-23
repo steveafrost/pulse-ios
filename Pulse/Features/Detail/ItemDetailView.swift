@@ -36,7 +36,7 @@ public struct ItemDetailView: View {
                     onOpen: { open($0) }
                 )
                 if model.item.status == .waiting {
-                    Text("Waiting on someone else since \(model.item.updatedAt.formatted(.dateTime.month(.abbreviated).day()))")
+                    Text(waitingCopy)
                         .font(PulseTypography.meta)
                         .foregroundStyle(PulseColor.statusWaiting)
                 }
@@ -100,6 +100,18 @@ public struct ItemDetailView: View {
         .modifier(GlassIdentity(id: model.item.id, namespace: namespace))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(metaSummary)
+    }
+
+    /// §8.2: "Waiting on Marco since Oct 20" when the row names exactly one other
+    /// person, otherwise the honest general form. "Waiting on someone else" told
+    /// the user nothing the row did not already say.
+    private var waitingCopy: String {
+        let since = model.item.updatedAt.formatted(.dateTime.month(.abbreviated).day())
+        let others = model.item.people
+        guard others.count == 1, let name = others.first?.split(separator: " ").first else {
+            return "Waiting on someone else since \(since)"
+        }
+        return "Waiting on \(name) since \(since)"
     }
 
     private var metaSummary: String {

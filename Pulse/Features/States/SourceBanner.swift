@@ -20,7 +20,7 @@ public struct SourceBanner: View {
                 .foregroundStyle(PulseColor.textSecondary)
                 .lineLimit(2)
             Spacer(minLength: 0)
-            Button("Settings", action: onOpenSettings)
+            Button("Open Settings", action: onOpenSettings)
                 .font(.footnote.weight(.medium))
                 .frame(minHeight: PulseSpacing.minimumHitTarget)
                 .accessibilityIdentifier("banner.openSettings")

@@ -63,12 +63,12 @@ public struct CaptureStatusCapsule: View {
         return PulseColor.statusDone
     }
 
+    /// §8.1: the capsule is one element. The visible line is already a sentence,
+    /// so this only has to say the count and the time without repeating the
+    /// implementation words the second line shows; "Mac mirror" named a file the
+    /// user has never seen and is VoiceOver's only way to reach it, so it reads
+    /// "On your Mac" instead.
     private var accessibilityText: String {
-        if status.isFailed { return "Couldn't refresh. Try again." }
-        if status.isCapturing { return "Capturing" }
-        guard let date = status.lastCapturedAt else { return "Not captured yet" }
-        let base = "\(status.itemCount) items, updated \(PulseDateFormat.relative(date, now: now))"
-        guard let syncText = status.syncText else { return base }
-        return "\(base). Mac mirror: \(syncText)"
+        CaptureCopy.accessibility(status, now: now)
     }
 }

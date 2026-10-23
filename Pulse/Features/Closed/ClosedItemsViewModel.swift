@@ -42,6 +42,9 @@ public final class ClosedItemsViewModel {
 
     public var canLoadMore: Bool { visibleCount < allClosed.count }
 
+    /// #19: how many closed items the next "Load more" reveals.
+    public var remainingCount: Int { max(0, allClosed.count - min(visibleCount, allClosed.count)) }
+
     public func load() async {
         isLoading = true
         defer { isLoading = false }

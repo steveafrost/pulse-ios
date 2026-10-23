@@ -77,6 +77,7 @@ public struct EmptyBoardView: View {
         case .allClear: "allClear"
         case .neverCaptured: "neverCaptured"
         case .filtered: "filtered"
+        case .denied(let identity): "denied.\(identity.rawValue)"
         }
     }
 
@@ -103,6 +104,20 @@ public struct EmptyBoardView: View {
                 .buttonStyle(.bordered)
                 .frame(minHeight: PulseSpacing.minimumHitTarget)
                 .accessibilityIdentifier("board.empty.reset")
+        case .denied(let identity):
+            // §9.3: Open Settings is the way back; "Choose sources" re-runs the
+            // preamble instead of refusing outright, which is what "Not now" in
+            // 9.2 left the board able to do.
+            VStack(spacing: PulseSpacing.xs) {
+                Button("Open Settings", action: onOpenSettings)
+                    .buttonStyle(.bordered)
+                    .accessibilityIdentifier("board.empty.openSettings")
+                Button("Choose sources") { onConnect(identity) }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(PulseColor.textSecondary)
+                    .frame(minHeight: PulseSpacing.minimumHitTarget)
+                    .accessibilityIdentifier("board.empty.chooseSources")
+            }
         }
     }
 
@@ -111,6 +126,7 @@ public struct EmptyBoardView: View {
         case .allClear: "checkmark.circle.fill"
         case .neverCaptured: "sparkles"
         case .filtered: "line.3.horizontal.decrease.circle"
+        case .denied: "calendar.badge.exclamationmark"
         }
     }
 
@@ -119,6 +135,7 @@ public struct EmptyBoardView: View {
         case .allClear: PulseColor.statusDone
         case .neverCaptured: PulseColor.horizonNow
         case .filtered: PulseColor.textTertiary
+        case .denied: PulseColor.statusError
         }
     }
 
@@ -128,6 +145,7 @@ public struct EmptyBoardView: View {
         case .allClear: "You're all clear"
         case .neverCaptured: "Let's see what needs you"
         case .filtered: "Nothing matches this filter"
+        case .denied(let identity): "Pulse can't see your \(identity.title.lowercased())"
         }
     }
 
@@ -139,6 +157,8 @@ public struct EmptyBoardView: View {
             "Connect your calendar and reminders. Pulse reads them on this device and never sends anything anywhere."
         case .filtered:
             "Every item is filtered out. Clear the filter to see the whole board."
+        case .denied(let identity):
+            "\(identity.title) access is off. Turn it on in Settings and Pulse will fill this board."
         }
     }
 
@@ -153,6 +173,8 @@ public struct EmptyBoardView: View {
             return "You can turn sources on or off later in Settings."
         case .filtered:
             return "Filters are never saved between launches."
+        case .denied:
+            return "Pulse reads on this device. Nothing leaves it."
         }
     }
 }

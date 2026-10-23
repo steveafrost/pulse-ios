@@ -355,12 +355,22 @@ the board. Primary action: the FAB, resolving the topmost open Now item with
 │ Due    Today, 5:30 PM                 │ KeyValue rows, opaque
 │ People Priya Raman, Marco Alves       │
 │ Source Calendar · opens in app ↗      │
-│ QUICK ACTIONS  ┌ "Yes to Oct 28" ⧉ ┐  │ copy buttons, .bordered
+│ QUICK ACTIONS  [ Yes to Oct 28 ⧉ ]    │ copy / open buttons, .bordered
 │ HISTORY        · Created 9:02 AM      │
 ├───────────────────────────────────────┤
 │ ( Snooze )  ( Dismiss )  ( Done )     │ glass action bar, glassProminent primary
 └───────────────────────────────────────┘
 ```
+
+**Quick action labels.** `QuickAction.label` is the button title and is written in
+the imperative ("Open thread", "Accept", "Yes to Oct 28"), never as a noun naming
+the payload. The row renders it verbatim and adds only a behaviour glyph
+(`doc.on.doc` for a copy action, `arrow.up.right.square` for one that opens a URL,
+`ellipsis.circle` for a menu when the action carries both); it never prefixes the
+label with a verb or wraps it in quotes, because "open the thing called *Open
+thread*" renders as "Open “Open thread”" and reads to VoiceOver as left-quote. A
+quick action whose URL equals the item's own `url` replaces the standalone "Open
+link" button rather than duplicating it.
 
 States: **waiting** — banner "Waiting on Marco since Oct 20" in `StatusWaiting`;
 **done** — card at 60% opacity with a "Done · Reopen" banner; **mirror pending** —
@@ -385,7 +395,12 @@ glyph, `.title2` `.semibold` heading, `.body` `TextSecondary` centred at max wid
 | --- | --- | --- | --- | --- |
 | **9.1 Genuinely clear** (captured before, nothing needs the user) | `checkmark.circle.fill` · `StatusDone` | "You're all clear" | "Nothing needs you right now. Pulse is watching your calendar and reminders and will put the next thing here." | `Refresh` (`.bordered`, not prominent) · "Last checked 2 minutes ago" |
 | **9.2 Never captured** (no sources connected) | `sparkles` · `HorizonNow` | "Let's see what needs you" | "Connect your calendar and reminders. Pulse reads them on this device and never sends anything anywhere." | `Connect Calendar` (`glassProminent`), `Not now` (`.plain`) · "You can turn sources on or off later in Settings." If only Reminders is available the primary becomes `Connect Reminders`. |
-| **9.3 Permission denied** | `calendar.badge.exclamationmark` · `StatusError` | "Pulse can't see your calendar" | "Calendar access is off. Turn it on in Settings and Pulse will fill this board." | `Open Settings` (`.bordered`), `Choose sources` (`.plain`) · If reminders still work, those items render above this as a non-blocking banner instead of a full-screen state. |
+| **9.3 Permission denied** | `calendar.badge.exclamationmark` · `StatusError` | "Pulse can't see your calendar" (the paused source's name: "Pulse can't see your reminders") | "Calendar access is off. Turn it on in Settings and Pulse will fill this board." | `Open Settings` (`.bordered`), `Choose sources` (`.plain`) · "Pulse reads on this device. Nothing leaves it." If reminders still work, those items render above this as a non-blocking banner instead of a full-screen state. |
+
+9.3 applies only when the board is **empty** because of the denial
+(`BoardState.EmptyReason.denied`). With any item renderable the denial is the
+non-blocking `SourceBanner` above, and the identical sentence appears there with
+the same "Open Settings" button — one wording, two placements.
 
 **9.4 Section-empty rule.** A zero-item section is never rendered (4.1); "Nothing
 in Next" is never written.

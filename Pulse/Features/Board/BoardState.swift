@@ -17,6 +17,11 @@ public enum BoardState: Sendable, Equatable {
         case neverCaptured
         /// Filter/query excludes everything.
         case filtered
+        /// §9.3 — the board is empty because a source is paused, not because
+        /// nothing needs the user. Without this the first run after a denial
+        /// renders 9.2 ("Let's see what needs you", "Connect your calendar") at
+        /// someone who just said no, which is both wrong and nagging.
+        case denied(SourceIdentity)
     }
 
     public var showsSections: Bool {

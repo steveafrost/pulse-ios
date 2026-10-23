@@ -46,7 +46,7 @@ public struct PulseSectionHeader: View {
         .padding(.vertical, PulseSpacing.xs)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(horizon.title), \(count) item\(count == 1 ? "" : "s")")
+        .accessibilityLabel(BoardCopy.sectionHeader(horizon, count: count))
         .accessibilityAddTraits(.isHeader)
     }
 }

@@ -35,7 +35,7 @@ public struct HistoryTimeline: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("History, \(entries.count) entries")
+        .accessibilityLabel(BoardCopy.history(entries.count))
     }
 
     private func row(_ entry: HistoryEntry) -> some View {
@@ -47,10 +47,10 @@ public struct HistoryTimeline: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: PulseSpacing.xxs) {
-                    Text(entry.change)
+                    Text(HistoryCopy.change(entry.change))
                         .font(PulseTypography.itemDetail)
                         .foregroundStyle(PulseColor.textPrimary)
-                    Text(entry.by)
+                    Text(HistoryCopy.actor(entry.by))
                         .font(PulseTypography.chip)
                         .foregroundStyle(PulseColor.textSecondary)
                         .padding(.horizontal, 6)
@@ -79,9 +79,58 @@ public struct HistoryTimeline: View {
     }
 
     private func spoken(_ entry: HistoryEntry) -> String {
-        var parts = ["\(entry.change), by \(entry.by), \(PulseDateFormat.relative(entry.at, now: now))"]
+        var parts = ["\(HistoryCopy.change(entry.change)), by \(HistoryCopy.actorSpoken(entry.by)), \(PulseDateFormat.relative(entry.at, now: now))"]
         if let reason = entry.reason, !reason.isEmpty { parts.append(reason) }
         if let until = entry.until { parts.append("until \(PulseDateFormat.snoozeUntil(until))") }
         return parts.joined(separator: ", ")
+    }
+}
+
+/// §18: history is store vocabulary (`change` is a status or a comma-joined field
+/// list, `by` is the writer id "capture" / "user" / "mirror"). Both are rendered
+/// for a person: a verb phrase and who did it, never the raw token.
+///
+/// The store strings are load-bearing (the Mac mirror greps them), so the mapping
+/// lives here rather than in `PulseCore`: the wire keeps its tokens, the screen
+/// keeps its sentences, and an unknown token falls back to itself instead of
+/// going blank.
+public enum HistoryCopy {
+    public static func change(_ raw: String) -> String {
+        switch raw {
+        case "created": return "Added"
+        case "done": return "Marked done"
+        case "dismissed": return "Dismissed"
+        case "snoozed": return "Snoozed"
+        case "open": return "Reopened"
+        case "resolved": return "Resolved"
+        case "waiting": return "Set to waiting"
+        case "snooze-expired": return "Snooze ended"
+        default:
+            // A capture delta is a comma-joined field list ("title,detail").
+            if raw.contains(",") { return "Updated " + raw.split(separator: ",").joined(separator: ", ") }
+            return raw.replacingOccurrences(of: "-", with: " ").capitalizedFirst
+        }
+    }
+
+    /// "You", "Pulse", "Your Mac" — the three writers a person can name.
+    public static func actor(_ raw: String) -> String {
+        switch raw {
+        case "user": return "You"
+        case "capture": return "Pulse"
+        case "mirror": return "Your Mac"
+        default: return raw.replacingOccurrences(of: "-", with: " ").capitalizedFirst
+        }
+    }
+
+    /// The same actor as a phrase, for the composed VoiceOver sentence.
+    public static func actorSpoken(_ raw: String) -> String {
+        raw == "user" ? "you" : actor(raw)
+    }
+}
+
+private extension String {
+    var capitalizedFirst: String {
+        guard let first else { return self }
+        return first.uppercased() + dropFirst()
     }
 }

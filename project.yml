@@ -43,6 +43,8 @@ targets:
       - package: PulseCore
       - target: PulseWidgets
         embed: true
+      - target: PulseShare
+        embed: true
     info:
       path: Pulse/Info.plist
       properties:
@@ -106,6 +108,43 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.pulse.widgets
 
+  # M7.1. The Share Extension is the honest on-device capture path for Slack,
+  # Gmail and GitHub: no OAuth app exists for Pulse, so the user hands it a link
+  # and the app turns that link into an item. It shares the app group with the
+  # app (that is the only channel it has) and depends on PulseCore for the
+  # `SharedLinkWriter`, so the write format cannot drift from the reader.
+  PulseShare:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PulseShare
+    dependencies:
+      - package: PulseCore
+    info:
+      path: PulseShare/Info.plist
+      properties:
+        CFBundleDisplayName: Pulse
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).ShareViewController"
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsWebURLWithMaxCount: 1
+              NSExtensionActivationSupportsWebPageWithMaxCount: 1
+              NSExtensionActivationSupportsText: true
+    entitlements:
+      path: PulseShare/PulseShare.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.steveafrost.pulse
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.pulse.share
+        # The extension has no Auto Layout-heavy chrome; keep it lean.
+        SKIP_INSTALL: YES
+
   PulseTests:
     type: bundle.unit-test
     platform: iOS
@@ -124,6 +163,7 @@ schemes:
       targets:
         Pulse: all
         PulseWidgets: all
+        PulseShare: all
     run:
       config: Debug
     test:

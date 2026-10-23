@@ -12,8 +12,17 @@ public enum PulseSyncError: Error, Sendable, Hashable, CustomStringConvertible {
     case unsupportedSchemaVersion(Int, supported: Int)
     /// A relative path was absolute or climbed out of the container root.
     case pathEscapesRoot(String)
-    /// iCloud is not signed in, or the ubiquity container could not be resolved.
+    /// iCloud is not signed in, iCloud Drive is off for this app, or the ubiquity
+    /// container could not be resolved. Deliberately separate from
+    /// `iCloudDirectoryUnavailable`: "sign in" and "we couldn't make our folder"
+    /// are different sentences to a user, and the device protocol checks both.
     case iCloudUnavailable
+    /// The ubiquity container resolved, but `Documents/Pulse/` could not be
+    /// created inside it (storage full, container read-only, a file where the
+    /// directory should be). Distinct from `iCloudUnavailable` because the
+    /// recovery differs and because it would otherwise surface as a raw
+    /// `NSError` out of `FileManager`.
+    case iCloudDirectoryUnavailable(String)
     /// A file could not be downloaded from iCloud within the timeout.
     case iCloudDownloadTimedOut(String)
     /// The tmp-write + rename dance failed; the previous file is untouched.
@@ -33,6 +42,8 @@ public enum PulseSyncError: Error, Sendable, Hashable, CustomStringConvertible {
             "sync path escapes the container root: \(path)"
         case .iCloudUnavailable:
             "iCloud is unavailable; sign in to iCloud to mirror Pulse to the Mac"
+        case .iCloudDirectoryUnavailable(let why):
+            "couldn't create the Pulse folder in iCloud Drive: \(why)"
         case .iCloudDownloadTimedOut(let path):
             "timed out downloading \(path) from iCloud"
         case .atomicWriteFailed(let why):

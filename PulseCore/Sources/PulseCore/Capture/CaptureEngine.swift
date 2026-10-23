@@ -136,6 +136,12 @@ public struct CaptureReport: Sendable, Hashable, Codable {
 /// its instant from that closure, so one pass judges every source against the
 /// same moment.
 ///
+/// Sources are ordered and independent: `EventKitSource`, `RemindersSource` and
+/// `SharedLinkSource` run against the same `now`. A source that throws contributes
+/// a `SourceError` and nothing else; a source that throws `CaptureError.denied`
+/// (or `.unavailable`) is reported in `pausedSources`, which is what the board
+/// shows as "Calendar access is off" rather than as a broken pass.
+///
 /// An `actor` because it holds the in-flight-run guard: two overlapping
 /// `run` calls would otherwise double-capture and race on the store.
 public actor CaptureEngine {

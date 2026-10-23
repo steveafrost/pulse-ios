@@ -70,10 +70,18 @@ public struct BoardSectionView: View {
 
     private var hiddenBeyondLimit: Int { max(0, items.count - horizon.collapseLimit) }
 
+    /// §4.1: "Show 4 more in Now". The row noun never appears here because the
+    /// horizon is named, so the only pluralisation risk is the number itself --
+    /// and "Show 1 more" is already correct. Kept as a property so the AX label and
+    /// the visible text cannot drift.
+    private var showMoreTitle: String {
+        BoardCopy.showMore(hiddenBeyondLimit, in: horizon)
+    }
+
     private var showAllControl: some View {
         Button(action: onToggle) {
             HStack(spacing: PulseSpacing.xxs) {
-                Text(isExpanded ? "Show less" : "Show \(hiddenBeyondLimit) more in \(horizon.title)")
+                Text(isExpanded ? "Show less" : showMoreTitle)
                     .font(.footnote.weight(.medium))
                     .lineLimit(1)
                 if !isExpanded {
@@ -86,6 +94,7 @@ public struct BoardSectionView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(isExpanded ? BoardCopy.showFewer(in: horizon) : showMoreTitle)
         .accessibilityIdentifier("board.showAll.\(horizon.rawValue)")
     }
 }

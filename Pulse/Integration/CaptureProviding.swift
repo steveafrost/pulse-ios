@@ -169,9 +169,13 @@ public struct CaptureStatusModel: Sendable, Hashable {
 
     public var phase: Phase
     public var itemCount: Int
-    /// The sync line under the capture line, e.g. "Mac · 2m ago", "Syncing…", or
-    /// the failure that stopped publishing. `nil` when this build has no container,
-    /// so the capsule renders exactly as it did before sync existed.
+    /// The sync line under the capture line, e.g. "Mac · 2m ago", "Sending to your
+    /// Mac…", or the failure that stopped publishing. `nil` when this build has no
+    /// container, so the capsule renders exactly as it did before sync existed.
+    ///
+    /// Every sentence here names the *user's* Mac, not the transport: "Mac mirror",
+    /// "publishing" and "snapshot" are implementation vocabulary and must not reach
+    /// the capsule (§8.1).
     public var syncText: String?
 
     public init(phase: Phase, itemCount: Int, syncText: String? = nil) {
@@ -187,17 +191,10 @@ public struct CaptureStatusModel: Sendable, Hashable {
         }
     }
 
-    /// §3: "12 items · 2m ago".
+    /// §3: "12 items · 2m ago". Delegates so the line and the VoiceOver sentence
+    /// cannot disagree about the count, which is the one thing they share.
     public func text(now: Date) -> String {
-        switch phase {
-        case .capturing:
-            return "Capturing…"
-        case .failed:
-            return "Couldn't refresh · Try again"
-        case .idle(let date):
-            guard let date else { return "Not captured yet" }
-            return "\(itemCount) item\(itemCount == 1 ? "" : "s") · \(PulseDateFormat.relative(date, now: now))"
-        }
+        CaptureCopy.line(self, now: now)
     }
 
     public var isFailed: Bool {

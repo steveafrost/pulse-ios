@@ -106,7 +106,7 @@ public struct BoardFilterBar: View {
 
     private var resetRow: some View {
         HStack(spacing: PulseSpacing.s) {
-            Text("\(totalCount) shown")
+            Text(BoardCopy.shown(totalCount))
                 .font(PulseTypography.meta)
                 .foregroundStyle(PulseColor.textTertiary)
             Spacer(minLength: 0)

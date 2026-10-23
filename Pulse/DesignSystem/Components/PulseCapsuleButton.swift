@@ -51,7 +51,9 @@ public struct PulseCapsuleButton: View {
         }
         .buttonStyle(.plain)
         .pulseGlass(isSelected ? .tintedUrgent : .regular, in: .capsule)
-        .accessibilityLabel(title)
+        // The badge is hidden from VoiceOver on its own, so the count has to
+        // ride along here or a chip reads "All" while showing "3".
+        .accessibilityLabel(badge.map { "\(title), \(Plural.items(Int($0) ?? 0)) in Now" } ?? title)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 }

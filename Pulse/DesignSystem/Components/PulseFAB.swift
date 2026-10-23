@@ -39,8 +39,11 @@ public struct PulseFAB: View {
                 .frame(minHeight: PulseSpacing.minimumHitTarget)
         }
         .buttonStyle(.pulseProminent(tint: tint))
+        // §10: the label is the action ("Done", "Refresh board"); a hint that
+        // says "runs the board's main action" repeats it in the wrong words.
+        // With a caption it names what is about to be done.
         .accessibilityLabel(title)
-        .accessibilityHint("Runs the board's main action")
+        .accessibilityHint(caption.map { "Marks \u{201C}\($0)\u{201D} done" } ?? "Checks your sources again")
     }
 
     /// §8.1: at AX1+ the caption sits above the glyph, so the control becomes a

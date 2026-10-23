@@ -23,7 +23,14 @@ public final class SyncCoordinator {
     public enum Phase: Sendable, Hashable {
         case idle
         case syncing
+        /// A write failed. Retryable.
         case failed(String)
+        /// Writes are succeeding, but to the local fallback: the board is safe
+        /// and the Mac sees nothing. Deliberately its own case, because "the
+        /// Mac has it" and "the Mac cannot see it" are the two states a user
+        /// must never confuse, and `failed` is the wrong word for a device that
+        /// is working exactly as designed with no iCloud account.
+        case notConnected(String)
     }
 
     // MARK: State
@@ -35,7 +42,16 @@ public final class SyncCoordinator {
     public private(set) var lastError: String?
     /// Set when iCloud is unavailable and the app is publishing to the app-group
     /// fallback instead. The Mac will not see those writes.
-    public private(set) var isMirroring: Bool
+    ///
+    /// Derived from `mirrorUnavailable`, never from `lastError`: a successful
+    /// write to the *local fallback* clears `lastError`, and reading the flag off
+    /// that made the capsule claim "Mac · 2m ago" while the Mac saw nothing. That
+    /// is the failure this property exists to make impossible.
+    public var isMirroring: Bool { mirrorUnavailable == nil }
+    /// Why the mirror is unreachable, or nil when it is. Sticky for the lifetime
+    /// of the coordinator: the container is resolved once at launch, so a
+    /// successful publish never means the mirror came back.
+    public private(set) var mirrorUnavailable: MirrorUnavailable?
     /// The last command drain, for the debug sheet and for the board's reload.
     public private(set) var lastReport: CommandConsumeReport?
 
@@ -78,7 +94,7 @@ public final class SyncCoordinator {
         deviceName: String,
         paths: PulsePaths = PulsePaths(),
         log: SyncLog = SyncLog(),
-        isMirroring: Bool = true,
+        mirrorUnavailable: MirrorUnavailable? = nil,
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.store = store
@@ -94,7 +110,7 @@ public final class SyncCoordinator {
         self.log = log
         self.clock = now
         self.deviceName = deviceName
-        self.isMirroring = isMirroring
+        self.mirrorUnavailable = mirrorUnavailable
     }
 
     /// Built from the resolved container, logging the iCloud fallback once.
@@ -106,13 +122,12 @@ public final class SyncCoordinator {
             deviceName: DeviceName.current,
             paths: paths,
             log: SyncLog(paths: paths, now: now),
-            isMirroring: resolved.fallbackReason == nil,
+            mirrorUnavailable: resolved.unavailable,
             now: now
         )
-        if let reason = resolved.fallbackReason {
-            coordinator.log.append("iCloud unavailable (\(reason)); publishing to the app-group fallback")
-            coordinator.lastError = reason
-            coordinator.phase = .failed(reason)
+        if let reason = resolved.unavailable {
+            coordinator.log.append("iCloud unavailable (\(reason.message)); publishing to the local fallback the Mac cannot see")
+            coordinator.phase = .notConnected(reason.shortReason)
         } else {
             coordinator.log.append("sync started at \(resolved.container.rootURL.lastPathComponent)")
         }
@@ -151,9 +166,13 @@ public final class SyncCoordinator {
             )
             lastPublishedAt = snapshot.generatedAt
             lastError = nil
-            phase = .idle
+            // A successful write does not mean the Mac got it. When iCloud was
+            // unavailable at launch we are writing to the local fallback, and
+            // resetting the phase to `.idle` here is what made the capsule say
+            // "Mac · 2m ago" over a file the Mac can never read.
+            phase = mirrorUnavailable.map { .notConnected($0.shortReason) } ?? .idle
             await onPublished?()
-            log.append("published \(snapshot.items.count) items")
+            log.append("published \(snapshot.items.count) items\(mirrorUnavailable == nil ? "" : " (local fallback; Mac cannot see this)")")
         } catch {
             let message = (error as? PulseSyncError)?.description ?? "\(error)"
             lastError = message
@@ -170,6 +189,9 @@ public final class SyncCoordinator {
     /// can decide to reload the board.
     @discardableResult
     public func pollCommands() async -> Bool {
+        // Nothing to drain without a container we can read; the local fallback
+        // holds no commands and polling it would only log noise every 15 s.
+        if mirrorUnavailable != nil { return false }
         do {
             let report = try await reader.consume()
             lastReport = report
@@ -201,7 +223,7 @@ public final class SyncCoordinator {
     /// EventKit wiring lands -- it then only mirrors whatever the board already
     /// has, which is the honest behaviour for a device with no sources.
     public func syncNow() async {
-        phase = .syncing
+        phase = mirrorUnavailable.map { .notConnected($0.shortReason) } ?? .syncing
         // Mirror first, capture second, publish after each.
         //
         // Order matters: a capture pass can block on a first-run permission
@@ -274,8 +296,11 @@ public final class SyncCoordinator {
         _ = await captureHandler?()
         await publish()
         await BackgroundRefresh.schedule()
-        log.append("background refresh finished (command change: \(changed))")
-        return lastError == nil
+        log.append("background refresh finished (command change: \(changed), mirroring: \(isMirroring))")
+        // A refresh that wrote only to the local fallback did its local job but
+        // did not reach the Mac. Reporting success there would let the OS keep a
+        // slot reserved for work that cannot succeed until the user signs in.
+        return lastError == nil && isMirroring
     }
 }
 
