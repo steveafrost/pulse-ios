@@ -404,13 +404,44 @@ extension ThirdHandItem {
 
     public var isSnoozed: Bool { status == .snoozed }
 
-    /// §5.1 rule 1: the rail takes `HorizonNow` only when the item is high
-    /// priority *and* due within 24h; otherwise a high-priority row takes Next.
+    /// §5.1 rule 1, revised in the craft pass: the rail is a *quiet spine* unless
+    /// the row is genuinely urgent.
+    ///
+    /// It previously took `horizon.tint`, so every Now row carried a saturated red
+    /// stripe and the board read as a wall of alarms. §1 says "urgency is position,
+    /// not colour"; the rail was contradicting it. Now:
+    ///
+    /// - urgent (high priority **and** due within 24h, including overdue) →
+    ///   `HorizonNow`, and the rail also thickens (`isUrgent`).
+    /// - high priority further out → `HorizonNext`.
+    /// - everything else → `RailNeutral`, a structural cue that this card has a
+    ///   horizon without asserting an alarm.
+    ///
+    /// The horizon is still unmistakable from the section it sits under and from
+    /// the header glyph, so no information is lost — only emphasis.
+    ///
+    /// Note on the demo fixture: every Now row in it is high-priority and overdue,
+    /// so all three rails are legitimately red there and the rationing is invisible
+    /// in that screenshot. It shows up on the ordinary case — a Now row that is
+    /// merely due today and not high priority now gets a quiet rail where it used to
+    /// get a red one.
     public func railTint(horizon: Horizon, now: Date) -> Color {
         guard horizon.hasRail else { return .clear }
-        if priority == .high, let due, due.timeIntervalSince(now) <= 86_400 { return ThirdHandColor.horizonNow }
+        if isUrgent(now: now) { return ThirdHandColor.horizonNow }
         if priority == .high { return ThirdHandColor.horizonNext }
-        return horizon.tint
+        return ThirdHandColor.railNeutral
+    }
+
+    /// High priority *and* due inside a day — the only state that earns the Now
+    /// rail colour and the thicker rail.
+    ///
+    /// No lower bound on purpose. An overdue high-priority item is *more* urgent
+    /// than one due in an hour, so it must keep the red spine; clamping the past
+    /// away (as a first draft of this did) silently demoted exactly the rows that
+    /// most needed the emphasis.
+    public func isUrgent(now: Date) -> Bool {
+        guard priority == .high, let due else { return false }
+        return due.timeIntervalSince(now) <= 86_400
     }
 
     /// §5.2: newness derives from the snapshot's `lastViewedAt`.

@@ -12,9 +12,19 @@ SF Symbol is what ships, and a stated number is the value.
   `.glassEffect()` appears only on the filter bar, capture capsule, FAB, sheets and
   tab bar, never on text.
 - **Urgency is position, not colour.** *Which means:* four section headers carry the
-  message, and every tint is paired with a glyph and a word.
+  message, and every tint is paired with a glyph and a word. **Enforced, not just
+  stated:** the row rail, the section counts and the filter bar's selected chip each
+  used to spend a saturated tint on things that are not urgent. All three now reserve
+  colour for the rows and states that earn it (see §2.1).
 - **The board is quiet by default.** *Which means:* one numeric emphasis per screen
   (the Now badge); everything else is rank order, with no per-row counts or dots.
+  **Enforced:** a row used to show its kind three times inside 20pt — glyph, glyph
+  tint, and a redundant kind chip. The chip is gone (§5.1).
+- **Nothing moves that the user did not cause.** *Which means:* three animations
+  total — row→detail morph, completion collapse, section reorder — all reducible.
+  The craft pass adds exactly one more, the §7.2b board load-in, which is `onAppear`
+  choreography rather than a response to a gesture, and which shows its **final
+  state instantly** under Reduce Motion.
 - **Every row ends in one gesture.** *Which means:* the full row opens detail, the
   trailing 44×44pt control completes it, a swipe reveals Snooze / Dismiss.
 - **Nothing moves that the user did not cause.** *Which means:* three animations
@@ -58,8 +68,34 @@ holds **3:1**. Both are asserted by the snapshot contrast test.
 
 `Horizon` owns the glyph, tint and collapse limit for each horizon; every other
 table here derives from it (`.now` 3, `.next` 4, `.later` 3, `.fyi` 2). The rail is
-3pt and takes `HorizonNow` only when `priority == high` **and** `due` is within 24h;
-otherwise a high-priority row takes `HorizonNext`, and Later rows never take Now.
+3pt and takes `HorizonNow` only when `priority == high` **and** `due` is within 24h
+(overdue counts — an overdue high-priority item is more urgent than one due in an
+hour, so there is deliberately no lower bound); it is then 4pt. Otherwise a
+high-priority row takes `HorizonNext`, and the ordinary case takes the neutral
+`RailNeutral` token below. Later rows never take Now.
+
+### 2.1 Where colour is allowed to be loud
+
+The craft pass rationed saturation. Before it, a single board screenshot carried
+red on the row rails, the Now count, the "All" filter chip, every Deadline chip and
+the FAB — five red objects competing, which is the same as none of them mattering.
+
+| Element | Before | After |
+| --- | --- | --- |
+| Row rail | `horizon.tint` on every rail row | `RailNeutral`; `HorizonNow` only when urgent |
+| Section count | horizon tint on all four | tint **only** on Now; tertiary elsewhere |
+| Filter bar selected chip | `.tintedUrgent` (red) | `.selected` (foreground tint) |
+| Kind glyph | always its kind tint | attention tint only for blocking kinds; tertiary otherwise |
+| Kind chip | shown beside the glyph | **removed** |
+| FAB | `HorizonNow` | `HorizonNow` — unchanged, and now the only large red object |
+| Now badge | `HorizonNow` | unchanged — §1's one numeric emphasis |
+
+The rule this encodes: **red on the board means "this one, now"**, and nothing
+else may use it. Adding `.selected` to `ThirdHandGlassVariant` was the enabling
+change, so a selected chip no longer has to borrow the urgent tint to look chosen.
+
+`RailNeutral` (new token) is `#D1D1D6` light, `#3C3C3C` dark, `#8E8E8E` increased
+contrast — a structural grey that reads as a spine, not an alarm.
 
 **Source identity** — glyph + label only, never on the card or rail. Light → dark:
 `SourceCalendar` `#B32D0F`→`#FF9F0A` (`calendar:` · `calendar`), `SourceReminders`
@@ -92,13 +128,28 @@ these tables — new colour requires a row here first.
 
 ## 3. Typography
 
-SF Pro Text below 20pt / display above (system default). SF Pro **Rounded** only
-for the board title and the Now badge.
+**Two faces, one job each.** **New York** (`design: .serif`) names the board — the
+board title, the horizon headings, and empty-state headings. **SF Pro** does
+everything that is read as data: titles, detail, meta, chips, counts, labels.
+
+Why a serif at all: it is what makes the board read as a considered personal
+*ledger* rather than a default SwiftUI list, and it is the single cheapest way to
+avoid the anonymous look. Why only there: a serif row title measurably slows the
+scan the board exists for, and a serif footnote is muddy at 13pt. Serif is a
+*voice*, so it is spent on two lines and nowhere else.
+
+Why New York and not a bundled face: it ships with iOS, so there is no file to
+license, no binary to verify, no `UIAppFonts` entry, and no risk of shipping a
+font that fails to load. Because it is reached through a **text style** rather than
+a point size, it scales through Dynamic Type and reflows at AX5 exactly as SF does
+— which a `Font.custom(_:size:)` with a fixed size would not.
+
+SF Pro **Rounded** remains only on the Now badge.
 
 | Role | Style | Weight | Use |
 | --- | --- | --- | --- |
-| Board title | `.largeTitle` Rounded | `.bold` | "Third Hand", inline at rest |
-| Section header | `.title3` | `.semibold` | "Now" + count |
+| Board title | `.largeTitle` **Serif** | `.bold` | "Third Hand", inline at rest |
+| Section header | `.title3` **Serif** | `.semibold` | "Now" + count |
 | Section hint | `.footnote` | `.regular` | "High priority or due today" |
 | Item title | `.headline` | `.semibold` | 2 lines |
 | Item detail | `.subheadline` | `.regular` | 2 lines |
@@ -107,6 +158,15 @@ for the board title and the Now badge.
 | Badge count | `.caption` Rounded | `.bold` | filter bar Now count |
 | Button label | `.body` | `.semibold` | FAB, sheet primary |
 | Capture capsule | `.footnote` | `.medium` | "12 items · 2m ago" |
+| Empty heading | `.title2` **Serif** | `.semibold` | "You're all clear" |
+| Key/value label | `.subheadline` | `.semibold` | Settings rows, account facts |
+
+**Tracking.** `ThirdHandTracking.eyebrow` (0.8) on uppercase group labels only, and
+`ThirdHandTracking.count` (0.5) on the horizon count. Letterspacing is used in
+exactly those two places: it is a way to buy distinctiveness without a bundled
+face, but applying it to a sentence that is actually read damages legibility. The
+serif headings use `-0.2` tracking, because a high-contrast serif set at display
+size opens up too much at default tracking.
 
 At AX sizes: the **title**'s 2-line limit is removed at `.accessibility1`+.
 **Detail** hides on the board at `.accessibility3`+ (kept in detail) so rows stay
@@ -168,14 +228,34 @@ separate 44pt completion control, and swipe actions on both edges.
 ┌──────────────────────────────────────────────────────────────┐
 │ ▍ ★  Pick the launch date for the Payments beta        ✓  ⌄   │ 1,2,3,4,5
 │ ▍    Priya needs a yes on Oct 28 or Nov 4 before she…        │ 3
-│ ▍    [Slack] [Decision]  Today 5:30 PM  Priya, Marco  5h ago │ 6
+│ ▍    [Slack]            Today 5:30 PM  Priya, Marco  5h ago │ 6
 └──────────────────────────────────────────────────────────────┘
 ```
 
-1. **Leading rail** — `RoundedRectangle(cornerRadius: 1.5)`, 3pt, flush to the card
-   edge, tinted by horizon. Absent for Nice to Know, which use plain 16pt leading
-   padding (rail rows inset text 3+12pt more).
-2. **Kind glyph** — 20×20pt SF Symbol `.semibold` in its kind token: reply
+**One chip, not two.** The craft pass removed the kind chip. It restated the kind
+glyph (2pt to its left) and the VoiceOver label, so a row asserted its kind three
+times inside 20pt. The **source** chip stays because source is the one fact the eye
+cannot get any other way — the glyph encodes kind, not source. Nothing is lost for
+VoiceOver: the kind is still in the row's accessibility label.
+
+1. **Leading rail** — `RoundedRectangle(cornerRadius: 1.5)`, flush to the card
+   edge. **3pt neutral (`RailNeutral`) at rest; 4pt `HorizonNow` only when the row
+   is genuinely urgent** (high priority and due within 24h, overdue included).
+   Absent for Nice to Know, which use plain 16pt leading padding (rail rows inset
+   text 3+12pt more).
+
+   This is the change that did the most for the board. The rail used to take
+   `horizon.tint`, so *every* Now row carried a saturated red spine and the board
+   read as a wall of alarms — which §1's "urgency is position, not colour" already
+   forbade. A neutral rail keeps the structural cue (this card has a horizon) and
+   leaves the red to the one row that earns it. A high-priority row further out
+   keeps `HorizonNext`.
+
+2. **Kind glyph** — 20×20pt SF Symbol `.regular` (was `.semibold`), in its kind
+   token only for the kinds that block another person — `decision`, `rsvp`,
+   `conflict`, `deadline`. The rest (`reply`, `review`, `followup`, `fyi`) drop to
+   `TextTertiary`: the *shape* still identifies the kind, but it stops competing
+   with the title. Glyphs: reply
    `arrowshape.turn.up.left`, decision `questionmark.circle`, rsvp
    `calendar.badge.clock`, conflict `exclamationmark.triangle`, deadline
    `clock.badge.exclamationmark`, review `doc.text.magnifyingglass`, followup
@@ -194,7 +274,20 @@ separate 44pt completion control, and swipe actions on both edges.
 
 ### 5.2 Height, truncation, newness
 
-Padding `.padding(.horizontal, 16).padding(.vertical, 14)`, minima from 4.
+Padding `.padding(.horizontal, 16).padding(.vertical, 12)`, minima from 4.
+
+**The minima were not the problem.** They were 72/92/112 and are now 56/76/92 — but
+measuring the shipped board showed the minima were never the binding constraint:
+rows stood at ~115pt because the *detail* wrapped to two lines, not because a floor
+held them up. Tightening the floor alone would have changed nothing on screen. The
+real height came from three things, and each is now addressed:
+
+1. `vertical` padding 14 → 12 (§4's own 12pt step, not an off-scale 14).
+2. The **second meta chip was removed** (see 5.1) — one pill instead of two.
+3. The minima dropped to the floor the content actually needs.
+
+Minima remain a floor, never a cap: nothing here truncates a row, and every text
+block still carries `.fixedSize(horizontal: false, vertical: true)`.
 Trailing affordances are **top-aligned** with the title, not centred, so they hold
 their place as the row grows. Truncation: title 2 lines (∞ at AX1+) `.tail`;
 detail 2 lines `.tail`, hidden at AX3+; meta line 1 line `.tail`, scrolling
@@ -203,7 +296,9 @@ horizontally at AX2+; chips never wrap (`.fixedSize()`); people cap at 2 names t
 
 Newness derives from `snapshot.lastViewedAt`: a row with `firstSeenAt >
 lastViewedAt` gets a 6pt `Circle()` in `HorizonNext` 8pt left of the kind glyph plus
-`.overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(HorizonNext.opacity(0.45), lineWidth: 1))`.
+`.overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(HorizonNext.opacity(0.35), lineWidth: 1))`.
+The border dropped from 0.45 to 0.35 so it reads as a hint rather than a fourth
+competing signal.
 No background or weight change — weight would shift layout. Clears when that item's
 detail opens, or the board is left and returned to.
 
@@ -307,13 +402,30 @@ From the row control, a VoiceOver action, or a mirror command landing:
 The card stays in the hierarchy until step 3 finishes so the flash is visible —
 a two-phase state (`marking → removing`) inside `ItemRow`.
 
+### 7.2b Board load-in — the signature moment
+
+The board's one piece of choreography. On first appearance each row fades up from
+`opacity 0` and rises 10pt, over `.easeOut(duration: 0.34)`, each row starting 32ms
+after the one above it, **capped at 240ms total** so a long board does not spend a
+second and a half arriving. The stagger index runs across the whole board rather
+than restarting per section (`BoardView.loadInOffset(forSection:)`), so Now 1–5 are
+rows 0–4 and Next begins at 5 — including when a section is expanded.
+
+Deliberately a breath, not a performance: 10pt and 0.34s, because this is a board a
+busy person opens a hundred times a day and anything larger reads as decoration.
+
+**Reduce Motion shows the final state immediately.** `LoadIn.body` returns the
+content untouched when `motion.reduceMotion` is true — no transition, no delay, no
+opacity change. This is not a shortened animation; there is no window in which a
+row is half-arrived.
+
 ### 7.3 Section reorder
 
 On a horizon change from a capture pass the row leaves on the step-3 curve and
 arrives in the destination at `.smooth(duration: 0.28)` after a 60ms delay; both
 counts use `.contentTransition(.numericText())`.
 
-### 7.4 Reduce Motion
+### 7.4 Reduce Motion (unchanged, and now also covers 7.2b)
 
 `@Environment(\.accessibilityReduceMotion)`. When true, 7.1 loses the matched
 geometry for a standard sheet present with a 0.2s opacity cross-fade; 7.2 keeps
@@ -381,7 +493,61 @@ footnote "Action sent to Mac" while a command is unacked; **error** — `alert`
 
 | Sheet | Content | States | Primary action |
 | --- | --- | --- | --- |
-| `SettingsView` (`.large`) | Sources (Calendar / Reminders toggles + last sync), Freshness (last capture, "Refresh now"), Appearance (`@AppStorage("density")`: Comfortable = 16pt, Compact = 8pt with detail hidden), Privacy ("Data stays on device"), About | granted / denied per source + "Open Settings" deep link | **none** — configuration never carries `glassProminent` |
+| `SettingsView` (`.large`) | **What Third Hand can see** (one row per source: glyph, name, state), **Email** (one row → `EmailAccountView`), **Privacy** ("Everything stays on this device."), **About** (version/build) | granted / denied per source + "Open Settings" deep link | **none** — configuration never carries `glassProminent` |
+| `EmailAccountView` (`.large`) | See §8.4 | not connected / connected / password needed | `Connect` · `Save password` (`glassProminent`) |
+
+**What changed and why.** `SettingsView` has been specified here since v1 and did
+not exist in the codebase — `onOpenSettings` deep-linked straight out to iOS
+Settings, so the app could say "Calendar is off" and offer nothing about it. It is
+now a real screen with the only thing it needs: a per-source truth table with the
+fix beside each degraded source.
+
+Three rows were **deliberately not built**, because they would each be a lie:
+
+- *Appearance / density.* The app follows the system. A density switch that only
+  changed padding would be a setting with no job.
+- *Notification toggles.* The board is the notification; there are no pushes.
+- *Accounts / sign-in.* There is no server and no account (§10).
+
+Each source row carries its **own label and glyph** rather than reading
+`Source.title`. That is not cosmetic: reminders and shared links both travel on the
+wire as `.other` (the contract reserves no case for either), so the enum would
+label the Reminders row "Other" and give it a link symbol.
+
+### 8.4 Email account (`EmailAccountView`)
+
+The mailbox screen is where the app is allowed to look most like a form, because
+its job is unambiguous. Three account states, and the distinction between the last
+two is the point:
+
+| State | Shown as | Form |
+| --- | --- | --- |
+| No mailbox configured | heading "Connect a mailbox", empty address | address, server, password |
+| Configured + password stored | the address, "N unread messages" | server/mailbox facts, replace, disconnect |
+| Configured, **no password in the Keychain** | "Password needed" | password only |
+
+The third state is what a restore-from-backup produces: the non-secret half lives
+in `UserDefaults` and survives, the Keychain secret does not. Reporting it as "Not
+connected" would send the user to a form that is already filled in and hide the one
+thing that has to happen.
+
+**The password is a `SecureField` and is never logged.** It exists only as view
+`@State` for the length of the edit and goes straight to the Keychain via
+`EmailAccountModel.save(password:)`; the model has no property to store it in. It is
+never included in `saveError` (which names the *operation*, not the value), and
+`EmailAccount` already restricts its own `description` to host, port and username.
+The draft is cleared the instant the save succeeds.
+
+**The rationale is short and only claims what is true:** the password is kept in the
+iOS Keychain on this device, never shown again, never written to a log, and leaves
+the phone only to sign in over an encrypted connection (the transport is IMAPS — TLS
+from the first byte). The "How do I get one?" disclosure names the Gmail path and
+says plainly that a normal Google password will not work; it names no other
+provider, because a wrong guess at another provider's settings page is worse than
+no link.
+
+**The source chip and this screen share one copy source** (`statusLine`), so
+"Not connected" / "Checking…" / "N unread messages" cannot drift apart.
 | `PermissionPrimerView` (full-screen cover) | `calendar.badge.checkmark` (64pt, `HorizonNext`), "Third Hand reads your calendar and reminders to know what needs you.", bullets "Nothing leaves your device" / "No account" / "You can revoke any time", `Continue` (`glassProminent`), `Not now` (`.plain`, `TextSecondary`) | single | `Continue` raises the system prompt; Not now dismisses to 9.2 |
 | `SnoozeSheet` (`.height(320)`) | Later today (5 PM), Tonight (8 PM), Tomorrow 9 AM, This weekend (Sat 9 AM), Pick a time… (`DatePicker` `.wheel`) | single | none — the options are the action; a tap snoozes and dismisses |
 

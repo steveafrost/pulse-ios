@@ -108,9 +108,52 @@ struct DemoRoot: View {
             PermissionPreambleView(onAllow: { _ in }, onNotNow: {})
         case .gallery:
             DesignSystemGallery()
+        case .settings:
+            SettingsView(
+                sources: DemoSeed.settingsSources,
+                emailStatus: .unread(3),
+                lastChecked: Fixtures.fixtureNow,
+                onOpenEmail: {}
+            )
+        case .email:
+            EmailAccountView(model: demoEmailModel(.notConnected))
+        case .emailConnected:
+            EmailAccountView(model: demoEmailModel(.connected))
+        case .emailNeedsPassword:
+            EmailAccountView(model: demoEmailModel(.needsPassword))
         }
     }
 }
+
+/// The three account states, wired to in-memory stores so a demo never touches the
+/// real Keychain or a real mailbox.
+enum EmailDemoState { case notConnected, connected, needsPassword }
+
+@MainActor
+private func demoEmailModel(_ state: EmailDemoState) -> EmailAccountModel {
+    let account = EmailAccount.gmail(username: "steve@example.com")
+    switch state {
+    case .notConnected:
+        return EmailAccountModel(
+            accounts: StaticEmailAccountProvider(account: nil),
+            accountsWriter: nil,
+            secrets: InMemorySecretStore()
+        )
+    case .connected:
+        return EmailAccountModel(
+            accounts: StaticEmailAccountProvider(account: account),
+            accountsWriter: nil,
+            secrets: InMemorySecretStore(secrets: [account.keychainAccount: "demo"])
+        )
+    case .needsPassword:
+        return EmailAccountModel(
+            accounts: StaticEmailAccountProvider(account: account),
+            accountsWriter: nil,
+            secrets: InMemorySecretStore()
+        )
+    }
+}
+
 #endif
 
 extension DemoSeed {
@@ -131,6 +174,8 @@ enum DemoSeed {
     #if DEBUG
     enum Screen: String {
         case board, detail, snooze, closed, preamble, gallery, empty, loading
+        /// §8.3 surfaces, added in the craft pass.
+        case settings, email, emailConnected, emailNeedsPassword
     }
 
     /// `-ThirdHandDemoScreen <name>` picks the screen; absent or unknown means the board.
@@ -142,6 +187,16 @@ enum DemoSeed {
         return Screen(rawValue: args[index + 1]) ?? .board
     }
     #endif
+
+    /// The source rows the demo Settings screen lists. Real values, so the screen is
+    /// judged on realistic copy rather than placeholders.
+    static var settingsSources: [SettingsView.SourceRow] {
+        [
+            .init(id: "calendar", source: .calendar, title: "Calendar", systemImage: "calendar", state: "Connected", needsAttention: false),
+            .init(id: "reminders", source: .other, title: "Reminders", systemImage: "checklist", state: "Connected", needsAttention: false),
+            .init(id: "slack", source: .slack, title: "Shared links", systemImage: "link", state: "Off in iOS Settings", needsAttention: true),
+        ]
+    }
 
     static func store() -> ItemStore {
         #if DEBUG
@@ -166,6 +221,15 @@ enum DemoSeed {
                 // shared is what the board gets. See `docs/DEFERRED-SOURCES.md`
                 // for the API path that would replace it.
                 SharedLinkSource(provider: FileSharedLinkProvider()),
+                // IMAP email. Inert until the user saves a mailbox in Settings:
+                // with no account it throws `denied(.gmail)`, which the board
+                // shows as "connect a mailbox" rather than an empty success.
+                // See docs/DEFERRED-SOURCES.md for why IMAP, not Gmail OAuth.
+                EmailSource(
+                    transport: TLSIMAPTransport(),
+                    accounts: UserDefaultsEmailAccountProvider(),
+                    secrets: KeychainSecretStore()
+                ),
             ],
             store: store,
             now: { Date() }

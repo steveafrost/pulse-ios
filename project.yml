@@ -165,6 +165,11 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.thirdhand.tests
+        # Without this, `xcodebuild test` fails before running a single test:
+        # "Cannot code sign because the target does not have an Info.plist file".
+        # CI hid it by passing CODE_SIGNING_ALLOWED=NO, so the documented command
+        # only worked with a flag nobody would guess.
+        GENERATE_INFOPLIST_FILE: YES
 
 schemes:
   ThirdHand:

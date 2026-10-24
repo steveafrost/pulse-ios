@@ -17,6 +17,12 @@ public struct ThirdHandGlassStyle: ViewModifier {
         case interactive
         /// The Now tint while capturing or while an error pends (§6.1).
         case tintedUrgent
+        /// A *selected* chip. Added in the craft pass: selection used to borrow
+        /// `.tintedUrgent`, so the unremarkable act of showing "All" painted a pink
+        /// pill across the top of the board and spent the red that Now needs. A
+        /// selection is a state, not an alarm, so it tints to the foreground colour
+        /// instead: clearly chosen, never shouting.
+        case selected
     }
 
     public enum Shape: Sendable {
@@ -56,6 +62,8 @@ public struct ThirdHandGlassStyle: ViewModifier {
                 content.glassEffect(.regular.interactive(), in: anyShape)
             case .tintedUrgent:
                 content.glassEffect(.regular.tint(ThirdHandColor.horizonNow.opacity(0.15)), in: anyShape)
+            case .selected:
+                content.glassEffect(.regular.tint(ThirdHandColor.textPrimary.opacity(0.10)).interactive(), in: anyShape)
             }
         } else {
             // iOS 18 fallback: the system material, tinted for the urgent variant.
@@ -67,11 +75,7 @@ public struct ThirdHandGlassStyle: ViewModifier {
         }
     }
 
-    private var backgroundMaterial: Material {
-        variant == .tintedUrgent
-            ? .regularMaterial
-            : .regularMaterial
-    }
+    private var backgroundMaterial: Material { .regularMaterial }
 
     private var anyShape: AnyShape {
         switch shape {
@@ -108,28 +112,45 @@ public struct ThirdHandProminentButtonStyle: ButtonStyle {
     let tint: Color
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    /// Added in the craft pass. The style used to ignore `isEnabled`, so a primary
+    /// action that was correctly `.disabled(...)` — "Connect" with no address yet —
+    /// still rendered as fully saturated red. A disabled control that looks enabled
+    /// is the same class of dishonesty as a source that fails silently: the user
+    /// taps it, nothing happens, and the screen never said why.
+    @Environment(\.isEnabled) private var isEnabled
 
     public init(tint: Color = ThirdHandColor.horizonNow) {
         self.tint = tint
     }
 
+    /// A disabled primary action drops its fill to the neutral pressed surface and
+    /// its label to `textTertiary` — clearly present, clearly not available. It keeps
+    /// its 44pt frame so the layout does not jump when the form becomes valid.
+    private var fill: Color { isEnabled ? tint : ThirdHandColor.surfaceCardPressed }
+    private var labelColor: Color { isEnabled ? ThirdHandColor.textOnAccent : ThirdHandColor.textTertiary }
+
     public func makeBody(configuration: Configuration) -> some View {
         if #available(iOS 26.0, *), !reduceTransparency {
             configuration.label
                 .font(ThirdHandTypography.buttonLabel)
-                .foregroundStyle(ThirdHandColor.textOnAccent)
+                .foregroundStyle(labelColor)
                 .padding(.horizontal, ThirdHandSpacing.l)
                 .frame(minHeight: ThirdHandSpacing.minimumHitTarget)
-                .glassEffect(.regular.tint(tint).interactive(), in: .capsule)
-                .opacity(configuration.isPressed ? 0.85 : 1)
+                .glassEffect(isEnabled ? .regular.tint(tint).interactive() : .regular, in: .capsule)
+                .opacity(configuration.isPressed && isEnabled ? 0.85 : 1)
         } else {
             configuration.label
                 .font(ThirdHandTypography.buttonLabel)
-                .foregroundStyle(ThirdHandColor.textOnAccent)
+                .foregroundStyle(labelColor)
                 .padding(.horizontal, ThirdHandSpacing.l)
                 .frame(minHeight: ThirdHandSpacing.minimumHitTarget)
-                .background(tint, in: Capsule())
-                .opacity(configuration.isPressed ? 0.85 : 1)
+                .background(fill, in: Capsule())
+                .overlay {
+                    if !isEnabled {
+                        Capsule().strokeBorder(ThirdHandColor.separator, lineWidth: ThirdHandMetrics.hairline)
+                    }
+                }
+                .opacity(configuration.isPressed && isEnabled ? 0.85 : 1)
         }
     }
 }

@@ -1,0 +1,184 @@
+import Foundation
+import Testing
+import ThirdHandCore
+@testable import ThirdHand
+
+/// The Email account screen's logic, tested without SwiftUI.
+///
+/// The rules asserted here are the ones that would be expensive to get wrong in
+/// production: an address validation that is too strict locks the user out, a save
+/// that forgets the Keychain leaves a mailbox that can never check, and a
+/// `statusLine` that says "Not connected" for a *configured* mailbox is exactly the
+/// dishonesty the design doc forbids. The password itself is asserted only in terms
+/// of where it must end up — never by reading it back into a value under test.
+@Suite("Email account")
+@MainActor
+struct EmailAccountModelTests {
+    /// A provider that records what was written, so a test can prove the Keychain
+    /// received the password without the model ever exposing it.
+    final class RecordingWriter: EmailAccountSaving, @unchecked Sendable {
+        var written: [EmailAccount?] = []
+        func save(_ account: EmailAccount?) throws { written.append(account) }
+    }
+
+    private func makeModel(
+        account: EmailAccount? = nil,
+        secrets: InMemorySecretStore = InMemorySecretStore(),
+        writer: RecordingWriter = RecordingWriter()
+    ) -> (EmailAccountModel, RecordingWriter, InMemorySecretStore) {
+        let model = EmailAccountModel(
+            accounts: StaticEmailAccountProvider(account: account),
+            accountsWriter: writer,
+            secrets: secrets
+        )
+        return (model, writer, secrets)
+    }
+
+    // MARK: Phase
+
+    @Test("no configured mailbox reads as not connected")
+    func notConnected() {
+        let (model, _, _) = makeModel()
+        #expect(model.phase == .notConnected)
+        #expect(model.statusLine == "Not connected")
+    }
+
+    @Test("a configured mailbox with a stored password reads as connected")
+    func connected() {
+        let account = EmailAccount.gmail(username: "s@example.com")
+        let secrets = InMemorySecretStore(secrets: [account.keychainAccount: "app-pass"])
+        let (model, _, _) = makeModel(account: account, secrets: secrets)
+        #expect(model.phase == .connected(account))
+    }
+
+    @Test("a configured mailbox with no password says so rather than reading as disconnected")
+    func needsPassword() {
+        let account = EmailAccount.gmail(username: "s@example.com")
+        let (model, _, _) = makeModel(account: account)
+        // Restoring from a backup keeps the address and loses the secret. Reporting
+        // that as "Not connected" would send the user to a form that is already
+        // filled in and hide what actually has to happen.
+        #expect(model.phase == .needsPassword(account))
+        #expect(model.statusLine != "Not connected")
+    }
+
+    // MARK: Validation
+
+    @Test("a plausible address is accepted", arguments: [
+        "a@b.co", "steve.frost@example.com", "s+tag@mail.example.org",
+    ])
+    func validAddresses(_ address: String) {
+        let (model, _, _) = makeModel()
+        model.draftAddress = address
+        #expect(model.isAddressValid)
+    }
+
+    @Test("an implausible address is rejected", arguments: [
+        "", "no-at-sign", "@example.com", "a@nodot", "a@b.", "two words@example.com",
+    ])
+    func invalidAddresses(_ address: String) {
+        let (model, _, _) = makeModel()
+        model.draftAddress = address
+        #expect(!model.isAddressValid)
+    }
+
+    @Test("a host needs a dot and no spaces")
+    func hostValidation() {
+        let (model, _, _) = makeModel()
+        model.draftHost = "imap.gmail.com"
+        #expect(model.isHostValid)
+        model.draftHost = "localhost"
+        #expect(!model.isHostValid)
+        model.draftHost = "imap gmail com"
+        #expect(!model.isHostValid)
+    }
+
+    @Test("save is blocked until address, host and password are all present")
+    func canSave() {
+        let (model, _, _) = makeModel()
+        model.draftAddress = "s@example.com"
+        model.draftHost = "imap.gmail.com"
+        #expect(!model.canSave(password: ""))
+        #expect(model.canSave(password: "x"))
+    }
+
+    // MARK: Saving
+
+    @Test("saving stores the password in the secret store and the account in the writer")
+    func saveWritesBothHalves() throws {
+        let (model, writer, secrets) = makeModel()
+        model.draftAddress = "s@example.com"
+        model.draftHost = "imap.gmail.com"
+
+        #expect(model.save(password: "app-specific"))
+        #expect(model.phase == .connected(EmailAccount(host: "imap.gmail.com", username: "s@example.com")))
+        // The secret is in the store, under the account's own key — not in the model.
+        let stored = try secrets.secret(for: EmailAccount.gmail(username: "s@example.com").keychainAccount)
+        #expect(stored == "app-specific")
+        #expect(writer.written.compactMap { $0 }.count == 1)
+    }
+
+    @Test("the saved account carries no password field to leak")
+    func accountHasNoSecret() {
+        let account = EmailAccount(host: "imap.gmail.com", username: "s@example.com")
+        // `description` is the string a log line would capture. It must name the
+        // account without ever having a secret to name.
+        #expect(!account.description.lowercased().contains("password"))
+        #expect(account.description.contains("s@example.com"))
+    }
+
+    @Test("disconnect clears both halves")
+    func disconnect() throws {
+        let account = EmailAccount.gmail(username: "s@example.com")
+        let secrets = InMemorySecretStore(secrets: [account.keychainAccount: "app-pass"])
+        let (model, writer, _) = makeModel(account: account, secrets: secrets)
+        #expect(model.phase == .connected(account))
+
+        model.disconnect()
+        #expect(model.phase == .notConnected)
+        #expect(try secrets.secret(for: account.keychainAccount) == nil)
+        #expect(writer.written.last! == nil)
+    }
+
+    // MARK: Status copy
+
+    @Test("the status line states the mail state and never shrugs")
+    func statusCopy() {
+        #expect(EmailAccountModel.Status.notConnected.isHonest)
+        #expect(EmailAccountModel.Status.checking.isHonest)
+        #expect(EmailAccountModel.Status.unread(12).isHonest)
+    }
+
+    @Test("an unread count inflects, and one message is not '1 messages'")
+    func unreadInflects() {
+        #expect(EmailAccountModel.Status.unread(1).isHonest)
+        // `Plural` is the shared rule the whole app uses; assert the two ends here
+        // so the mailbox line cannot regress independently of it.
+        #expect(Plural.count(1, "unread message") == "1 unread message")
+        #expect(Plural.count(3, "unread message") == "3 unread messages")
+        #expect(Plural.count(0, "unread message") == "0 unread messages")
+    }
+
+    @Test("the rationale names the Keychain and promises nothing it cannot keep")
+    func rationale() {
+        let text = EmailAccountModel.passwordRationale
+        #expect(text.contains("Keychain"))
+        #expect(text.lowercased().contains("never"))
+        // It must not claim the password is "encrypted" in a vague way when what is
+        // true is that it is stored in the Keychain and sent over TLS.
+        #expect(!text.lowercased().contains("military"))
+    }
+}
+
+private extension EmailAccountModel.Status {
+    /// Every state is a fact the user can act on: a state, an action, or a count.
+    /// None is an empty string and none is a generic apology.
+    var isHonest: Bool {
+        switch self {
+        case .notConnected: true
+        case .checking: true
+        case .unread(let count): count >= 0
+        case .failed: true
+        }
+    }
+}

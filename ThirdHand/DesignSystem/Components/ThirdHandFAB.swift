@@ -6,6 +6,9 @@ public struct ThirdHandFAB: View {
     let title: String
     var caption: String?
     let systemImage: String
+    /// §6.1 keeps the one prominent action tinted `HorizonNow`. That stays true:
+    /// the craft pass removed red from the rails and the filter chips instead, so
+    /// the FAB is now the only large red object rather than one of four.
     var tint: Color = ThirdHandColor.horizonNow
     let action: () -> Void
 

@@ -33,8 +33,6 @@ public struct BoardView: View {
         self.deepLinkItemID = deepLinkItemID
     }
 
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
     public var body: some View {
         NavigationStack {
             ZStack(alignment: .bottomTrailing) {
@@ -154,7 +152,7 @@ public struct BoardView: View {
                     SourceBanner(failure: failure, onOpenSettings: onOpenSettings)
                 }
 
-                ForEach(model.visibleHorizons, id: \.self) { horizon in
+                ForEach(Array(model.visibleHorizons.enumerated()), id: \.element) { sectionIndex, horizon in
                     BoardSectionView(
                         horizon: horizon,
                         items: model.items(in: horizon),
@@ -162,6 +160,10 @@ public struct BoardView: View {
                         isExpanded: model.isExpanded(horizon),
                         now: model.nowDate,
                         lastViewedAt: model.lastViewedAt,
+                        /// §7.5: the stagger runs across the board, so each section
+                        /// starts where the previous one left off. Derived from the
+                        /// same collapse limits the rows use.
+                        loadInOffset: loadInOffset(forSection: sectionIndex),
                         onToggle: {
                             withAnimation(motion.sectionExpansion) { model.toggleExpansion(horizon) }
                         },
@@ -181,20 +183,28 @@ public struct BoardView: View {
         .animation(motion.listGap, value: model.visibleHorizons)
     }
 
-    /// The FAB floats over the scroll view and grows with Dynamic Type, so a fixed
-    /// inset leaves the last row underneath it. Derived from the size class rather
-    /// than measured, which keeps the scroll view's layout pure.
-    private var bottomInset: CGFloat {
-        var inset = ThirdHandSpacing.boardBottomInset + 160
-        switch dynamicTypeSize {
-        case .accessibility1: inset += 60
-        case .accessibility2: inset += 110
-        case .accessibility3: inset += 170
-        case .accessibility4: inset += 230
-        case .accessibility5: inset += 290
-        default: break
+    /// How many rows rendered before `sectionIndex` — the starting index for that
+    /// section's staggered load-in (§7.5). Counts what is actually on screen, so an
+    /// expanded section pushes the following sections' delay along with it.
+    private func loadInOffset(forSection sectionIndex: Int) -> Int {
+        model.visibleHorizons.prefix(sectionIndex).reduce(0) { total, horizon in
+            total + model.visibleItems(in: horizon).count
         }
-        return inset
+    }
+
+    /// The FAB floats over the scroll view and grows with Dynamic Type, so the
+    /// scroll content needs an inset at least as tall as the floating chrome or
+    /// the last row sits underneath it.
+    ///
+    /// This used to be a hand-tuned table of per-size-class offsets, which drifted:
+    /// at AX5 the chrome still covered row content, because a table of constants
+    /// cannot track a type size that scales continuously. `@ScaledMetric` scales
+    /// with the same text metrics the FAB's own label uses, so the two cannot
+    /// disagree at any size, including the AX sizes the table never covered well.
+    @ScaledMetric(relativeTo: .body) private var scaledChromeHeight: CGFloat = 160
+
+    private var bottomInset: CGFloat {
+        ThirdHandSpacing.boardBottomInset + scaledChromeHeight
     }
 
     // MARK: Floating chrome (§6.3: capsule + FAB share one container)

@@ -27,6 +27,9 @@ public struct DesignSystemGallery: View {
                 swatch("TextTertiary", ThirdHandColor.textTertiary)
                 swatch("SurfaceCanvas", ThirdHandColor.surfaceCanvas)
                 swatch("SurfaceCard", ThirdHandColor.surfaceCard)
+                // The neutral rail (§2.1) — the token that lets a row carry a
+                // horizon without asserting an alarm.
+                swatch("RailNeutral", ThirdHandColor.railNeutral)
                 swatch("HorizonNow", ThirdHandColor.horizonNow)
                 swatch("HorizonNext", ThirdHandColor.horizonNext)
                 swatch("HorizonLater", ThirdHandColor.horizonLater)
@@ -69,6 +72,14 @@ public struct DesignSystemGallery: View {
             Text("Meta line").font(ThirdHandTypography.meta)
             Text("Chip").font(ThirdHandTypography.chip)
             Text("Button label").font(ThirdHandTypography.buttonLabel)
+            Text("Key/value label").font(ThirdHandTypography.keyValueLabel)
+            // Tracking (§3) — the eyebrow and the horizon count, shown at their
+            // real settings so a regression to default tracking is visible here.
+            Text("EYEBROW TRACKING".uppercased())
+                .font(ThirdHandTypography.eyebrow)
+                .tracking(ThirdHandTracking.eyebrow)
+            Text("Now 12").font(ThirdHandTypography.sectionHeader)
+                .tracking(ThirdHandTracking.count)
         }
         .foregroundStyle(ThirdHandColor.textPrimary)
     }

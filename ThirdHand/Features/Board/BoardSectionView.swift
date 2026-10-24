@@ -15,6 +15,9 @@ public struct BoardSectionView: View {
     let isExpanded: Bool
     let now: Date
     let lastViewedAt: Date?
+    /// How many rows already settled before this section, so the staggered load-in
+    /// (§7.5) flows across the whole board instead of restarting per section.
+    var loadInOffset: Int
     var onToggle: () -> Void
     var onRowOpen: (ThirdHandItem) -> Void
     var onRowAction: (ThirdHandItem, BoardItemRow.LocalAction) -> Void
@@ -26,6 +29,7 @@ public struct BoardSectionView: View {
         isExpanded: Bool,
         now: Date,
         lastViewedAt: Date?,
+        loadInOffset: Int = 0,
         onToggle: @escaping () -> Void,
         onRowOpen: @escaping (ThirdHandItem) -> Void,
         onRowAction: @escaping (ThirdHandItem, BoardItemRow.LocalAction) -> Void
@@ -36,6 +40,7 @@ public struct BoardSectionView: View {
         self.isExpanded = isExpanded
         self.now = now
         self.lastViewedAt = lastViewedAt
+        self.loadInOffset = loadInOffset
         self.onToggle = onToggle
         self.onRowOpen = onRowOpen
         self.onRowAction = onRowAction
@@ -47,7 +52,7 @@ public struct BoardSectionView: View {
                 .accessibilityAddTraits(.isHeader)
 
             VStack(spacing: ThirdHandSpacing.cardGap) {
-                ForEach(Array(items.prefix(visibleCount))) { item in
+                ForEach(Array(items.prefix(visibleCount).enumerated()), id: \.element.id) { index, item in
                     BoardItemRow(
                         item: item,
                         horizon: horizon,
@@ -56,6 +61,7 @@ public struct BoardSectionView: View {
                         onAction: { onRowAction(item, $0) },
                         onOpen: { onRowOpen(item) }
                     )
+                    .loadIn(index: loadInOffset + index)
                 }
             }
 

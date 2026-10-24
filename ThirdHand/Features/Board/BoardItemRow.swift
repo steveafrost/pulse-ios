@@ -66,7 +66,7 @@ public struct BoardItemRow: View {
             if horizon.hasRail {
                 RoundedRectangle(cornerRadius: ThirdHandRadius.rail, style: .continuous)
                     .fill(item.railTint(horizon: horizon, now: now))
-                    .frame(width: ThirdHandMetrics.railWidth)
+                    .frame(width: item.isUrgent(now: now) ? ThirdHandMetrics.railWidthUrgent : ThirdHandMetrics.railWidth)
                     .accessibilityHidden(true)
             }
 
@@ -102,13 +102,13 @@ public struct BoardItemRow: View {
             .padding(.leading, horizon.hasRail ? ThirdHandSpacing.s : 0)
         }
         .padding(.horizontal, ThirdHandSpacing.m)
-        .padding(.vertical, 14)
+        .padding(.vertical, ThirdHandSpacing.s)
         .frame(minHeight: minimumHeight, alignment: .topLeading)
         .background(rowBackground, in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous))
         .overlay {
             if isNew {
                 RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous)
-                    .strokeBorder(ThirdHandColor.horizonNext.opacity(0.45), lineWidth: ThirdHandMetrics.hairline)
+                    .strokeBorder(ThirdHandColor.horizonNext.opacity(0.35), lineWidth: ThirdHandMetrics.hairline)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -129,6 +129,12 @@ public struct BoardItemRow: View {
 
     // MARK: Content
 
+    /// The kind glyph. Quieted in the craft pass: it keeps the *shape* of the kind
+    /// (which is what the eye uses) but drops to `textTertiary` unless the kind is
+    /// one that blocks another person (`decision` / `rsvp` / `conflict` /
+    /// `deadline`). Those keep their attention tint because they are the only kinds
+    /// where looking away has a cost. It is also slightly lighter in weight, so it
+    /// sits beside the title rather than shouting at it.
     private var kindGlyph: some View {
         HStack(spacing: ThirdHandSpacing.xxs) {
             if isNew {
@@ -138,11 +144,21 @@ public struct BoardItemRow: View {
                     .accessibilityHidden(true)
             }
             Image(systemName: item.kind.systemImage)
-                .font(.system(size: ThirdHandMetrics.kindGlyphSize, weight: .semibold))
-                .foregroundStyle(item.kind.tint)
+                .font(.system(size: ThirdHandMetrics.kindGlyphSize, weight: .regular))
+                .foregroundStyle(glyphTint)
                 .accessibilityHidden(true)
         }
         .frame(width: ThirdHandMetrics.kindGlyphSize + (isNew ? ThirdHandMetrics.newnessDot + ThirdHandSpacing.xxs : 0))
+    }
+
+    /// Only the kinds that block someone else keep a colour; the rest recede to
+    /// tertiary. This is the "fewer, stronger signals" rule applied to the one
+    /// place the row had three of them within 20pt.
+    private var glyphTint: Color {
+        switch item.kind {
+        case .decision, .rsvp, .conflict, .deadline: item.kind.tint
+        case .reply, .review, .followup, .fyi: ThirdHandColor.textTertiary
+        }
     }
 
     private var titleBlock: some View {
@@ -193,17 +209,24 @@ public struct BoardItemRow: View {
     /// §3: chips stop scaling and drop their fill at AX2+, becoming plain
     /// `·`-separated tokens. At AX5 a chip's own width leaves room for two
     /// letters, which is worse than the word it was standing in for.
+    /// The meta line now carries **one** chip, not two.
+    ///
+    /// The kind chip restated what the kind glyph and the VoiceOver label already
+    /// said, so a row showed the same kind twice within 20pt — three times counting
+    /// the glyph's tint. Source is the fact the eye cannot get any other way (the
+    /// glyph is a kind, not a source), so the source chip stays and the kind chip
+    /// goes. The kind is still fully announced to VoiceOver; only the duplicate
+    /// *visual* pill was removed, so nothing is lost for a sighted or a non-sighted
+    /// reader, and the row loses one pill's worth of width and one chip's worth of
+    /// height. At AX2+ the remaining chip collapses to a plain token per §3.
     @ViewBuilder
     private var metaChips: some View {
         if dynamicTypeSize >= .accessibility2 {
-            Text(item.sourceIdentity.title + " · " + item.kind.title)
+            Text(item.sourceIdentity.title)
                 .font(ThirdHandTypography.meta)
                 .foregroundStyle(ThirdHandColor.textSecondary)
         } else {
-            HStack(spacing: ThirdHandSpacing.xs) {
-                ThirdHandBadge(source: item.sourceIdentity)
-                ThirdHandBadge(kind: item.kind)
-            }
+            ThirdHandBadge(source: item.sourceIdentity)
         }
     }
 

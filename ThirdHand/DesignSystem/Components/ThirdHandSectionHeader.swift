@@ -18,7 +18,7 @@ public struct ThirdHandSectionHeader: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: ThirdHandSpacing.xxs) {
-            HStack(spacing: ThirdHandSpacing.xs) {
+            HStack(alignment: .firstTextBaseline, spacing: ThirdHandSpacing.xs) {
                 Image(systemName: horizon.systemImage)
                     .font(ThirdHandTypography.sectionHeader)
                     .foregroundStyle(horizon.tint)
@@ -26,9 +26,16 @@ public struct ThirdHandSectionHeader: View {
                 Text(horizon.title)
                     .font(ThirdHandTypography.sectionHeader)
                     .foregroundStyle(ThirdHandColor.textPrimary)
+                    .tracking(-0.2)
                 Text("\(count)")
                     .font(ThirdHandTypography.sectionHeader)
-                    .foregroundStyle(horizon.tint)
+                    /// §1: "one numeric emphasis per screen — the Now badge".
+                    /// Every count used to take its horizon tint, so the board had
+                    /// four coloured numerals competing with the rows. Only Now
+                    /// keeps the tint now; the rest are tertiary, which still reads
+                    /// as a count without asserting urgency.
+                    .foregroundStyle(horizon == .now ? horizon.tint : ThirdHandColor.textTertiary)
+                    .tracking(ThirdHandTracking.count)
                     .contentTransition(.numericText())
                     .accessibilityHidden(true)
                 Spacer(minLength: 0)
