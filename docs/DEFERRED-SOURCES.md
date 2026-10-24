@@ -7,11 +7,13 @@ Why Third Hand captures less than it declares, and what it would take to capture
 `Source` declares six values (`ThirdHandCore/Sources/ThirdHandCore/Models/Enums.swift:16`):
 `slack`, `gmail`, `calendar`, `github`, `docs`, `other`.
 
-Of those, **only `calendar` and `reminders` pull data autonomously**. For Slack,
-Gmail, GitHub and Docs, Third Hand has **no OAuth application registered and no way to
-authenticate**. A source that tried to call those APIs today would fail to
-authenticate and return nothing — and a source that quietly returns nothing makes the
-board *look* complete while being blind, which is worse than an absent source.
+Of those, **`calendar`, `reminders` and now `gmail` pull data autonomously**. Mail is
+read over **IMAP with an app-specific password held in the Keychain** — see
+[Gmail / IMAP below](#gmail--imap--implemented-no-oauth). Slack, GitHub and Docs still
+have **no OAuth application registered and no way to authenticate**. A source that tried
+to call those APIs today would fail to authenticate and return nothing — and a source
+that quietly returns nothing makes the board *look* complete while being blind, which is
+worse than an absent source.
 
 So instead of shipping three clients that cannot work, M7.1 shipped:
 
@@ -34,7 +36,7 @@ even when Third Hand cannot tell what it wants. An unknown host becomes `fyi` �
 not a task.
 
 **Its ceiling is exactly what the user shared.** It cannot see an unshared Slack
-mention, an unread Gmail thread, or a PR awaiting your review.
+mention or a PR awaiting your review. (Unread Gmail is now covered by `EmailSource`.)
 
 ## What each deferred source would add
 
@@ -62,10 +64,90 @@ done action. GitHub also has the most pleasant auth story for a personal app.
 - Identity: `github:pr:<owner>/<repo>#<n>` and `github:issue:<owner>/<repo>#<n>`, following
   `ItemIdentity`'s existing template, and stable across title edits.
 
-### Gmail — highest value, worst auth
+### Gmail / IMAP — implemented, no OAuth
 
-**Would add:** threads awaiting your reply, messages from people you cannot ignore, and
-anything flagged. This is where the "what needs me" question most literally lives.
+**Status: implemented and wired in.** `EmailSource`
+(`ThirdHandCore/Sources/ThirdHandCore/Capture/EmailSource.swift`), with `IMAPClient`,
+`TLSIMAPTransport`, `KeychainSecretStore`, `EmailAccount` and `EmailClassifier`, is
+constructed in `ThirdHandApp.capture(store:)` alongside the EventKit sources, so it runs
+in every real capture pass. With no mailbox saved it throws `CaptureError.denied(.gmail)`
+— the board's "connect a mailbox" state — rather than returning an empty list that would
+look like a healthy, quiet inbox.
+
+**Still unverified against a real server.** Every protocol path is covered through
+`FakeIMAPTransport`; the TLS handshake and `NWConnection` byte framing in
+`TLSIMAPTransport` have never touched `imap.gmail.com`. Treat the first real connection
+as the test.
+
+**What it adds:** every **unread** message in `INBOX` as an item, classified, with no
+share-sheet action required. This is the "thread awaiting your reply" column the
+share-sheet source could only ever approximate.
+
+**Why IMAP and not the Gmail API.** The Gmail API path below is still the *better*
+integration long-term and is still blocked on paperwork that is not engineering:
+`gmail.readonly` is a restricted scope, so an unverified app is capped at 100 test
+users, and while unverified a refresh token expires after 7 days — which for a
+personal app with no server means a user re-authorising weekly. **IMAP with an
+app-specific password sidesteps all of it.** It needs one credential the user
+generates in five clicks, that Google can revoke independently of the account
+password, and that never leaves the device.
+
+**What is deliberately not claimed:**
+- **No OAuth.** There is no Google Cloud project, no client id, no consent screen, and
+  no token refresh. If OAuth is ever added, it replaces `EmailCredentials` and leaves
+  `IMAPClient` untouched.
+- **Not Gmail-specific.** `EmailAccount` takes any IMAPS host and port. Gmail is the
+  convenience initialiser (`EmailAccount.gmail(username:)`), not a special case.
+- **Attachments and bodies are not read.** One `FETCH` per message, headers only
+  (`BODY.PEEK[HEADER.FIELDS (FROM TO CC SUBJECT DATE MESSAGE-ID REFERENCES IN-REPLY-TO)]`).
+  `BODY.PEEK` — never `BODY[...]` — so a capture pass can never mark mail as read.
+- **No `IDLE`.** Capture is poll-on-refresh, like every other source.
+
+**Classification** (`EmailClassifier.classify`), in precedence order:
+
+| Signal | kind | priority |
+| --- | --- | --- |
+| deadline phrase in the subject ("due Friday", "EOD") | `deadline` | high |
+| decision phrase in the subject ("should we", "sign off") | `decision` | normal |
+| the user is the sole `To`+`Cc` recipient and the message is not a reply | `reply` | normal |
+| a question mark in the subject | `reply` | normal |
+| anything else | `followup` | normal |
+
+**A direct unread message is never `fyi` and never `low`.** That is asserted as an
+invariant over a cross-product of subjects, recipient sets and reply flags in
+`EmailClassificationTests.neverFYI`. Filing unread, personally-addressed mail under
+"Nice to Know" would be the silently-blind board wearing a smile.
+
+**Identity:** `gmail:message:<rfc822 Message-ID>`, matching the row `ItemIdentity`
+already documented for shared mail — so a message both shared *and* received unread
+is one card, not two. A message with no `Message-ID` (some mailers omit it) falls back
+to `gmail:message:uid:<n>`, which is stable for as long as the message is unread in
+that mailbox, i.e. the item's whole lifetime. The account is deliberately not part of
+the id: the same list message delivered to two mailboxes is one message.
+
+**Caps and omissions, stated rather than hidden:** at most
+`IMAPClient.defaultLimit` (200) messages per pass, applied to the *oldest* end of
+`UID SEARCH UNSEEN` — a thousand-message backlog costs the user nothing they were
+going to act on today. No `window` filter: unread is unread.
+
+**Operational honesty.** Missing configuration, a missing Keychain secret and a
+rejected `LOGIN` all throw `CaptureError.denied(.gmail)`, which the engine reports as a
+**paused source** with a fix ("connect a mailbox"). Socket, TLS and protocol failures
+throw `CaptureError.underlying`. Only a genuinely empty inbox returns `[]`.
+
+**Not verified by the author of this change:** the TLS handshake, the byte-level
+`NWConnection` framing, and every server-specific behaviour — against a live
+`imap.gmail.com`. The protocol logic is covered end-to-end through
+`FakeIMAPTransport` (a scripted server that parses the request and answers in wire
+format), and `TLSIMAPTransport` is the untested remainder. A first real run should
+check: that Gmail's greeting is accepted, that `SELECT INBOX` succeeds after `LOGIN`,
+that a 200-message inbox returns 200 items, and that `BODY.PEEK` genuinely leaves
+messages unread in the Gmail web UI.
+
+#### The Gmail API path, if it is ever worth the paperwork
+
+Still the better long-term integration: threads rather than messages, labels, and
+server-side query (`is:unread -category:promotions`) instead of a client-side filter.
 
 **What it needs:**
 - A **Google Cloud project with the Gmail API enabled**, an OAuth client of type
@@ -73,13 +155,12 @@ anything flagged. This is where the "what needs me" question most literally live
   able to archive from the notification).
 - **OAuth verification.** `gmail.readonly` is a *restricted* scope. Google requires a
   security assessment (CASA) before unverified users may grant it, and in testing mode
-  the app is capped at **100 test users**. This is the real reason Gmail is deferred —
+  the app is capped at **100 test users**. This is the real cost of the OAuth path —
   not the code, the paperwork.
 - Endpoints: `GET /gmail/v1/users/me/threads?q=is:unread -category:promotions`, then
   `threads.get` with `format=metadata` and headers `From`, `Subject`, `Date`.
-- Identity: `gmail:thread:<threadId>`.
-- Classification: a thread where you are the last recipient and nobody has replied →
-  `reply`; a thread containing a question directed at you → `reply` high.
+- Identity: `gmail:thread:<threadId>` — note this differs from the `gmail:message:` form
+  IMAP uses, so an OAuth migration would need an id migration, not just a swap.
 
 ### Slack — good value, needs a workspace app
 
@@ -105,18 +186,19 @@ anything flagged. This is where the "what needs me" question most literally live
 Low signal, heavy integration surface, and the `docs` source already accepts anything a
 user shares. Defer past v1.2.
 
-## What the SharedLink ceiling means for the board
+## What the current ceiling means for the board
 
-Until at least GitHub lands, the board reflects **Calendar + Reminders + whatever the
-user chose to share**. That is a smaller board than the product vision describes, and
-`README.md` and the App Store description must not imply otherwise. Marketing copy that
-suggests Third Hand reads your Slack or Gmail would be false today.
+The board reflects **Calendar + Reminders + unread IMAP mail + whatever the user chose
+to share**. That is a smaller board than the product vision describes, and `README.md`
+and the App Store description must not imply otherwise. Marketing copy that suggests
+Third Hand reads your Slack — or your *read* mail, labels, or archived threads — would
+be false today.
 
 ## Recommended order
 
-1. **GitHub** (v1.1) — cheapest auth, highest signal-to-effort, testable with a public
+1. ~~**Gmail**~~ — **done** (v1.2) over IMAP, no OAuth. The OAuth upgrade, which buys
+   threads, labels and server-side queries, remains deferred behind CASA.
+2. **GitHub** (v1.3) — cheapest auth, highest signal-to-effort, testable with a public
    repo and no verification process.
-2. **Gmail** (v1.2) — highest value, but start the CASA security assessment early; it is
-   the long pole and it is not engineering.
-3. **Slack** (v1.2/1.3) — needs a workspace install, so it is per-organisation.
-4. **Docs** (v1.3+) — only if users ask.
+3. **Slack** (v1.3/1.4) — needs a workspace install, so it is per-organisation.
+4. **Docs** (v1.4+) — only if users ask.
