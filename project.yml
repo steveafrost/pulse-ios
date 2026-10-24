@@ -1,4 +1,4 @@
-name: Pulse
+name: ThirdHand
 options:
   bundleIdPrefix: com.steveafrost
   deploymentTarget:
@@ -30,25 +30,25 @@ settings:
       ENABLE_TESTABILITY: NO
 
 packages:
-  PulseCore:
-    path: PulseCore
+  ThirdHandCore:
+    path: ThirdHandCore
 
 targets:
-  Pulse:
+  ThirdHand:
     type: application
     platform: iOS
     sources:
-      - path: Pulse
+      - path: ThirdHand
     dependencies:
-      - package: PulseCore
-      - target: PulseWidgets
+      - package: ThirdHandCore
+      - target: ThirdHandWidgets
         embed: true
-      - target: PulseShare
+      - target: ThirdHandShare
         embed: true
     info:
-      path: Pulse/Info.plist
+      path: ThirdHand/Info.plist
       properties:
-        CFBundleDisplayName: Pulse
+        CFBundleDisplayName: Third Hand
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen:
@@ -56,74 +56,74 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false
-        NSCalendarsFullAccessUsageDescription: Pulse reads your calendar to show what needs a reply, a decision or your attention. Nothing leaves your device.
-        NSRemindersFullAccessUsageDescription: Pulse reads your reminders so overdue and due-today tasks show up on your board. Nothing leaves your device.
+        NSCalendarsFullAccessUsageDescription: Third Hand reads your calendar to show what needs a reply, a decision or your attention. Nothing leaves your device.
+        NSRemindersFullAccessUsageDescription: Third Hand reads your reminders so overdue and due-today tasks show up on your board. Nothing leaves your device.
         NSSupportsLiveActivities: true
         UIBackgroundModes:
           - fetch
         BGTaskSchedulerPermittedIdentifiers:
-          - com.steveafrost.pulse.refresh
+          - com.steveafrost.thirdhand.refresh
         CFBundleURLTypes:
-          - CFBundleURLName: com.steveafrost.pulse
-            CFBundleURLSchemes: [pulse]
+          - CFBundleURLName: com.steveafrost.thirdhand
+            CFBundleURLSchemes: [thirdhand]
     entitlements:
-      path: Pulse/Pulse.entitlements
+      path: ThirdHand/ThirdHand.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.com.steveafrost.pulse
+          - group.com.steveafrost.thirdhand
         com.apple.developer.icloud-container-identifiers:
-          - iCloud.com.steveafrost.pulse
+          - iCloud.com.steveafrost.thirdhand
         com.apple.developer.icloud-services:
           - CloudDocuments
         com.apple.developer.ubiquity-container-identifiers:
-          - iCloud.com.steveafrost.pulse
+          - iCloud.com.steveafrost.thirdhand
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.pulse
+        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.thirdhand
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
 
-  PulseWidgets:
+  ThirdHandWidgets:
     type: app-extension
     platform: iOS
     sources:
-      - path: PulseWidgets
+      - path: ThirdHandWidgets
     dependencies:
-      - package: PulseCore
+      - package: ThirdHandCore
     info:
-      path: PulseWidgets/Info.plist
+      path: ThirdHandWidgets/Info.plist
       properties:
-        CFBundleDisplayName: Pulse
+        CFBundleDisplayName: Third Hand
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:
-      path: PulseWidgets/PulseWidgets.entitlements
+      path: ThirdHandWidgets/ThirdHandWidgets.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.com.steveafrost.pulse
+          - group.com.steveafrost.thirdhand
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.pulse.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.thirdhand.widgets
 
   # M7.1. The Share Extension is the honest on-device capture path for Slack,
-  # Gmail and GitHub: no OAuth app exists for Pulse, so the user hands it a link
+  # Gmail and GitHub: no OAuth app exists for Third Hand, so the user hands it a link
   # and the app turns that link into an item. It shares the app group with the
-  # app (that is the only channel it has) and depends on PulseCore for the
+  # app (that is the only channel it has) and depends on ThirdHandCore for the
   # `SharedLinkWriter`, so the write format cannot drift from the reader.
-  PulseShare:
+  ThirdHandShare:
     type: app-extension
     platform: iOS
     sources:
-      - path: PulseShare
+      - path: ThirdHandShare
     dependencies:
-      - package: PulseCore
+      - package: ThirdHandCore
     info:
-      path: PulseShare/Info.plist
+      path: ThirdHandShare/Info.plist
       properties:
-        CFBundleDisplayName: Pulse
+        CFBundleDisplayName: Third Hand
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:
@@ -135,40 +135,40 @@ targets:
               NSExtensionActivationSupportsWebPageWithMaxCount: 1
               NSExtensionActivationSupportsText: true
     entitlements:
-      path: PulseShare/PulseShare.entitlements
+      path: ThirdHandShare/ThirdHandShare.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.com.steveafrost.pulse
+          - group.com.steveafrost.thirdhand
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.pulse.share
+        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.thirdhand.share
         # The extension has no Auto Layout-heavy chrome; keep it lean.
         SKIP_INSTALL: YES
 
-  PulseTests:
+  ThirdHandTests:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - path: PulseTests
+      - path: ThirdHandTests
     dependencies:
-      - package: PulseCore
-      - target: Pulse
+      - package: ThirdHandCore
+      - target: ThirdHand
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.pulse.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.thirdhand.tests
 
 schemes:
-  Pulse:
+  ThirdHand:
     build:
       targets:
-        Pulse: all
-        PulseWidgets: all
-        PulseShare: all
+        ThirdHand: all
+        ThirdHandWidgets: all
+        ThirdHandShare: all
     run:
       config: Debug
     test:
       config: Debug
       targets:
-        - PulseTests
+        - ThirdHandTests
     archive:
       config: Release

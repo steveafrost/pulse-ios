@@ -1,6 +1,6 @@
 #!/usr/bin/env swift
 //
-// Scripts/make-icon.swift — reproducible App Store icon generator for Pulse.
+// Scripts/make-icon.swift — reproducible App Store icon generator for Third Hand.
 //
 // Produces the iOS 18/27 single-size 1024x1024 icon plus the dark and tinted
 // appearance variants. Flat, opaque, full-bleed: no alpha, no rounded corners,
@@ -9,9 +9,9 @@
 // reads at 40 pt.
 //
 // Run:  swift Scripts/make-icon.swift
-// Out:  Pulse/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
-//       Pulse/Assets.xcassets/AppIcon.appiconset/AppIcon-1024-dark.png
-//       Pulse/Assets.xcassets/AppIcon.appiconset/AppIcon-1024-tinted.png
+// Out:  Third Hand/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+//       Third Hand/Assets.xcassets/AppIcon.appiconset/AppIcon-1024-dark.png
+//       Third Hand/Assets.xcassets/AppIcon.appiconset/AppIcon-1024-tinted.png
 //
 // Token source of truth: docs/DESIGN.md §2 and Assets.xcassets.
 //   HorizonNow light #D70015   HorizonNow dark #FF453A
@@ -23,7 +23,7 @@ import ImageIO
 import UniformTypeIdentifiers
 
 let size = 1024
-let outDir = URL(fileURLWithPath: "Pulse/Assets.xcassets/AppIcon.appiconset")
+let outDir = URL(fileURLWithPath: "Third Hand/Assets.xcassets/AppIcon.appiconset")
 
 struct Variant {
     let file: String

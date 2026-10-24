@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Lint and format check for Pulse iOS.
+# Lint and format check for Third Hand iOS.
 #
 #   bash Scripts/lint.sh          # check only, exits non-zero on findings
 #   bash Scripts/lint.sh --fix    # rewrite files, then check

@@ -1,4 +1,4 @@
-# Pulse Data Contract — v1
+# Third Hand Data Contract — v1
 
 The single source of truth for item shape and sync. Both the iOS app and the
 `bb-plugin-pulse` mirror implement this. Change it here first, then in both
@@ -8,7 +8,7 @@ implementations, then bump `schemaVersion`.
 
 | Component | Role |
 | --- | --- |
-| `PulseApp` (iOS) | **Owner.** Reads sources, applies capture rules, owns user actions. |
+| `ThirdHandApp` (iOS) | **Owner.** Reads sources, applies capture rules, owns user actions. |
 | `bb-plugin-pulse` (Mac) | **Mirror.** Reads the snapshot, renders it, forwards user actions. |
 | iCloud Drive ubiquity container | Transport. UTF-8 JSON files. |
 
@@ -17,8 +17,8 @@ iOS through a command file; iOS applies them and republishes the snapshot.
 
 ## Transport layout
 
-Inside the app's iCloud container (`iCloud.com.steveafrost.pulse`), under
-`Documents/Pulse/`:
+Inside the app's iCloud container (`iCloud.com.steveafrost.thirdhand`), under
+`Documents/ThirdHand/`:
 
 ```
 snapshot.json      iOS -> plugin. Full item set. Written atomically (tmp + rename).
@@ -26,7 +26,7 @@ commands.jsonl     plugin -> iOS. One JSON action per line. Append-only.
 commands.ack.jsonl iOS -> plugin. Ids of commands consumed. Append-only.
 ```
 
-`PULSE_HOME` env var overrides the Mac-side directory so the plugin can be
+`THIRDHAND_HOME` env var overrides the Mac-side directory so the plugin can be
 pointed at any mirrored folder (used by tests and by users without iCloud).
 
 ### Write protocol
@@ -64,7 +64,7 @@ its `at` is newer than the item's `updatedAt`. Otherwise dropped with a log line
 the last 3 days. Older closed items are pruned on write. The plugin filters for
 display.
 
-## PulseItem (field-for-field identical to plugin `types.ts`)
+## ThirdHandItem (field-for-field identical to plugin `types.ts`)
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -149,6 +149,6 @@ count it in the Now badge.
 ## Versioning
 
 `schemaVersion` is an integer. A reader seeing a higher version than it supports
-must refuse to write and surface an "update Pulse" state rather than silently
+must refuse to write and surface an "update Third Hand" state rather than silently
 dropping fields. Adding an optional field does not bump the version; removing or
 retyping a field does.

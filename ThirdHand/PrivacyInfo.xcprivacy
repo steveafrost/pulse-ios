@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Third Hand privacy manifest.
+	     Required-reason APIs are scanned by App Store Connect at upload; a
+	     manifest that is missing or under-declares these is a rejection. The two
+	     declared below are the only ones the codebase uses (see
+	     docs/RELEASE-READINESS.md for the grep that proves it). -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<!-- UserDefaults: PermissionCoordinator remembers whether the
+			     permission preamble was shown (pulse.permissionPreambleAsked), and
+			     SharedStore keeps the board filter / last-viewed marker / collapsed
+			     sections in the app-group suite so the widget can read them.
+			     CA92.1: only the app itself (and its extension via the app group)
+			     reads this. Nothing is sent anywhere. -->
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+		<dict>
+			<!-- File timestamps: CloudContainer.modificationDate() reads the
+			     snapshot/command files' modification dates to decide whether the
+			     Mac's mirror is newer than what is on this device.
+			     C617.1: the timestamps are read only for the app's own files inside
+			     its own iCloud ubiquity container and app-group directory. -->
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

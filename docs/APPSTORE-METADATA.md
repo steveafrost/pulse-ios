@@ -1,4 +1,4 @@
-# App Store metadata — Pulse
+# App Store metadata — Third Hand
 
 Everything App Store Connect asks for on the version page, ready to paste.
 Verified against `asc` v0.18.2 and against build 1 (`0.1.0`) of the archive in
@@ -13,21 +13,21 @@ portal click-paths) and [`PRIVACY.md`](PRIVACY.md) (the policy behind §5).
 
 | Field | Value | Limit | Length |
 | --- | --- | --- | --- |
-| App Store name | `Pulse — What Needs You` | 30 | 22 |
-| Home Screen name (`CFBundleDisplayName`) | `Pulse` | — | 5 |
-| Bundle ID | `com.steveafrost.pulse` | — | — |
+| App Store name | `Third Hand — What Needs You` | 30 | 22 |
+| Home Screen name (`CFBundleDisplayName`) | `Third Hand` | — | 5 |
+| Bundle ID | `com.steveafrost.thirdhand` | — | — |
 | SKU | `pulse-ios-001` | — | — |
 | Subtitle | `Your day, ordered by urgency` | 30 | 28 |
 
-**The plain name `Pulse` is taken.** An exact-title app by `ua.com.pulse.app`
+**The plain name `Third Hand` is taken.** An exact-title app by `ua.com.pulse.app`
 sits in the US, GB, CA, AU, DE, FR and JP storefronts, and other developers hold
-near-identical titles. `Pulse — What Needs You` was verified free in US and GB
-(see `APPSTORE-SETUP.md` §3). The Home Screen label stays `Pulse`; that is
+near-identical titles. `Third Hand — What Needs You` was verified free in US and GB
+(see `APPSTORE-SETUP.md` §3). The Home Screen label stays `Third Hand`; that is
 independent of App Store name uniqueness, and `CFBundleDisplayName` already says
 so.
 
 `asc apps list` was re-run while writing this doc: no existing app record has
-bundle id `com.steveafrost.pulse`, so nothing is colliding with the new record.
+bundle id `com.steveafrost.thirdhand`, so nothing is colliding with the new record.
 
 ---
 
@@ -48,9 +48,9 @@ why it leads with the value proposition rather than a release note.
 competitor claims, no pricing.
 
 ```text
-Pulse answers one question: what needs me right now?
+Third Hand answers one question: what needs me right now?
 
-Most task apps ask you to maintain them. Pulse doesn't. It reads the calendar and reminders already on your iPhone, works out what actually needs you, and puts it on one board in the order you'd want to deal with it.
+Most task apps ask you to maintain them. Third Hand doesn't. It reads the calendar and reminders already on your iPhone, works out what actually needs you, and puts it on one board in the order you'd want to deal with it.
 
 FOUR HORIZONS, ONE GLANCE
 
@@ -84,20 +84,20 @@ Home Screen widgets in three sizes and all three Lock Screen families, plus a Li
 
 YOUR DATA STAYS YOURS
 
-Pulse has no account, no sign-up, and no server. There is nothing to log in to.
+Third Hand has no account, no sign-up, and no server. There is nothing to log in to.
 
 - It reads only your Calendar and Reminders, and only on this device
 - No analytics, no tracking, no third-party SDKs
 - Your board syncs to your own private iCloud so it can reach your Mac, and to nobody else
 - Everything else is stored on the device and nowhere else
 
-If you delete the app, Pulse has nothing left to delete.
+If you delete the app, Third Hand has nothing left to delete.
 
 WHO IT IS FOR
 
 People who already keep a calendar and a reminders list, and who want one honest view of what those two things are asking of them today - without another system to maintain.
 
-Pulse is a productivity app for iOS. It needs access to Calendar and Reminders to be useful; you can grant either, both, or neither, and turn them off again in Settings at any time.
+Third Hand is a productivity app for iOS. It needs access to Calendar and Reminders to be useful; you can grant either, both, or neither, and turn them off again in Settings at any time.
 ```
 
 ---
@@ -109,7 +109,7 @@ tasks,agenda,todo,calendar,reminder,focus,priority,daily,planner,productivity,pe
 ```
 
 86 characters (limit 100), comma-separated with no spaces. No word is repeated
-from the app name (`Pulse`, `What`, `Needs`, `You`) — that would waste
+from the app name (`Third Hand`, `What`, `Needs`, `You`) — that would waste
 characters, because App Store search already indexes the name and subtitle
 separately.
 
@@ -135,7 +135,7 @@ Why this is true, per [`ARCHITECTURE.md`](ARCHITECTURE.md) §Privacy:
 | What a reviewer might ask | Why it is not "collected" |
 | --- | --- |
 | Calendar and reminders are read | Read on-device and stored on-device. Nothing is transmitted to the developer or any third party. |
-| There is an iCloud snapshot | It goes to **the user's own private iCloud container** (`iCloud.com.steveafrost.pulse`), under their Apple ID. The developer has no access, no server, and no key. Apple treats "data stored in the user's own iCloud, not accessible to the developer" as not collected by the developer. |
+| There is an iCloud snapshot | It goes to **the user's own private iCloud container** (`iCloud.com.steveafrost.thirdhand`), under their Apple ID. The developer has no access, no server, and no key. Apple treats "data stored in the user's own iCloud, not accessible to the developer" as not collected by the developer. |
 | Any analytics or crash reporting? | None. No third-party SDKs, no telemetry, no crash reporter. |
 | Any account? | None. No sign-in, no email capture, no identifier. |
 
@@ -157,7 +157,7 @@ on for the repo first. See §7 for the switch.
 
 ### App Privacy detail (the free-text field)
 
-> Pulse does not collect any data. Calendar and reminders are read on the device
+> Third Hand does not collect any data. Calendar and reminders are read on the device
 > and stay there. Your board is mirrored to your own private iCloud container so
 > it can reach your Mac; that copy belongs to your Apple ID and is never visible
 > to the developer. There is no account, no server, no analytics and no
@@ -218,7 +218,7 @@ submission, together with the date it was checked:
 `asc` v0.18.2 accepts these display types for `asc screenshot-sets create
 --display-type` (rejected types omitted):
 
-| Display type | Device | Pixels | Needed for Pulse |
+| Display type | Device | Pixels | Needed for Third Hand |
 | --- | --- | --- | --- |
 | `APP_IPHONE_67` | iPhone 6.7"/6.9" | 1290×2796 or 1320×2868 | **Yes** — primary |
 | `APP_IPHONE_65` | iPhone 6.5" | 1242×2688 or 1284×2778 | Yes — fallback/compat |
@@ -253,19 +253,19 @@ All are real simulator captures of the debug fixture board, status bar pinned to
 Captured with:
 
 ```sh
-D="Pulse 17 Pro Max"   # created from iPhone-17-Pro-Max + iOS 27 runtime
-xcrun simctl install  "$D" /tmp/pulse-shots/Build/Products/Debug-iphonesimulator/Pulse.app
-xcrun simctl privacy  "$D" grant calendar com.steveafrost.pulse
-xcrun simctl privacy  "$D" grant reminders com.steveafrost.pulse
+D="Third Hand 17 Pro Max"   # created from iPhone-17-Pro-Max + iOS 27 runtime
+xcrun simctl install  "$D" /tmp/pulse-shots/Build/Products/Debug-iphonesimulator/ThirdHand.app
+xcrun simctl privacy  "$D" grant calendar com.steveafrost.thirdhand
+xcrun simctl privacy  "$D" grant reminders com.steveafrost.thirdhand
 xcrun simctl status_bar "$D" override --time "9:41" --batteryState charged \
     --batteryLevel 100 --wifiBars 3 --cellularBars 4
-xcrun simctl launch   "$D" com.steveafrost.pulse -PulseDemoBoard -PulseDemoScreen board
+xcrun simctl launch   "$D" com.steveafrost.thirdhand -ThirdHandDemoBoard -ThirdHandDemoScreen board
 xcrun simctl io       "$D" screenshot docs/screenshots/01-board-now-69.png
 ```
 
-The other screens swap `-PulseDemoScreen` for `detail`, `snooze`, `closed`,
-`preamble`, and add `-PulseDemoEmpty` for the all-clear state. These flags are
-compiled out of Release (`#if DEBUG` in `PulseApp.swift`), so the fixture data
+The other screens swap `-ThirdHandDemoScreen` for `detail`, `snooze`, `closed`,
+`preamble`, and add `-ThirdHandDemoEmpty` for the all-clear state. These flags are
+compiled out of Release (`#if DEBUG` in `ThirdHandApp.swift`), so the fixture data
 cannot ship.
 
 ### Not captured, and why
@@ -273,7 +273,7 @@ cannot ship.
 `DESIGN.md` §12 lists 11 shots. The gaps:
 
 - **6.9" Live Activity and Lock Screen widgets (#9)** — waiting on the widget and
-  Live Activity target work landing in `PulseWidgets/`.
+  Live Activity target work landing in `ThirdHandWidgets/`.
 - **iPad (#7, #8)** — no iPad support; `UIDeviceFamily` is iPhone-only.
 - **Completion moment (#3)** — a mid-animation frame; better captured on device.
 - **Reduce Transparency (#11)** — needs an accessibility setting toggle we have
@@ -293,7 +293,7 @@ asc screenshots upload --set-id <SET_ID> --file docs/screenshots/01-board-now-69
 ```
 First release.
 
-Pulse reads your calendar and reminders and puts what actually needs you on one
+Third Hand reads your calendar and reminders and puts what actually needs you on one
 board, in four horizons: Now, Next, Later and Nice to Know. Done and snooze stick,
 snooze comes back on its own, and everything is reversible from Recently Closed.
 
@@ -317,14 +317,14 @@ Paste into **App Store Connect → App Version → App Review Information → No
 ```
 No login or demo account is required. The app has no account system at all.
 
-Pulse reads the user's Calendar and Reminders to build one board of what needs
+Third Hand reads the user's Calendar and Reminders to build one board of what needs
 attention. On first launch it shows a preamble explaining this, then raises the
 system prompts for Calendar ("Allow Full Access") and Reminders. Granting either,
 both, or neither works: with neither granted, the board shows the connect state
 from DESIGN.md 9.2 and the app remains usable.
 
 The same data is mirrored to the user's own private iCloud container
-(iCloud.com.steveafrost.pulse) so the board can be read on their Mac. The
+(iCloud.com.steveafrost.thirdhand) so the board can be read on their Mac. The
 developer operates no server and cannot see that data. This is why the App Privacy
 answer is Data Not Collected.
 
@@ -340,13 +340,13 @@ Two things a reviewer is likely to test, and what they will see:
    expires on schedule. Losing state on relaunch would look like a bug.
 
 If a reviewer cannot see any items because the simulator or device has an empty
-calendar, that is expected — Pulse shows what the device holds and nothing else.
+calendar, that is expected — Third Hand shows what the device holds and nothing else.
 
 ---
 
 ## 11. Pre-submission field checklist
 
-- [ ] App name `Pulse — What Needs You`
+- [ ] App name `Third Hand — What Needs You`
 - [ ] Subtitle `Your day, ordered by urgency`
 - [ ] Promotional text pasted (§2)
 - [ ] Description pasted (§3)

@@ -1,4 +1,4 @@
-# Pulse — Accessibility
+# Third Hand — Accessibility
 
 The pass for #22. Each line is a check, its method, its result, and the date.
 Where an automated check was not feasible in this milestone the manual method is
@@ -11,18 +11,18 @@ Date of this pass: 2026-10-23. Device: iPhone 17 Pro simulator, iOS 18 SDK path
 
 | Check | Method | Result |
 | --- | --- | --- |
-| No fixed point fonts | `grep -rn 'system(size:' Pulse` (design tokens) | Pass — the only `.system(size:)` uses are the 20pt kind glyph and the 64pt empty-state glyph, both decorative and `accessibilityHidden` |
+| No fixed point fonts | `grep -rn 'system(size:' Third Hand` (design tokens) | Pass — the only `.system(size:)` uses are the 20pt kind glyph and the 64pt empty-state glyph, both decorative and `accessibilityHidden` |
 | Dynamic Type through AX5 | `@Preview` variants at `.dynamicTypeSize(.accessibility5)` for board, detail, empty states and preamble | Pass — titles wrap, detail hides at AX3+, meta line becomes a horizontal scroller at AX2+, chips stop stretching |
 | No clipped row text | `.fixedSize(horizontal: false, vertical: true)` on every text block; no fixed row height | Pass |
 | Row is one VoiceOver element | `.accessibilityElement(children: .ignore)` + composed label/value/hint | Pass — `BoardItemRow.accessibilityLabel`/`accessibilityValue` implement DESIGN.md §5.3 verbatim |
 | Section headers are headers | `.accessibilityAddTraits(.isHeader)`, label "Now, 2 items" | Pass |
 | Actions read as outcomes | "Mark done", "More actions for <title>", "Refresh board" | Pass |
 | Rotor actions | Done, Snooze, Dismiss, Copy action, Open link, Reopen (conditional) | Pass |
-| Hit targets ≥ 44pt | `PulseSpacing.minimumHitTarget` on row controls, chips, FAB, capsule, show-all, banner | Pass |
-| Reduce Motion | `PulseMotion` swaps matched geometry for a plain push, drops `.symbolEffect`, makes removal instant, removes the shimmer | Pass — no shimmer exists at all |
-| Reduce Transparency | `PulseGlassStyle` substitutes `SurfaceCard` + hairline for every `.glassEffect()` | Pass — `.glassEffect` is only called inside the one modifier's non-reduced branch |
+| Hit targets ≥ 44pt | `ThirdHandSpacing.minimumHitTarget` on row controls, chips, FAB, capsule, show-all, banner | Pass |
+| Reduce Motion | `ThirdHandMotion` swaps matched geometry for a plain push, drops `.symbolEffect`, makes removal instant, removes the shimmer | Pass — no shimmer exists at all |
+| Reduce Transparency | `ThirdHandGlassStyle` substitutes `SurfaceCard` + hairline for every `.glassEffect()` | Pass — `.glassEffect` is only called inside the one modifier's non-reduced branch |
 | Bold Text | Weights resolve to `.semibold`; rows have no fixed heights | Pass |
-| Increased Contrast | `PulseContrast` lifts chip fill to 22% and separator to 55% | Pass |
+| Increased Contrast | `ThirdHandContrast` lifts chip fill to 22% and separator to 55% | Pass |
 | Differentiate without colour | Every tint paired with a glyph and a word; snoozed carries a glyph and "until" | Pass |
 | Switch Control | Every action is a `Button` in the tree; the FAB follows the filter bar | Pass |
 
@@ -37,9 +37,9 @@ Date of this pass: 2026-10-23. Device: iPhone 17 Pro simulator, iOS 18 SDK path
 
 ## Known gaps
 
-1. **No UI test target.** The project has `PulseTests` (unit) only. `performAccessibilityAudit()`
+1. **No UI test target.** The project has `ThirdHandTests` (unit) only. `performAccessibilityAudit()`
    requires an `XCUIApplication` UI test target, so #22's automated audit is deferred
-   and replaced by the tables above. Adding `PulseUITests` is the next step.
+   and replaced by the tables above. Adding `ThirdHandUITests` is the next step.
 2. **Count announcement after completion.** DESIGN.md §10 asks VoiceOver to say
    "Done. 3 items left in Now." The row currently leaves silently; the completion
    flash and collapse are correct, the post-announcement is not implemented.

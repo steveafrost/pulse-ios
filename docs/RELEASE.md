@@ -1,4 +1,4 @@
-# Release process — Pulse iOS
+# Release process — Third Hand iOS
 
 How a change on `main` becomes a TestFlight build. Covers versioning, archiving,
 uploading, and where things land.
@@ -6,7 +6,7 @@ uploading, and where things land.
 ```
 main ──► fastlane beta ──► xcodegen ──► xcodebuild archive ──► export .ipa ──► asc builds upload ──► TestFlight
               │                                                                                        │
-              └── Scripts/bump-build.sh writes project.yml                                     Pulse Beta
+              └── Scripts/bump-build.sh writes project.yml                                     Third Hand Beta
 ```
 
 ---
@@ -28,7 +28,7 @@ Verify with:
 
 ```sh
 grep -n 'MARKETING_VERSION\|CURRENT_PROJECT_VERSION' project.yml   # exactly one definition each
-xcodegen generate && xcodebuild -showBuildSettings -scheme Pulse -configuration Release \
+xcodegen generate && xcodebuild -showBuildSettings -scheme ThirdHand -configuration Release \
   | grep -E 'MARKETING_VERSION|CURRENT_PROJECT_VERSION'
 ```
 
@@ -79,7 +79,7 @@ and the widget without duplicating per target:
 | `DEBUG_INFORMATION_FORMAT` | `dwarf-with-dsym` | Produces the `.dSYM` that symbolicates TestFlight crash reports |
 | `ENABLE_NS_ASSERTIONS` | `NO` | Assertions out of shipped builds |
 | `VALIDATE_PRODUCT` | `YES` | Runs Apple's validation during the archive |
-| `ENABLE_TESTABILITY` | `NO` | `@testable import PulseCore` cannot leak into a Release build |
+| `ENABLE_TESTABILITY` | `NO` | `@testable import ThirdHandCore` cannot leak into a Release build |
 
 `SWIFT_STRICT_CONCURRENCY = complete` and `ENABLE_USER_SCRIPT_SANDBOXING = YES`
 stay on in both configurations.
@@ -94,25 +94,25 @@ stay on in both configurations.
 xcodegen generate
 ./Scripts/bump-build.sh
 xcodebuild archive \
-  -project Pulse.xcodeproj -scheme Pulse -configuration Release \
+  -project ThirdHand.xcodeproj -scheme ThirdHand -configuration Release \
   -destination 'generic/platform=iOS' \
-  -archivePath build/Pulse.xcarchive \
+  -archivePath build/Third Hand.xcarchive \
   -allowProvisioningUpdates \
   DEVELOPMENT_TEAM=4QJ25Y85MX CODE_SIGN_STYLE=Automatic
 xcodebuild -exportArchive \
-  -archivePath build/Pulse.xcarchive \
+  -archivePath build/Third Hand.xcarchive \
   -exportPath build/export \
   -exportOptionsPlist fastlane/ExportOptions.plist \
   -allowProvisioningUpdates
 ```
 
-The `.ipa` lands at `build/export/Pulse.ipa`. The `.dSYM` files are inside
-`build/Pulse.xcarchive/dSYMs/` (`Pulse.app.dSYM` and
-`PulseWidgets.appex.dSYM`).
+The `.ipa` lands at `build/export/Third Hand.ipa`. The `.dSYM` files are inside
+`build/Third Hand.xcarchive/dSYMs/` (`ThirdHand.app.dSYM` and
+`ThirdHandWidgets.appex.dSYM`).
 
 `-allowProvisioningUpdates` is what lets automatic signing create the App Store
 provisioning profiles on the first archive. Without it, a fresh machine fails at
-export with "no profiles for com.steveafrost.pulse were found".
+export with "no profiles for com.steveafrost.thirdhand were found".
 
 ### With fastlane
 
@@ -144,7 +144,7 @@ needed anywhere in this repo.
 ```sh
 asc builds upload \
   --app-id <APP_ID> \
-  --file build/export/Pulse.ipa \
+  --file build/export/Third Hand.ipa \
   --version 0.1.0 \
   --build-number 2 \
   --platform ios \
@@ -158,7 +158,7 @@ the build shows as *Processing* in App Store Connect.
 The wrapper does the same thing and gates on credentials first:
 
 ```sh
-./Scripts/upload-testflight.sh build/export/Pulse.ipa
+./Scripts/upload-testflight.sh build/export/Third Hand.ipa
 ./Scripts/upload-testflight.sh --dry-run     # prints the asc command, uploads nothing
 ```
 
@@ -178,9 +178,9 @@ Resolution order, first match wins:
 | `ASC_KEY_ID` | API key id (`38R6G5B784` for this team) |
 | `ASC_ISSUER_ID` | Issuer UUID (`4e8ddd0a-9e6c-4877-ae9d-3f7168c02256`) |
 | `ASC_KEY_PATH` | Path to the `.p8`. Never committed. |
-| `PULSE_ASC_APP_ID` | Numeric App Store Connect app id. Empty until the record exists. |
-| `PULSE_TEAM_ID` | Overrides the team id (defaults to `4QJ25Y85MX`) |
-| `PULSE_BETA_TESTERS` | Optional comma-separated emails for `fastlane ios groups` |
+| `THIRDHAND_ASC_APP_ID` | Numeric App Store Connect app id. Empty until the record exists. |
+| `THIRDHAND_TEAM_ID` | Overrides the team id (defaults to `4QJ25Y85MX`) |
+| `THIRDHAND_BETA_TESTERS` | Optional comma-separated emails for `fastlane ios groups` |
 
 `fastlane/.env.example` lists them with no values. Copy it to `fastlane/.env`
 (gitignored) or export them. The `.p8` gets written from a CI secret at job start
@@ -200,9 +200,9 @@ asc auth login --key-id 38R6G5B784 \
 
 | Artefact | Location | Committed? |
 | --- | --- | --- |
-| `.ipa` | `build/export/Pulse.ipa` | no — `build/` is gitignored |
-| `.xcarchive` | `build/Pulse.xcarchive` | no |
-| `.dSYM` | `build/Pulse.xcarchive/dSYMs/` | no |
+| `.ipa` | `build/export/Third Hand.ipa` | no — `build/` is gitignored |
+| `.xcarchive` | `build/Third Hand.xcarchive` | no |
+| `.dSYM` | `build/Third Hand.xcarchive/dSYMs/` | no |
 | App Store Connect | uploaded build, visible in TestFlight | — |
 | Builds listing | `asc builds list --app-id <APP_ID> --pretty` | — |
 
@@ -221,20 +221,20 @@ The record must be created once in the portal:
 
 1. <https://appstoreconnect.apple.com/apps> → **My Apps** → **+** → **New App**
 2. Platform **iOS**
-3. Name **`Pulse — What Needs You`** (plain `Pulse` is taken — `APPSTORE-SETUP.md` §3)
+3. Name **`Third Hand — What Needs You`** (plain `Third Hand` is taken — `APPSTORE-SETUP.md` §3)
 4. Primary language **English (U.S.)**
-5. Bundle ID **`Pulse` (`com.steveafrost.pulse`)**
+5. Bundle ID **`Third Hand` (`com.steveafrost.thirdhand`)**
 6. SKU **`pulse-ios-001`**
 7. Full Access → **Create**
 
 Then record the numeric id (it is in the URL: `…/apps/<id>/…`) as
-`PULSE_ASC_APP_ID`.
+`THIRDHAND_ASC_APP_ID`.
 
 If a browser session cookie is available, the private API can do it instead:
 
 ```sh
 export ASC_IRIS_COOKIES=<cookie jar from a logged-in appstoreconnect session>
-asc iris apps create --name "Pulse — What Needs You" --bundle-id com.steveafrost.pulse \
+asc iris apps create --name "Third Hand — What Needs You" --bundle-id com.steveafrost.thirdhand \
   --sku pulse-ios-001 --primary-locale en-US --platforms IOS --version 1.0
 ```
 
@@ -245,7 +245,7 @@ asc iris apps create --name "Pulse — What Needs You" --bundle-id com.steveafro
 asc apps list --pretty
 
 # 2. create the internal group (idempotent in the fastlane lane)
-asc testflight groups create --app-id <APP_ID> --name "Pulse Beta" --internal
+asc testflight groups create --app-id <APP_ID> --name "Third Hand Beta" --internal
 
 # 3. list it
 asc testflight groups list --app-id <APP_ID> --pretty
@@ -261,15 +261,15 @@ asc testflight testers list --beta-group-id <GROUP_ID> --pretty
 Or all at once:
 
 ```sh
-PULSE_ASC_APP_ID=<APP_ID> PULSE_BETA_TESTERS=you@example.com fastlane ios groups
+THIRDHAND_ASC_APP_ID=<APP_ID> THIRDHAND_BETA_TESTERS=you@example.com fastlane ios groups
 ```
 
-That lane is idempotent: it looks for a group named `Pulse Beta` first and
+That lane is idempotent: it looks for a group named `Third Hand Beta` first and
 only creates it when absent. No tester address is ever invented — with
-`PULSE_BETA_TESTERS` unset it prints the click-path and adds nobody.
+`THIRDHAND_BETA_TESTERS` unset it prints the click-path and adds nobody.
 
 **Internal vs external:** internal testers are App Store Connect team members and
-need no App Review or beta review. External testers do. Pulse Beta is internal, so
+need no App Review or beta review. External testers do. Third Hand Beta is internal, so
 the first build is testable within minutes of processing.
 
 ### After the upload
@@ -305,4 +305,4 @@ TestFlight builds cannot be deleted, only expired. To stop testers seeing one:
 
 If a build reached the App Store, a version cannot be pulled, only superseded:
 submit a new version with the fix and request an expedited review if it is
-urgent. Who to tell: the internal tester list in `Pulse Beta`.
+urgent. Who to tell: the internal tester list in `Third Hand Beta`.

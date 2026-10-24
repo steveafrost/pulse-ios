@@ -1,4 +1,4 @@
-# Agent workflow — Pulse iOS
+# Agent workflow — Third Hand iOS
 
 The convention every agent and subagent follows in this repo. The goal: an agent
 with zero prior context can pick up any issue and know exactly how to claim it,
@@ -60,16 +60,16 @@ is acceptable. Never force-push, ever — if history needs fixing, add a commit.
 - **Stay inside the issue's `## Files` list.** That list is the blast radius the
   issue author agreed to. Touching a file outside it is how a small fix becomes
   an unreviewable change.
-- **`Pulse.xcodeproj` is generated. Never commit it.** It is produced by
+- **`ThirdHand.xcodeproj` is generated. Never commit it.** It is produced by
   `xcodegen generate` from `project.yml` and is listed in `.gitignore`. If you
   need a new target, file, build setting or Info.plist key, change
   `project.yml`, then regenerate. A hand-edit to the `.xcodeproj` is lost on the
   next generate and will not be reviewed.
-- **`PulseCore` stays free of UI and EventKit imports.** No `import SwiftUI`,
-  no `import WidgetKit`, no `import EventKit` inside `PulseCore/Sources`. That
+- **`ThirdHandCore` stays free of UI and EventKit imports.** No `import SwiftUI`,
+  no `import WidgetKit`, no `import EventKit` inside `ThirdHandCore/Sources`. That
   package is the testability boundary: it must build and run its tests with
   plain `swift test` on macOS, no simulator. Platform code lives in
-  `Pulse/` (app) and `PulseWidgets/`; adapt EventKit behind the `CaptureSource`
+  `Third Hand/` (app) and `ThirdHandWidgets/`; adapt EventKit behind the `CaptureSource`
   protocol as described in `docs/ARCHITECTURE.md`.
 - **Models and contracts change in `docs/DATA-CONTRACT.md` first**, then in both
   implementations, then bump `schemaVersion`. The Mac plugin mirrors the same
@@ -86,13 +86,13 @@ The three standard verification commands for this repo:
 
 ```sh
 # 1. Core domain: fast unit tests, no simulator required
-cd PulseCore && swift test
+cd ThirdHandCore && swift test
 
 # 2. Generate the Xcode project from project.yml
 xcodegen generate
 
 # 3. Full app build against a simulator, no signing
-xcodebuild -scheme Pulse \
+xcodebuild -scheme ThirdHand \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   -derivedDataPath /tmp/pulse-build \
   CODE_SIGNING_ALLOWED=NO build
@@ -120,8 +120,8 @@ of the repo you touched:
 
 | Prefix | Use for |
 | --- | --- |
-| `feat(core):` | `PulseCore` models, store, capture, sync |
-| `feat(ui):` | SwiftUI views in `Pulse/` |
+| `feat(core):` | `ThirdHandCore` models, store, capture, sync |
+| `feat(ui):` | SwiftUI views in `Third Hand/` |
 | `feat(sync):` | snapshot/command protocol, CloudContainer |
 | `fix:` | bug fixes, in any target |
 | `chore:` | CI, tooling, docs, project.yml |
@@ -149,18 +149,18 @@ git push -u origin HEAD
 One issue per PR. Title it with the milestone prefix and a short summary:
 
 ```
-M0.2 — CI builds PulseCore and runs swift test on macOS
+M0.2 — CI builds ThirdHandCore and runs swift test on macOS
 ```
 
 Body must contain `Closes #<N>` and the acceptance-command output from step 5:
 
 ```sh
-gh pr create --title "M0.2 — CI builds PulseCore and runs swift test on macOS" \
+gh pr create --title "M0.2 — CI builds ThirdHandCore and runs swift test on macOS" \
   --body "Closes #2
 
 ## Verification
 \`\`\`
-$ cd PulseCore && swift test
+$ cd ThirdHandCore && swift test
 ...
 \`\`\`"
 ```
@@ -183,7 +183,7 @@ close it explicitly:
 gh issue close <N> --comment "Done in <sha>.
 
 \`\`\`
-$ cd PulseCore && swift test
+$ cd ThirdHandCore && swift test
 ...
 \`\`\`"
 ```

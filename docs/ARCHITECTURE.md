@@ -1,8 +1,8 @@
-# Pulse iOS — Architecture
+# Third Hand iOS — Architecture
 
 ## Product
 
-Pulse answers one question: *what needs me right now?* It reads your calendar,
+Third Hand answers one question: *what needs me right now?* It reads your calendar,
 reminders and (later) mail, classifies each thing into an action kind, and shows
 one board sorted into **Now / Next / Later / Nice to Know**. Done and Snooze
 stick. It exists standalone on iOS and also drives the existing bb plugin as a
@@ -12,23 +12,23 @@ mirror, so the same board is on the Mac nav rail.
 
 | Target | Kind | Purpose |
 | --- | --- | --- |
-| `Pulse` | iOS app | The board, item detail, settings, capture scheduling. |
-| `PulseCore` | Swift package | Models, store, capture engine, sync. No UI. Unit-testable on macOS. |
-| `PulseWidgets` | Widget extension | Home Screen + Lock Screen widgets, Live Activity for the next meeting. |
-| `PulseIntents` | App Intents (in app) | Siri/Shortcuts: "What needs me", "Snooze the top item". |
-| `PulseTests` | Unit + UI tests | Store state machine, capture rules, sync protocol. |
+| `Third Hand` | iOS app | The board, item detail, settings, capture scheduling. |
+| `ThirdHandCore` | Swift package | Models, store, capture engine, sync. No UI. Unit-testable on macOS. |
+| `ThirdHandWidgets` | Widget extension | Home Screen + Lock Screen widgets, Live Activity for the next meeting. |
+| `ThirdHandIntents` | App Intents (in app) | Siri/Shortcuts: "What needs me", "Snooze the top item". |
+| `ThirdHandTests` | Unit + UI tests | Store state machine, capture rules, sync protocol. |
 
-`PulseCore` is a local Swift package so it can be tested with `swift test`
+`ThirdHandCore` is a local Swift package so it can be tested with `swift test`
 without a simulator, which is what CI runs on every push.
 
 ## Layers
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ PulseUI (SwiftUI)   BoardView, ItemDetail, ...  │
+│ ThirdHandUI (SwiftUI)   BoardView, ItemDetail, ...  │
 ├─────────────────────────────────────────────────┤
-│ PulseCore                                       │
-│  ├ Models      PulseItem, enums, Ports          │
+│ ThirdHandCore                                       │
+│  ├ Models      ThirdHandItem, enums, Ports          │
 │  ├ Store       ItemStore (actor) - state machine│
 │  ├ Capture     CaptureEngine, Detectors,        │
 │  │             EventKitSource, RemindersSource  │
@@ -116,7 +116,7 @@ Collected**.
 | # | Milestone | Exit criteria |
 | --- | --- | --- |
 | M0 | Foundation | Repo, contract, architecture, CI, XcodeGen project builds empty app |
-| M1 | Core domain | `PulseCore` models + store state machine, green unit tests |
+| M1 | Core domain | `ThirdHandCore` models + store state machine, green unit tests |
 | M2 | Capture | EventKit + Reminders detectors, classification, green tests |
 | M3 | UI | Board, detail, actions, Liquid Glass chrome, empty/error states |
 | M4 | Sync + plugin mirror | Snapshot/command protocol both sides, plugin reads iOS data |

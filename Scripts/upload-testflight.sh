@@ -5,7 +5,7 @@
 # this; you can also run it by hand.
 #
 #   ./Scripts/upload-testflight.sh --dry-run
-#   ./Scripts/upload-testflight.sh path/to/Pulse.ipa
+#   ./Scripts/upload-testflight.sh path/to/Third Hand.ipa
 #
 # Credentials, in order of precedence:
 #   1. ASC_KEY_ID + ASC_ISSUER_ID (+ ASC_KEY_PATH) in the environment -> asc uses them
@@ -41,9 +41,9 @@ BUILD=$(sed -n 's/^[[:space:]]*CURRENT_PROJECT_VERSION:[[:space:]]*"\{0,1\}\([0-
     exit 1
 }
 
-APP_ID=${PULSE_ASC_APP_ID:-}
+APP_ID=${THIRDHAND_ASC_APP_ID:-}
 if [ -z "$APP_ID" ] && [ -f "$ROOT/fastlane/.env" ]; then
-    APP_ID=$(sed -n 's/^PULSE_ASC_APP_ID=\(.*\)$/\1/p' "$ROOT/fastlane/.env" | tr -d '"' | tr -d "'")
+    APP_ID=$(sed -n 's/^THIRDHAND_ASC_APP_ID=\(.*\)$/\1/p' "$ROOT/fastlane/.env" | tr -d '"' | tr -d "'")
 fi
 
 if [ "$DRY_RUN" -eq 0 ]; then
@@ -90,14 +90,14 @@ fi
 
 if [ -z "$APP_ID" ]; then
     if [ "$DRY_RUN" -eq 0 ]; then
-        echo "upload-testflight: PULSE_ASC_APP_ID is empty." >&2
+        echo "upload-testflight: THIRDHAND_ASC_APP_ID is empty." >&2
         echo "  The App Store Connect app record does not exist yet, so there is nothing to upload to." >&2
         echo "  Create it (App Store Connect -> My Apps -> + -> New App), then put the numeric id" >&2
-        echo "  in fastlane/.env as PULSE_ASC_APP_ID=<id>. Nothing was uploaded." >&2
+        echo "  in fastlane/.env as THIRDHAND_ASC_APP_ID=<id>. Nothing was uploaded." >&2
         exit 4
     fi
     APP_ID="<APP_ID>"
-    echo "note: PULSE_ASC_APP_ID unset (no app record yet) - printing the command with a placeholder." >&2
+    echo "note: THIRDHAND_ASC_APP_ID unset (no app record yet) - printing the command with a placeholder." >&2
 fi
 
 CMD="asc builds upload --app-id $APP_ID --file ${IPA:-<IPA>} --version $VERSION --build-number $BUILD --platform ios --wait"

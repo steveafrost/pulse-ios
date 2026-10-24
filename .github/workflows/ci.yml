@@ -2,7 +2,7 @@ name: CI
 
 # Two independent jobs, deliberately not chained with `needs:`.
 #
-#   core — the fast gate. `swift test` on the PulseCore package, no simulator,
+#   core — the fast gate. `swift test` on the ThirdHandCore package, no simulator,
 #          no Xcode project. This is the job to mark as a *required* status
 #          check in branch protection.
 #   app  — xcodegen generate + xcodebuild for an iOS simulator. Slower and more
@@ -65,13 +65,13 @@ jobs:
       - name: Cache SwiftPM build
         uses: actions/cache@v4
         with:
-          path: PulseCore/.build
-          key: ${{ runner.os }}-spm-${{ hashFiles('PulseCore/Package.resolved', 'PulseCore/Package.swift') }}
+          path: ThirdHandCore/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('ThirdHandCore/Package.resolved', 'ThirdHandCore/Package.swift') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
       - name: swift test
-        working-directory: PulseCore
+        working-directory: ThirdHandCore
         run: swift test --parallel
 
   app:
@@ -97,8 +97,8 @@ jobs:
       - name: Cache SwiftPM build
         uses: actions/cache@v4
         with:
-          path: PulseCore/.build
-          key: ${{ runner.os }}-spm-${{ hashFiles('PulseCore/Package.resolved', 'PulseCore/Package.swift') }}
+          path: ThirdHandCore/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('ThirdHandCore/Package.resolved', 'ThirdHandCore/Package.swift') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
@@ -112,7 +112,7 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild \
-            -scheme Pulse \
+            -scheme ThirdHand \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Debug \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
@@ -129,7 +129,7 @@ jobs:
           retention-days: 14
 
   lint:
-    # Non-blocking by design. The tree is not lint-clean yet (PulseCore is being
+    # Non-blocking by design. The tree is not lint-clean yet (ThirdHandCore is being
     # written concurrently), so a hard failure here would block every PR for
     # reasons unrelated to correctness. Flip `continue-on-error` to false — and
     # drop this comment — once `bash Scripts/lint.sh` exits 0 on main.
