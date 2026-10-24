@@ -17,7 +17,7 @@ settings:
     # hand; CURRENT_PROJECT_VERSION is bumped by Scripts/bump-build.sh and by the
     # fastlane beta lane. Never hardcode either in Info.plist (see docs/RELEASE.md).
     MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "3"
+    CURRENT_PROJECT_VERSION: "4"
   # Release hardening (issue #35). Release-only: whole-module optimization makes
   # Debug slow and undebuggable, and dSYMs are only wanted for shipped builds.
   configs:
