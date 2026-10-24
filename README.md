@@ -2,7 +2,7 @@
 
 One board of what needs you — from your Calendar and Reminders, sorted into
 **Now / Next / Later / Nice to Know**. Standalone on iOS, and the source of
-truth for the [bb](https://github.com/steveafrost/bb-plugin-pulse) Third Hand plugin,
+truth for the [bb](https://github.com/steveafrost/bb-plugin-thirdhand) Third Hand plugin,
 which mirrors the same board on your Mac.
 
 ## Status
@@ -14,7 +14,7 @@ for milestones and [`docs/DATA-CONTRACT.md`](docs/DATA-CONTRACT.md) for the sync
 
 ```
 ThirdHandCore/      Swift package: models, store, capture, sync (no UI)
-Third Hand/          SwiftUI app target
+ThirdHand/          SwiftUI app target
 ThirdHandWidgets/   WidgetKit extension
 ThirdHandTests/     Unit + UI tests
 docs/           Architecture, data contract, design spec

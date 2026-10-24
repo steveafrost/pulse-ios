@@ -5,7 +5,7 @@
 # this; you can also run it by hand.
 #
 #   ./Scripts/upload-testflight.sh --dry-run
-#   ./Scripts/upload-testflight.sh path/to/Third Hand.ipa
+#   ./Scripts/upload-testflight.sh path/to/ThirdHand.ipa
 #
 # Credentials, in order of precedence:
 #   1. ASC_KEY_ID + ASC_ISSUER_ID (+ ASC_KEY_PATH) in the environment -> asc uses them

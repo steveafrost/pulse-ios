@@ -51,7 +51,7 @@ release-blocking:
 | Location | Warning |
 | --- | --- |
 | `ThirdHandCore/.../CommandReader.swift:86` | immutable value `index` never used |
-| `Third Hand/Sync/SyncCoordinator.swift:289` | main-actor property `name` read from a nonisolated context |
+| `ThirdHand/Sync/SyncCoordinator.swift:289` | main-actor property `name` read from a nonisolated context |
 | AppIntents metadata processor | skipped, no `AppIntents.framework` dependency |
 
 The AppIntents line is informational: the widget has no AppIntent yet, so the
@@ -64,7 +64,7 @@ processor has nothing to do.
 ### The icon is flat, opaque, and reproducible
 
 ```console
-$ for f in Third Hand/Assets.xcassets/AppIcon.appiconset/*.png; do
+$ for f in ThirdHand/Assets.xcassets/AppIcon.appiconset/*.png; do
 >   echo -n "$(basename $f): "; sips -g hasAlpha -g pixelWidth -g pixelHeight "$f" | tail -3 | tr '\n' ' '; echo
 > done
 AppIcon-1024-dark.png:   hasAlpha: no   pixelWidth: 1024   pixelHeight: 1024
@@ -84,7 +84,7 @@ $ sips -g hasAlpha /tmp/ipa-y/Payload/ThirdHand.app/AppIcon60x60@2x.png
 The pixels come from `Scripts/make-icon.swift`, committed, not from an art tool:
 
 ```sh
-swift Scripts/make-icon.swift Third Hand/Assets.xcassets/AppIcon.appiconset
+swift Scripts/make-icon.swift ThirdHand/Assets.xcassets/AppIcon.appiconset
 ```
 
 It draws through Core Graphics into a `CGContext` created with
@@ -93,7 +93,7 @@ would reintroduce alpha), in sRGB, at exactly 1024×1024. No rounded corners: iO
 applies the mask, and baking a mask into the artwork produces the
 double-rounded-corner look reviewers flag. The mark is a board pulse that bleeds
 off both edges plus a single filled attention dot, and it was checked down to a
-40pt render, not only at 1024. `Third Hand/Assets.xcassets/AppIcon.appiconset/Contents.json`
+40pt render, not only at 1024. `ThirdHand/Assets.xcassets/AppIcon.appiconset/Contents.json`
 declares the universal 1024 slot plus the two `appearances` variants:
 
 - **Any** — `#D70015` field with a white mark
@@ -103,7 +103,7 @@ declares the universal 1024 slot plus the two `appearances` variants:
 ### Launch screen
 
 `UILaunchScreen` is declared with `UIColorName: LaunchBackground` in
-`project.yml`, backed by `Third Hand/Assets.xcassets/LaunchBackground.colorset`
+`project.yml`, backed by `ThirdHand/Assets.xcassets/LaunchBackground.colorset`
 (`#F2F2F7` light, `#000000` dark). The colours match `DESIGN.md` §2 tokens, so the
 launch does not flash a mismatched white. Confirmed in the exported plist:
 
@@ -132,13 +132,13 @@ $ fastlane ios build_only
 ==> export .ipa
 Exported Third Hand to: /tmp/pulse-verify/build/export
 ** EXPORT SUCCEEDED **
-ipa: /tmp/pulse-verify/build/export/Third Hand.ipa (1.8 MB, version 0.1.0 build 1)
+ipa: /tmp/pulse-verify/build/export/ThirdHand.ipa (1.8 MB, version 0.1.0 build 1)
 ```
 
 ```console
-$ ls -lh build/export/Third Hand.ipa
--rw-r--r--@ 1 white-box  wheel   1.8M Oct 23 17:17 build/export/Third Hand.ipa
-$ shasum -a 256 build/export/Third Hand.ipa
+$ ls -lh build/export/ThirdHand.ipa
+-rw-r--r--@ 1 white-box  wheel   1.8M Oct 23 17:17 build/export/ThirdHand.ipa
+$ shasum -a 256 build/export/ThirdHand.ipa
 50d92a24b23f1be4b07f0bcfc3301e5b6cbd91b8c76e42a2f9159e2fdf5eda74
 ```
 
@@ -168,7 +168,7 @@ capability work was needed.
 reports later:
 
 ```console
-$ ls build/Third Hand.xcarchive/dSYMs/
+$ ls build/ThirdHand.xcarchive/dSYMs/
 ThirdHand.app.dSYM  ThirdHandWidgets.appex.dSYM
 ```
 
@@ -181,11 +181,11 @@ verified in both failure modes:
 
 ```console
 $ ./Scripts/upload-testflight.sh --dry-run
-asc builds upload --app-id <APP_ID> --file build/export/Third Hand.ipa \
+asc builds upload --app-id <APP_ID> --file build/export/ThirdHand.ipa \
     --version 0.1.0 --build-number 1 --platform ios --wait
 (dry run: nothing uploaded)  # exit 0
 
-$ ./Scripts/upload-testflight.sh build/export/Third Hand.ipa   # with no creds
+$ ./Scripts/upload-testflight.sh build/export/ThirdHand.ipa   # with no creds
 No App Store Connect credentials found. ...
 exit 3
 ```
@@ -235,7 +235,7 @@ $ grep -rn "systemUptime\|mach_absolute_time\|statfs\|volumeAvailableCapacity" -
 
 ### The manifest
 
-`Third Hand/PrivacyInfo.xcprivacy` (XcodeGen includes it automatically; no `project.yml`
+`ThirdHand/PrivacyInfo.xcprivacy` (XcodeGen includes it automatically; no `project.yml`
 entry is needed, confirmed by 4 references in the generated `project.pbxproj`):
 
 ```xml
@@ -249,7 +249,7 @@ NSPrivacyAccessedAPITypes    UserDefaults   [CA92.1]
 Verified inside the shipped bundle, not only in the source tree:
 
 ```console
-$ unzip -l build/export/Third Hand.ipa | grep -i privacy
+$ unzip -l build/export/ThirdHand.ipa | grep -i privacy
      1883  10-23-2026 17:17   Payload/ThirdHand.app/PrivacyInfo.xcprivacy
 ```
 

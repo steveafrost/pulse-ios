@@ -9,9 +9,9 @@
 // reads at 40 pt.
 //
 // Run:  swift Scripts/make-icon.swift
-// Out:  Third Hand/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
-//       Third Hand/Assets.xcassets/AppIcon.appiconset/AppIcon-1024-dark.png
-//       Third Hand/Assets.xcassets/AppIcon.appiconset/AppIcon-1024-tinted.png
+// Out:  ThirdHand/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+//       ThirdHand/Assets.xcassets/AppIcon.appiconset/AppIcon-1024-dark.png
+//       ThirdHand/Assets.xcassets/AppIcon.appiconset/AppIcon-1024-tinted.png
 //
 // Token source of truth: docs/DESIGN.md §2 and Assets.xcassets.
 //   HorizonNow light #D70015   HorizonNow dark #FF453A
@@ -23,7 +23,7 @@ import ImageIO
 import UniformTypeIdentifiers
 
 let size = 1024
-let outDir = URL(fileURLWithPath: "Third Hand/Assets.xcassets/AppIcon.appiconset")
+let outDir = URL(fileURLWithPath: "ThirdHand/Assets.xcassets/AppIcon.appiconset")
 
 struct Variant {
     let file: String

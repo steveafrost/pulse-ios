@@ -69,7 +69,7 @@ is acceptable. Never force-push, ever — if history needs fixing, add a commit.
   no `import WidgetKit`, no `import EventKit` inside `ThirdHandCore/Sources`. That
   package is the testability boundary: it must build and run its tests with
   plain `swift test` on macOS, no simulator. Platform code lives in
-  `Third Hand/` (app) and `ThirdHandWidgets/`; adapt EventKit behind the `CaptureSource`
+  `ThirdHand/` (app) and `ThirdHandWidgets/`; adapt EventKit behind the `CaptureSource`
   protocol as described in `docs/ARCHITECTURE.md`.
 - **Models and contracts change in `docs/DATA-CONTRACT.md` first**, then in both
   implementations, then bump `schemaVersion`. The Mac plugin mirrors the same
@@ -121,7 +121,7 @@ of the repo you touched:
 | Prefix | Use for |
 | --- | --- |
 | `feat(core):` | `ThirdHandCore` models, store, capture, sync |
-| `feat(ui):` | SwiftUI views in `Third Hand/` |
+| `feat(ui):` | SwiftUI views in `ThirdHand/` |
 | `feat(sync):` | snapshot/command protocol, CloudContainer |
 | `fix:` | bug fixes, in any target |
 | `chore:` | CI, tooling, docs, project.yml |

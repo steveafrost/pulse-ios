@@ -96,18 +96,18 @@ xcodegen generate
 xcodebuild archive \
   -project ThirdHand.xcodeproj -scheme ThirdHand -configuration Release \
   -destination 'generic/platform=iOS' \
-  -archivePath build/Third Hand.xcarchive \
+  -archivePath build/ThirdHand.xcarchive \
   -allowProvisioningUpdates \
   DEVELOPMENT_TEAM=4QJ25Y85MX CODE_SIGN_STYLE=Automatic
 xcodebuild -exportArchive \
-  -archivePath build/Third Hand.xcarchive \
+  -archivePath build/ThirdHand.xcarchive \
   -exportPath build/export \
   -exportOptionsPlist fastlane/ExportOptions.plist \
   -allowProvisioningUpdates
 ```
 
-The `.ipa` lands at `build/export/Third Hand.ipa`. The `.dSYM` files are inside
-`build/Third Hand.xcarchive/dSYMs/` (`ThirdHand.app.dSYM` and
+The `.ipa` lands at `build/export/ThirdHand.ipa`. The `.dSYM` files are inside
+`build/ThirdHand.xcarchive/dSYMs/` (`ThirdHand.app.dSYM` and
 `ThirdHandWidgets.appex.dSYM`).
 
 `-allowProvisioningUpdates` is what lets automatic signing create the App Store
@@ -144,7 +144,7 @@ needed anywhere in this repo.
 ```sh
 asc builds upload \
   --app-id <APP_ID> \
-  --file build/export/Third Hand.ipa \
+  --file build/export/ThirdHand.ipa \
   --version 0.1.0 \
   --build-number 2 \
   --platform ios \
@@ -158,7 +158,7 @@ the build shows as *Processing* in App Store Connect.
 The wrapper does the same thing and gates on credentials first:
 
 ```sh
-./Scripts/upload-testflight.sh build/export/Third Hand.ipa
+./Scripts/upload-testflight.sh build/export/ThirdHand.ipa
 ./Scripts/upload-testflight.sh --dry-run     # prints the asc command, uploads nothing
 ```
 
@@ -200,9 +200,9 @@ asc auth login --key-id 38R6G5B784 \
 
 | Artefact | Location | Committed? |
 | --- | --- | --- |
-| `.ipa` | `build/export/Third Hand.ipa` | no — `build/` is gitignored |
-| `.xcarchive` | `build/Third Hand.xcarchive` | no |
-| `.dSYM` | `build/Third Hand.xcarchive/dSYMs/` | no |
+| `.ipa` | `build/export/ThirdHand.ipa` | no — `build/` is gitignored |
+| `.xcarchive` | `build/ThirdHand.xcarchive` | no |
+| `.dSYM` | `build/ThirdHand.xcarchive/dSYMs/` | no |
 | App Store Connect | uploaded build, visible in TestFlight | — |
 | Builds listing | `asc builds list --app-id <APP_ID> --pretty` | — |
 

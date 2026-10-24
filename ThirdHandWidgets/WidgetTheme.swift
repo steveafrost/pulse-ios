@@ -3,10 +3,10 @@ import SwiftUI
 
 /// The widget extension's copy of the design tokens it needs.
 ///
-/// Why a copy: `Third Hand/DesignSystem/Tokens.swift` lives in the **app** target, and an
+/// Why a copy: `ThirdHand/DesignSystem/Tokens.swift` lives in the **app** target, and an
 /// app extension cannot import the app's code. The colours themselves are asset
 /// catalogue entries (`HorizonNow`, `SurfaceCard`, ...) that ship inside
-/// `Third Hand/Assets.xcassets`, which the extension target does not compile either.
+/// `ThirdHand/Assets.xcassets`, which the extension target does not compile either.
 ///
 /// Two bad options and one good one:
 ///  * Reference `Color("HorizonNow")` from the extension and copy the asset
@@ -19,7 +19,7 @@ import SwiftUI
 ///    intent otherwise.
 ///
 /// We take the third, and note the one place it is imperfect: the extension does not
-/// get `Third Hand/Assets.xcassets`, so `Color("HorizonNow")` resolves to the default
+/// get `ThirdHand/Assets.xcassets`, so `Color("HorizonNow")` resolves to the default
 /// (black) rather than the token. Line-based tints in the widget are therefore
 /// reserved for *decorative* dots. Everything a user must read -- the count, the
 /// titles, the due hint -- uses `.primary`/`.secondary`, which are system semantic
@@ -27,7 +27,7 @@ import SwiftUI
 /// our involvement. That is also what lets the accessory families look right when
 /// the system desaturates them: nothing we draw depends on a hue surviving.
 ///
-/// If the extension is ever given `Third Hand/Assets.xcassets` as a resource (a
+/// If the extension is ever given `ThirdHand/Assets.xcassets` as a resource (a
 /// `project.yml` change I have not made, see the report), the `lineTint` references
 /// below light up with the real palette and nothing else changes.
 enum WidgetTheme {
