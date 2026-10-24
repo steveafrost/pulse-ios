@@ -13,6 +13,7 @@ Team ID (seed ID): `4QJ25Y85MX` — Apple ID `STEVEN ALLEN FROST`.
 | --- | --- | --- | --- |
 | App ID (main) | `com.steveafrost.pulse` | `UL473MF76P` | Registered by `asc` |
 | App ID (widget) | `com.steveafrost.pulse.widgets` | `33GP8PGDGU` | Registered by `asc` |
+| App ID (share) | `com.steveafrost.pulse.share` | `N8FQNRRQT2` | Registered by `asc` (M7.1) |
 | App Group | `group.com.steveafrost.pulse` | — | **Not creatable via CLI** — portal only |
 | iCloud container | `iCloud.com.steveafrost.pulse` | — | **Not creatable via CLI** — portal only |
 | App Store app record | name TBD (see §3) | — | **Not creatable via CLI** — portal only |
@@ -269,6 +270,15 @@ answer is Data Not Collected.
 ### Done via API
 
 - [x] App ID `com.steveafrost.pulse` registered — resource id `UL473MF76P`
+- [x] App ID `com.steveafrost.pulse.share` registered — resource id `N8FQNRRQT2`
+
+> **Share extension provisioning.** `com.steveafrost.pulse.share` needs the
+> **App Groups** capability (`group.com.steveafrost.pulse`), which `asc` cannot
+> add. The first archive that includes `PulseShare` must therefore run with
+> `-allowProvisioningUpdates` so Xcode can register the capability itself; without
+> it the archive fails with *"doesn't include the App Groups capability"*.
+> `fastlane/Fastfile` already passes the flag — only hand-run `xcodebuild archive`
+> commands need it.
 - [x] App ID `com.steveafrost.pulse.widgets` registered — resource id `33GP8PGDGU`
 - [x] Both App IDs on seed `4QJ25Y85MX`, platform iOS/UNIVERSAL
 - [x] Category ids `PRODUCTIVITY` + `BUSINESS` validated against the API
