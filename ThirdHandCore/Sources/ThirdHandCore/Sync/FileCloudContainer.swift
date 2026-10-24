@@ -16,10 +16,23 @@ enum SyncPaths {
                 throw ThirdHandSyncError.pathEscapesRoot(relativePath)
             }
         }
-        let url = components.reduce(root) { $0.appendingPathComponent(String($1)) }
-        // Belt and braces: the standardised path must still be under the root.
-        let rootPath = root.standardizedFileURL.path
-        guard url.standardizedFileURL.path.hasPrefix(rootPath.hasSuffix("/") ? rootPath : rootPath + "/") else {
+
+        // Both sides of the containment test below have to be spelled the same way,
+        // and standardising a path is not symmetric: it resolves symlinks only for the
+        // components that already exist, so a root that exists normalises
+        // `/private/tmp/x` to `/tmp/x` while a child that does not exist yet keeps the
+        // `/private` spelling. The child was then never a prefix-match for its own root,
+        // and every *first* write of a file threw `pathEscapesRoot` -- on a device,
+        // whose iCloud container really does live under `/private`, but never in the
+        // simulator, which falls back to an app-group container. Canonicalising the
+        // root once and building the child from that canonical root gives the pair one
+        // spelling, so this check measures containment instead of tripping over aliasing.
+        let canonicalRoot = root.resolvingSymlinksInPath()
+        let url = components.reduce(canonicalRoot) { $0.appendingPathComponent(String($1)) }
+        // Belt and braces: even with the components validated above, the resolved path
+        // must still be under the root.
+        let rootPath = canonicalRoot.path
+        guard url.path.hasPrefix(rootPath.hasSuffix("/") ? rootPath : rootPath + "/") else {
             throw ThirdHandSyncError.pathEscapesRoot(relativePath)
         }
         return url
