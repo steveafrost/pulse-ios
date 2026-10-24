@@ -80,7 +80,7 @@ of this file is the record.
 
 Questions about privacy, or anything in this policy:
 
-- Open an issue: <https://github.com/steveafrost/pulse-ios/issues>
+- Open an issue: <https://github.com/steveafrost/thirdhand-ios/issues>
 - Email: **privacy@steveafrost.com**
 
 This policy applies to the Third Hand iOS app (bundle id `com.steveafrost.thirdhand`) and

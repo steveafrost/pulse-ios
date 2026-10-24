@@ -224,7 +224,7 @@ The record must be created once in the portal:
 3. Name **`Third Hand — What Needs You`** (plain `Third Hand` is taken — `APPSTORE-SETUP.md` §3)
 4. Primary language **English (U.S.)**
 5. Bundle ID **`Third Hand` (`com.steveafrost.thirdhand`)**
-6. SKU **`pulse-ios-001`**
+6. SKU **`thirdhand-ios-001`**
 7. Full Access → **Create**
 
 Then record the numeric id (it is in the URL: `…/apps/<id>/…`) as
@@ -235,7 +235,7 @@ If a browser session cookie is available, the private API can do it instead:
 ```sh
 export ASC_IRIS_COOKIES=<cookie jar from a logged-in appstoreconnect session>
 asc iris apps create --name "Third Hand — What Needs You" --bundle-id com.steveafrost.thirdhand \
-  --sku pulse-ios-001 --primary-locale en-US --platforms IOS --version 1.0
+  --sku thirdhand-ios-001 --primary-locale en-US --platforms IOS --version 1.0
 ```
 
 ### Internal beta group

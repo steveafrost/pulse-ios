@@ -5,7 +5,7 @@ horizons: Now, Next, Later, and Nice to Know.
 
 ## Contact
 
-- **Bug or feature request:** <https://github.com/steveafrost/pulse-ios/issues>
+- **Bug or feature request:** <https://github.com/steveafrost/thirdhand-ios/issues>
 - **Email:** support@steveafrost.com
 
 Please say which iPhone and iOS version you are on, and what you expected to

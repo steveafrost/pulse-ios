@@ -17,7 +17,7 @@ Team ID (seed ID): `4QJ25Y85MX` — Apple ID `STEVEN ALLEN FROST`.
 | App Group | `group.com.steveafrost.thirdhand` | — | **Not creatable via CLI** — portal only |
 | iCloud container | `iCloud.com.steveafrost.thirdhand` | — | **Not creatable via CLI** — portal only |
 | App Store app record | name TBD (see §3) | — | **Not creatable via CLI** — portal only |
-| SKU (reserved) | `pulse-ios-001` | — | To use on app-record creation |
+| SKU (reserved) | `thirdhand-ios-001` | — | To use on app-record creation |
 
 Both App IDs were created with `platform: ios`, which the API normalises to `UNIVERSAL`.
 `seedID` is `4QJ25Y85MX` on both. Verify at any time:
@@ -125,7 +125,7 @@ Use the full name in the App Store listing; the Home Screen display name can sta
 3. Name: **`Third Hand — What Needs You`** (or #2/#3 if that is rejected)
 4. Primary Language: **English (U.S.)**
 5. Bundle ID: **`Third Hand` (`com.steveafrost.thirdhand`)** — appears in the picker now that §1 is done
-6. SKU: **`pulse-ios-001`**
+6. SKU: **`thirdhand-ios-001`**
 7. User Access: Full Access → **Create**
 
 Record the resulting numeric **Apple ID / app id** here once created: `_____________`
@@ -133,7 +133,7 @@ Record the resulting numeric **Apple ID / app id** here once created: `_________
 ### Why the CLI could not do it
 
 ```
-$ asc apps create --name "Third Hand" --bundle-id com.steveafrost.thirdhand --sku pulse-ios-001
+$ asc apps create --name "Third Hand" --bundle-id com.steveafrost.thirdhand --sku thirdhand-ios-001
 Error: Unknown option '--name'
 Usage: asc apps <subcommand>
 
@@ -147,13 +147,13 @@ There is no public-API app-creation endpoint. The only CLI route is the private 
 which needs a browser cookie session that this environment does not have:
 
 ```
-$ asc iris apps create --name "Third Hand" --bundle-id com.steveafrost.thirdhand --sku pulse-ios-001
+$ asc iris apps create --name "Third Hand" --bundle-id com.steveafrost.thirdhand --sku thirdhand-ios-001
 Error: No App Store Connect cookies found. Log in to appstoreconnect.apple.com in your browser, or set ASC_IRIS_COOKIES environment variable.
 ```
 
 If you want to try the CLI instead of clicking: log in to App Store Connect in Safari,
 set `ASC_IRIS_COOKIES`, then
-`asc iris apps create --name "Third Hand — What Needs You" --bundle-id com.steveafrost.thirdhand --sku pulse-ios-001 --primary-locale en-US --platforms IOS --version 1.0`.
+`asc iris apps create --name "Third Hand — What Needs You" --bundle-id com.steveafrost.thirdhand --sku thirdhand-ios-001 --primary-locale en-US --platforms IOS --version 1.0`.
 
 ---
 
@@ -228,7 +228,7 @@ no web browsing, no ads, no chat, no gambling.
 
 ### 4.4 Support & marketing URL
 
-- **Support URL**: `https://github.com/steveafrost/pulse-ios` (verified reachable, HTTP 200;
+- **Support URL**: `https://github.com/steveafrost/thirdhand-ios` (verified reachable, HTTP 200;
   the repo remote is exactly this). This is the existing, correct destination — no better
   Third Hand-specific site exists yet.
 - **Marketing URL**: optional. Use the same GitHub URL until a landing page exists.
@@ -298,7 +298,7 @@ answer is Data Not Collected.
       — Identifiers → App IDs → Third Hand → Capabilities → iCloud → Configure
 - [ ] Enable **App Groups** on `com.steveafrost.thirdhand.widgets` (tick the group)
       — Identifiers → App IDs → Third Hand Widgets → Capabilities → App Groups → Configure
-- [ ] Create the app record (name `Third Hand — What Needs You`, SKU `pulse-ios-001`)
+- [ ] Create the app record (name `Third Hand — What Needs You`, SKU `thirdhand-ios-001`)
       — App Store Connect → My Apps → **+** → New App
 - [ ] Set primary category `PRODUCTIVITY`, secondary `BUSINESS`
       — App Information → Category
@@ -323,7 +323,7 @@ Credentials are referenced **by ID only** — no key material belongs in this re
 | Key file | **not in repo** — supply the `.p8` at runtime via CI secret / `ASC_KEY_PATH` |
 | Team / seed ID | `4QJ25Y85MX` |
 | Distribution cert | `Apple Distribution: STEVEN ALLEN FROST (4QJ25Y85MX)` — already exists |
-| SKU | `pulse-ios-001` |
+| SKU | `thirdhand-ios-001` |
 | App ID (main) | `com.steveafrost.thirdhand` / portal resource `UL473MF76P` |
 | App ID (widget) | `com.steveafrost.thirdhand.widgets` / portal resource `33GP8PGDGU` |
 | App Group | `group.com.steveafrost.thirdhand` |

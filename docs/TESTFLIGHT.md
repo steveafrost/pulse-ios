@@ -45,7 +45,7 @@ Ten apps are in the account and none is Third Hand. So:
    | Name | `Third Hand — What Needs You` |
    | Primary Language | English (U.S.) |
    | Bundle ID | `Third Hand` (`com.steveafrost.thirdhand`) |
-   | SKU | `pulse-ios-001` |
+   | SKU | `thirdhand-ios-001` |
    | User Access | Full Access |
 
 4. **Create**

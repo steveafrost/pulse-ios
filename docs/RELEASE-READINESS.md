@@ -344,11 +344,11 @@ is explicitly not done, how to delete everything, the children's section, and a
 dated change clause. `docs/SUPPORT.md` pairs with it. Both render on GitHub, which
 gives a hostable URL with no new infrastructure:
 
-- `https://github.com/steveafrost/pulse-ios/blob/main/docs/PRIVACY.md`
-- `https://github.com/steveafrost/pulse-ios/blob/main/docs/SUPPORT.md`
+- `https://github.com/steveafrost/thirdhand-ios/blob/main/docs/PRIVACY.md`
+- `https://github.com/steveafrost/thirdhand-ios/blob/main/docs/SUPPORT.md`
 
 If a reviewer refuses a `blob/` URL, GitHub Pages on `/docs` serves the same files
-at `…github.io/pulse-ios/PRIVACY.html` — recorded in `APPSTORE-METADATA.md` §7, with
+at `…github.io/thirdhand-ios/PRIVACY.html` — recorded in `APPSTORE-METADATA.md` §7, with
 the switch documented. The URL actually entered in App Store Connect has to be
 recorded there before submission; it is deliberately left blank rather than
 guessed.
@@ -447,7 +447,7 @@ public create-app endpoint, so this is a click-path:
 | Name | `Third Hand — What Needs You` |
 | Primary Language | English (U.S.) |
 | Bundle ID | `Third Hand` (`com.steveafrost.thirdhand`) |
-| SKU | `pulse-ios-001` |
+| SKU | `thirdhand-ios-001` |
 | User Access | Full Access |
 
 Then record the numeric id: `echo "THIRDHAND_ASC_APP_ID=<ID>" >> fastlane/.env`.

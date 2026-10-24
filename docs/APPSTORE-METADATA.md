@@ -16,7 +16,7 @@ portal click-paths) and [`PRIVACY.md`](PRIVACY.md) (the policy behind §5).
 | App Store name | `Third Hand — What Needs You` | 30 | 22 |
 | Home Screen name (`CFBundleDisplayName`) | `Third Hand` | — | 5 |
 | Bundle ID | `com.steveafrost.thirdhand` | — | — |
-| SKU | `pulse-ios-001` | — | — |
+| SKU | `thirdhand-ios-001` | — | — |
 | Subtitle | `Your day, ordered by urgency` | 30 | 28 |
 
 **The plain name `Third Hand` is taken.** An exact-title app by `ua.com.pulse.app`
@@ -146,13 +146,13 @@ data from this app" → Save → Publish.**
 
 ### Privacy Policy URL
 
-`https://github.com/steveafrost/pulse-ios/blob/main/docs/PRIVACY.md`
+`https://github.com/steveafrost/thirdhand-ios/blob/main/docs/PRIVACY.md`
 
 Apple requires a reachable URL even for Data Not Collected. The policy is
 committed at [`docs/PRIVACY.md`](PRIVACY.md) and rendered by GitHub. If a
 github.com URL is rejected at submission (some reviewers refuse them), the
 fallback is GitHub Pages on the same file —
-`https://steveafrost.github.io/pulse-ios/PRIVACY.html` — which needs Pages turned
+`https://steveafrost.github.io/thirdhand-ios/PRIVACY.html` — which needs Pages turned
 on for the repo first. See §7 for the switch.
 
 ### App Privacy detail (the free-text field)
@@ -172,8 +172,8 @@ on for the repo first. See §7 for the switch.
 | Primary category | **Productivity** |
 | Secondary category | None |
 | Age rating | **4+** |
-| Support URL | `https://github.com/steveafrost/pulse-ios/issues` |
-| Marketing URL | `https://github.com/steveafrost/pulse-ios` |
+| Support URL | `https://github.com/steveafrost/thirdhand-ios/issues` |
+| Marketing URL | `https://github.com/steveafrost/thirdhand-ios` |
 | Copyright | `2026 Steve Frost` |
 | Content rights | Does not use third-party content |
 
@@ -194,11 +194,11 @@ Dynamic Type through AX5 and VoiceOver (see `ACCESSIBILITY.md`).
 Two options, in order of preference:
 
 1. **Zero setup (recommended):** the committed markdown renders on GitHub.
-   - Support: `https://github.com/steveafrost/pulse-ios/blob/main/docs/SUPPORT.md`
-   - Privacy: `https://github.com/steveafrost/pulse-ios/blob/main/docs/PRIVACY.md`
+   - Support: `https://github.com/steveafrost/thirdhand-ios/blob/main/docs/SUPPORT.md`
+   - Privacy: `https://github.com/steveafrost/thirdhand-ios/blob/main/docs/PRIVACY.md`
 2. **GitHub Pages:** Settings → Pages → Source: *Deploy from a branch* →
    branch `main`, folder `/docs` → Save. The pages then become
-   `https://steveafrost.github.io/pulse-ios/SUPPORT.html` and
+   `https://steveafrost.github.io/thirdhand-ios/SUPPORT.html` and
    `…/PRIVACY.html`. Use this if a reviewer rejects a github.com/blob URL.
 
 The URL actually entered in App Store Connect must be recorded here before
