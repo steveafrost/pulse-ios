@@ -3,21 +3,32 @@
 The internal TestFlight setup for Third Hand: the group, who is in it, how a build gets
 there, and what testers should do with it.
 
-**Current state: blocked on one portal step.** The internal group cannot be
-created until an App Store Connect app record exists for
-`com.steveafrost.thirdhand`, and `asc` v0.18.2 has no subcommand that creates apps.
-Everything below is scripted and ready; it needs that one record.
+**Current state: build uploaded and processed.** The app record, internal group
+and tester all exist. The last unverified link is the build's membership of the
+group, which `asc` gives no way to read back.
 
-Status as of 23 October 2026:
+Status as of 24 October 2026:
 
 | Prerequisite | State |
 | --- | --- |
 | API key authenticated for team `4QJ25Y85MX` | done — key `38R6G5B784` |
-| Bundle IDs registered (`…pulse`, `…pulse.widgets`) | done |
+| Bundle IDs registered (`…thirdhand`, `…thirdhand.widgets`, `…thirdhand.share`) | done — `3SV5SH94CF`, `8UHD7M7N6D`, `9NL57L5636` |
 | App Groups + iCloud container entitlements in the archive | done — verified in the exported `.ipa` |
-| App Store Connect app record | **missing** — portal step, §1 |
-| Internal group `Third Hand Beta` | blocked on the record — §2 |
-| A processed build | none yet; the `.ipa` is built and exported, not uploaded |
+| App Store Connect app record | done — **`6826457943`**, SKU `thirdhand-ios-001` |
+| Internal group `Third Hand Beta` | done — `db830c96-822f-404b-a867-905261424a1b` |
+| Internal tester | done — `hello@steveafrost.com` |
+| Build uploaded and processed | done — `0.1.0` (**2**), `processingState: VALID` |
+| Build attached to the beta group | **not verified** — see below |
+
+### The one unverified step
+
+`asc builds add-beta-group` exits 0 and prints nothing, twice, and `asc` exposes
+no read-back for a build's groups. The build is processed and the group has a
+tester, but whether the build is *in* the group has not been observed. Check the
+TestFlight tab: if the build is listed under "Third Hand Beta", this row is done.
+
+Note `0.1.0` is what shipped, while the ASC version record is `1.0`. TestFlight
+accepts that; the first App Store submission will need them to agree.
 
 ---
 

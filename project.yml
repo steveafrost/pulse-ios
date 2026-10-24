@@ -17,7 +17,7 @@ settings:
     # hand; CURRENT_PROJECT_VERSION is bumped by Scripts/bump-build.sh and by the
     # fastlane beta lane. Never hardcode either in Info.plist (see docs/RELEASE.md).
     MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    CURRENT_PROJECT_VERSION: "2"
   # Release hardening (issue #35). Release-only: whole-module optimization makes
   # Debug slow and undebuggable, and dSYMs are only wanted for shipped builds.
   configs:
@@ -55,6 +55,15 @@ targets:
           UIColorName: LaunchBackground
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        # The app is universal (UIDeviceFamily 1,2). App Store validation rejects
+        # a portrait-only iPhone list without all four iPad orientations, because
+        # iPad multitasking requires it. Keep the iPhone experience portrait; let
+        # iPad rotate rather than dropping iPad support the board is designed for.
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         ITSAppUsesNonExemptEncryption: false
         NSCalendarsFullAccessUsageDescription: Third Hand reads your calendar to show what needs a reply, a decision or your attention. Nothing leaves your device.
         NSRemindersFullAccessUsageDescription: Third Hand reads your reminders so overdue and due-today tasks show up on your board. Nothing leaves your device.
