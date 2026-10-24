@@ -207,14 +207,22 @@ public struct SettingsView: View {
         VStack(alignment: .leading, spacing: ThirdHandSpacing.s) {
             eyebrow("Privacy")
             VStack(alignment: .leading, spacing: ThirdHandSpacing.xs) {
-                Text("Everything stays on this device.")
+                Text("Your data stays yours.")
                     .font(ThirdHandTypography.keyValueLabel)
                     .foregroundStyle(ThirdHandColor.textPrimary)
+                // Two outbound paths exist and both are the user's own: the iCloud
+                // mirror, and signing in to their own mail server. The previous copy
+                // said the iCloud mirror was "the only thing that leaves the device",
+                // which stopped being true when the mailbox was added -- a privacy
+                // claim that is subtly false is worse than a vague one, and this
+                // sentence is the one a user checks before typing a password.
                 Text(
                     "Third Hand reads your calendar, reminders and mailbox on the phone. "
-                        + "It has no server, no account and no analytics. The only thing that "
-                        + "leaves the device is what your Mac syncs over your own iCloud Drive, "
-                        + "and only if you turn that on."
+                        + "It has no server of its own, no account and no analytics. "
+                        + "Two things can leave the device, both to places you already own: "
+                        + "the board your Mac syncs over your own iCloud Drive, and your "
+                        + "password, sent only to your own mail server to sign in. "
+                        + "Only if you turn each one on."
                 )
                 .font(ThirdHandTypography.meta)
                 .foregroundStyle(ThirdHandColor.textSecondary)

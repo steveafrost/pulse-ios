@@ -96,6 +96,23 @@ struct EmailAccountModelTests {
         )
     }
 
+    @Test("the password rationale uses the provider's own word for the credential")
+    func rationaleUsesProviderVocabulary() {
+        // Gmail calls it an "app-specific password"; Apple calls it an "app password".
+        // Showing Gmail's phrase to an iCloud user reads as a copy-paste mistake, and
+        // the footer is the only place the phrase appears.
+        #expect(EmailAccountModel.passwordRationale(for: .gmail).contains("app-specific password"))
+        #expect(!EmailAccountModel.passwordRationale(for: .icloud).contains("app-specific"))
+        #expect(EmailAccountModel.passwordRationale(for: .icloud).contains("app password"))
+        // The three facts that make the block honest must survive the swap.
+        for provider in EmailAccount.Provider.allCases {
+            let text = EmailAccountModel.passwordRationale(for: provider)
+            #expect(text.contains("Keychain"), "\(provider.rawValue): keychain claim lost")
+            #expect(text.contains("this device only"), "\(provider.rawValue): device-only claim lost")
+            #expect(text.contains("never written to a log"), "\(provider.rawValue): log claim lost")
+        }
+    }
+
     // MARK: Phase
 
     @Test("no configured mailbox reads as not connected")

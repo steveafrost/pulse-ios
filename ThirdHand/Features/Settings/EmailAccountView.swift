@@ -85,7 +85,11 @@ public struct EmailAccountView: View {
                 // twice more — the password rationale and the Settings privacy
                 // block — so nothing is lost that the screen cannot say elsewhere.
                 if dynamicTypeSize < .accessibility4 {
-                    Text("Third Hand reads unread messages that need you and puts them on the board. It only reads the inbox, and nothing leaves the phone.")
+                    // "nothing leaves the phone" was false: the password is sent to the
+                    // user's own mail server on every check. Say what actually happens
+                    // here, because this paragraph sits directly above the field where
+                    // the user is about to type it.
+                    Text("Third Hand reads unread messages that need you and puts them on the board. It reads only the inbox, and only your password ever leaves the phone - sent to your own mail server, over an encrypted connection, to sign in.")
                         .font(ThirdHandTypography.emptyBody)
                         .foregroundStyle(ThirdHandColor.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -252,7 +256,7 @@ public struct EmailAccountView: View {
     private var rationale: some View {
         VStack(alignment: .leading, spacing: ThirdHandSpacing.xs) {
             Label {
-                Text(EmailAccountModel.passwordRationale)
+                Text(EmailAccountModel.passwordRationale(for: model.draftProvider))
                     .fixedSize(horizontal: false, vertical: true)
             } icon: {
                 Image(systemName: "lock")

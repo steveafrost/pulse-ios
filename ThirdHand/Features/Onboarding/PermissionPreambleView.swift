@@ -40,7 +40,10 @@ public struct PermissionPreambleView: View {
             }
 
             VStack(alignment: .leading, spacing: ThirdHandSpacing.xs) {
-                bullet("Nothing leaves your device", "lock.fill")
+                // Scoped to the sources being asked about. A blanket "nothing leaves
+                // your device" stopped being true once an optional mailbox existed;
+                // this screen only ever precedes the calendar/reminders prompt.
+                bullet("Calendar and reminders never leave your device", "lock.fill")
                 bullet("No account", "person.crop.circle.badge.xmark")
                 bullet("You can revoke any time", "arrow.uturn.backward.circle")
             }

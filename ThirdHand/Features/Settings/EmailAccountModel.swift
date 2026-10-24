@@ -205,11 +205,23 @@ public final class EmailAccountModel {
     /// It says what is stored, where, and what is *not* done — three facts a security
     /// copy block usually omits. It does not promise encryption-in-transit beyond
     /// what is true: the transport is IMAPS (TLS from the first byte), which is.
-    public static let passwordRationale = """
-    Your app-specific password is kept in the iOS Keychain on this device only. It \
-    is never shown again, never written to a log, and never leaves the phone except \
-    to sign in to your mail server over an encrypted connection.
-    """
+    /// The noun the provider itself uses for the credential: "app-specific password"
+    /// is Gmail's phrase and reads as wrong under an iCloud account, which simply
+    /// calls it an app password. The rationale below is the only place the phrase
+    /// reaches the screen, so it takes the provider as a parameter rather than
+    /// hardcoding one vendor's vocabulary for everybody.
+    public static func passwordRationale(for provider: EmailAccount.Provider) -> String {
+        let noun = provider == .gmail ? "app-specific password" : "app password"
+        return """
+        Your \(noun) is kept in the iOS Keychain on this device only. It is never \
+        shown again, never written to a log, and never leaves the phone except to \
+        sign in to your mail server over an encrypted connection.
+        """
+    }
+
+    /// Kept as the Gmail-flavoured default for callers that have no provider in hand
+    /// (the rationale is also used by a preview and by the Settings row summary).
+    public static let passwordRationale = passwordRationale(for: .gmail)
 
     /// Provider-agnostic fallback, used only where a provider has no specific
     /// guidance. The per-provider text lives on `EmailAccount.Provider`, next to the

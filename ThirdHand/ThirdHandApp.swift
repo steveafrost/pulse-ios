@@ -210,6 +210,23 @@ enum DemoSeed {
     /// denial as a source failure, which is the banner the board expects.
     static func capture(store: ItemStore) -> Capture {
         #if os(iOS)
+        #if DEBUG
+        // Screenshot runs (`-ThirdHandDemoBoard`) must not touch EventKit.
+        // `EventKitEventProvider.events` calls `requestFullAccessToEvents()` on
+        // every pass, so on a simulator that has not been granted access the
+        // system prompt covers the board on every capture -- which made every
+        // App Store screenshot unusable. The board draws from `FixtureStore` in
+        // this mode anyway, so capture has nothing to contribute.
+        if ProcessInfo.processInfo.arguments.contains("-ThirdHandDemoBoard")
+            || ProcessInfo.processInfo.arguments.contains("-ThirdHandDemoEmpty") {
+            let inert = EmptyCapture()
+            return Capture(
+                providing: inert,
+                runFull: { false },
+                runIncremental: { false }
+            )
+        }
+        #endif
         let engine = CaptureEngine(
             sources: [
                 EventKitSource(provider: EventKitEventProvider()),

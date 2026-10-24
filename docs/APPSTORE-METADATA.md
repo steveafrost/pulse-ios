@@ -3,8 +3,12 @@
 Everything App Store Connect asks for on the version page, ready to paste.
 Verified against `asc` v0.18.2 and against the archive described in §10 of
 `RELEASE.md`. The version record and `MARKETING_VERSION` are both `0.1.0`;
-build 2 is the one uploaded to TestFlight (build 1 was rejected on
-iPad orientations, 90474).
+build 3 is the one uploaded to TestFlight (build 1 was rejected on iPad
+orientations, 90474; build 2 shipped without the mailbox or the redesigned board).
+
+The screenshots in `docs/screenshots/` were recaptured against build 3. The
+earlier set predated the design pass by five hours and no longer matched the
+shipped board.
 
 Companion docs: [`APPSTORE-SETUP.md`](APPSTORE-SETUP.md) (account plumbing and
 portal click-paths) and [`PRIVACY.md`](PRIVACY.md) (the policy behind §5).
@@ -36,10 +40,10 @@ bundle id `com.steveafrost.thirdhand`, so nothing is colliding with the new reco
 ## 2. Promotional text
 
 ```
-See everything that needs a reply, a decision or your attention, ordered by urgency. From your calendar and reminders. No account, no server, no analytics.
+See everything that needs a reply, a decision or your attention, ordered by urgency. From your calendar, reminders and mailbox. No account, no analytics.
 ```
 
-155 characters (limit 170). Editable at any time without a new review, which is
+153 characters (limit 170). Editable at any time without a new review, which is
 why it leads with the value proposition rather than a release note.
 
 ---
@@ -86,12 +90,21 @@ Home Screen widgets in three sizes and all three Lock Screen families, plus a Li
 
 YOUR DATA STAYS YOURS
 
-Third Hand has no account, no sign-up, and no server. There is nothing to log in to.
+Third Hand has no account and no server of its own. It reads your calendar and reminders on the device, and nothing leaves it.
 
-- It reads only your Calendar and Reminders, and only on this device
+- Calendar and Reminders are read on this device and stored on this device
 - No analytics, no tracking, no third-party SDKs
 - Your board syncs to your own private iCloud so it can reach your Mac, and to nobody else
 - Everything else is stored on the device and nowhere else
+
+MAIL IS OPTIONAL, AND IT IS YOURS
+
+Optionally, you can connect a mailbox over IMAP so messages that need a reply show up on the same board. It is off until you turn it on.
+
+- Your mail password is stored in the iOS Keychain, marked so it never leaves this device and is never included in a backup to a new one
+- It is sent only to your own mail provider, to sign in. There is no middle server and nothing to route through us
+- Message headers are read on the device; nothing is uploaded anywhere
+- Disconnecting deletes the stored password and the cached mail items
 
 If you delete the app, Third Hand has nothing left to delete.
 
@@ -139,7 +152,17 @@ Why this is true, per [`ARCHITECTURE.md`](ARCHITECTURE.md) §Privacy:
 | Calendar and reminders are read | Read on-device and stored on-device. Nothing is transmitted to the developer or any third party. |
 | There is an iCloud snapshot | It goes to **the user's own private iCloud container** (`iCloud.com.steveafrost.thirdhand`), under their Apple ID. The developer has no access, no server, and no key. Apple treats "data stored in the user's own iCloud, not accessible to the developer" as not collected by the developer. |
 | Any analytics or crash reporting? | None. No third-party SDKs, no telemetry, no crash reporter. |
-| Any account? | None. No sign-in, no email capture, no identifier. |
+| Any account? | None. No app account, no sign-up, no identifier. |
+| **A connected mailbox (new in this build)** | The user's own IMAP credentials and message headers. The password is in the device Keychain and is sent **only to the user's own mail host** to authenticate; headers are read on-device. Nothing is routed through the developer, so nothing is collected *by the developer or a third party* — which is what the question asks. The mailbox is off unless the user enables it. |
+
+**Judgement call, stated plainly.** The mailbox is the one place a reviewer could
+reasonably disagree. The position taken here is that "Data Not Collected" remains
+correct because collection is defined as transmission off the device *to the developer
+or a third party*, and an IMAP client talking to the account owner's own mail server at
+their instruction is neither. Apple's own Mail app reports the same shape. If a reviewer
+pushes back, the fallback is to declare **User Content → Emails or Text Messages**,
+purpose *App Functionality*, not linked to identity, not used for tracking — that answer
+is also true and is the conservative one.
 
 If the App Privacy UI is unavailable (it is not settable by `asc` — the CLI has no
 `app-privacy` subcommand), this is the developer-portal step:
@@ -162,8 +185,10 @@ on for the repo first. See §7 for the switch.
 > Third Hand does not collect any data. Calendar and reminders are read on the device
 > and stay there. Your board is mirrored to your own private iCloud container so
 > it can reach your Mac; that copy belongs to your Apple ID and is never visible
-> to the developer. There is no account, no server, no analytics and no
-> third-party SDK.
+> to the developer. If you choose to connect a mailbox, its password is kept in the
+> iOS Keychain on this device and sent only to your own mail provider; message headers
+> are read on the device and are not uploaded anywhere. There is no account, no
+> server of ours, no analytics and no third-party SDK.
 
 ---
 
@@ -241,29 +266,64 @@ Recorded as `supportsIPad: false`.
 All are real simulator captures of the debug fixture board, status bar pinned to
 9:41 with full battery and Wi-Fi, per `DESIGN.md` §12. No lorem, no mockups.
 
-| # | File | Pixels | Device | Shows |
-| --- | --- | --- | --- | --- |
-| 1 | `01-board-now-69.png` | 1320×2868 | iPhone 17 Pro Max | Board populated, Now expanded with 3 rows, filter bar, FAB |
-| 2 | `02-detail-quick-actions-69.png` | 1320×2868 | iPhone 17 Pro Max | Item detail sheet: header, quick actions, action bar |
-| 3 | `03-snooze-69.png` | 1320×2868 | iPhone 17 Pro Max | Snooze sheet with the three presets |
-| 4 | `04-closed-review-69.png` | 1320×2868 | iPhone 17 Pro Max | Recently Closed review with reopen |
-| 5 | `05-all-clear-69.png` | 1320×2868 | iPhone 17 Pro Max | "You're all clear" empty state with last-checked |
-| 6 | `06-permission-preamble-69.png` | 1320×2868 | iPhone 17 Pro Max | The permission preamble before any system prompt |
-| 7 | `07-board-dark-69.png` | 1320×2868 | iPhone 17 Pro Max | The board in dark appearance |
-| 8 | `08-board-61.png` | 1179×2556 | iPhone 16 | Board at default Dynamic Type, all four sections |
+| # | File | Size | Screen |
+| --- | --- | --- | --- |
+| 1 | `01-board-now-69.png` | 1320×2868 | The board at default Dynamic Type, all four horizons |
+| 2 | `02-detail-quick-actions-69.png` | 1320×2868 | Item detail: metadata, quick actions, history |
+| 3 | `03-snooze-69.png` | 1320×2868 | The snooze menu, with its three durations |
+| 4 | `04-closed-review-69.png` | 1320×2868 | Recently Closed, with the reopen affordance |
+| 5 | `05-permission-preamble-69.png` | 1320×2868 | The preamble shown before any system permission prompt |
+| 6 | `06-settings-69.png` | 1320×2868 | Settings: sources, mailbox row, privacy block |
+| 7 | `07-email-account-69.png` | 1320×2868 | Connecting a mailbox: address, provider picker, password |
+| 8 | `08-email-connected-69.png` | 1320×2868 | A connected mailbox, with status and the disconnect action |
+| 9 | `09-board-dark-69.png` | 1320×2868 | The board in dark appearance |
+| 10 | `10-all-clear-69.png` | 1320×2868 | The all-clear state with last-checked |
 
 Captured with:
 
 ```sh
-D="Third Hand 17 Pro Max"   # created from iPhone-17-Pro-Max + iOS 27 runtime
-xcrun simctl install  "$D" /tmp/pulse-shots/Build/Products/Debug-iphonesimulator/ThirdHand.app
-xcrun simctl privacy  "$D" grant calendar com.steveafrost.thirdhand
-xcrun simctl privacy  "$D" grant reminders com.steveafrost.thirdhand
+# A dedicated device, because a stale TCC grant on a reused simulator leaves the
+# calendar prompt on screen and ruins every capture.
+D=$(xcrun simctl create "TH Shots 69" com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max \
+      com.apple.CoreSimulator.SimRuntime.iOS-27-0)
+xcrun simctl boot "$D"
+xcrun simctl install  "$D" /tmp/shots/Build/Products/Debug-iphonesimulator/ThirdHand.app
 xcrun simctl status_bar "$D" override --time "9:41" --batteryState charged \
     --batteryLevel 100 --wifiBars 3 --cellularBars 4
-xcrun simctl launch   "$D" com.steveafrost.thirdhand -ThirdHandDemoBoard -ThirdHandDemoScreen board
-xcrun simctl io       "$D" screenshot docs/screenshots/01-board-now-69.png
+
+shoot() {  # image-name screen-name
+  xcrun simctl terminate "$D" com.steveafrost.thirdhand 2>/dev/null; sleep 0.6
+  xcrun simctl launch "$D" com.steveafrost.thirdhand \
+      -ThirdHandDemoBoard -ThirdHandDemoScreen "$2" >/dev/null
+  sleep 5
+  xcrun simctl io "$D" screenshot "docs/screenshots/$1"
+}
+
+shoot 01-board-now-69.png            board
+shoot 02-detail-quick-actions-69.png detail
+shoot 03-snooze-69.png               snooze
+shoot 04-closed-review-69.png        closed
+shoot 05-permission-preamble-69.png  preamble
+shoot 06-settings-69.png             settings
+shoot 07-email-account-69.png        email
+shoot 08-email-connected-69.png      emailConnected
+
+xcrun simctl ui "$D" appearance dark
+shoot 09-board-dark-69.png           board
+
+# The all-clear state uses the empty fixture rather than the demo board.
+xcrun simctl ui "$D" appearance light
+xcrun simctl terminate "$D" com.steveafrost.thirdhand 2>/dev/null; sleep 0.6
+xcrun simctl launch "$D" com.steveafrost.thirdhand \
+    -ThirdHandDemoEmpty -ThirdHandDemoScreen board >/dev/null
+sleep 5
+xcrun simctl io "$D" screenshot docs/screenshots/10-all-clear-69.png
 ```
+
+**`-ThirdHandDemoBoard` also short-circuits capture** (`DemoSeed.capture`), because
+`EventKitEventProvider.events` calls `requestFullAccessToEvents()` on every pass and
+would otherwise raise the system prompt over the board on each launch. That guard is
+`#if DEBUG` and cannot affect a Release build.
 
 The other screens swap `-ThirdHandDemoScreen` for `detail`, `snooze`, `closed`,
 `preamble`, and add `-ThirdHandDemoEmpty` for the all-clear state. These flags are

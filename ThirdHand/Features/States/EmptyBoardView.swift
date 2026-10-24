@@ -174,7 +174,10 @@ public struct EmptyBoardView: View {
         case .filtered:
             return "Filters are never saved between launches."
         case .denied:
-            return "Third Hand reads on this device. Nothing leaves it."
+            // Was "Nothing leaves it", which a connected mailbox makes false --
+            // the password goes to the user's own mail server. Scope the claim to
+            // what this state is actually about: the calendar and reminders.
+            return "Third Hand reads your calendar and reminders on this device."
         }
     }
 }
