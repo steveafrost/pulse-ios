@@ -17,9 +17,14 @@ import Security
 /// protocol knowledge -- no tags, no commands, no parsing. That split is what lets
 /// every rule above it be tested against `FakeIMAPTransport` without a network.
 ///
-/// It was written against the IMAP4rev1 grammar and the `Network` API, and it has
-/// **not** been exercised against a live mail server by the author of this change; see
-/// the verification section of `docs/DEFERRED-SOURCES.md`.
+/// **Verified against a real server, but not a real mailbox.** The handshake, the
+/// greeting, line framing over a live socket and host-name verification are covered by
+/// `TLSIMAPTransportLiveTests`, which talk to `imap.gmail.com` when
+/// `THIRDHAND_LIVE_IMAP=1` is set. They are skipped by default so CI needs no network.
+///
+/// What remains unproven is everything past authentication: `LOGIN`, `SELECT`,
+/// `SEARCH UNSEEN` and the `FETCH` of a real message. That needs an actual mailbox and
+/// is recorded in the verification section of `docs/DEFERRED-SOURCES.md`.
 public struct TLSIMAPTransport: IMAPTransport {
     /// How long a pass may spend establishing the connection, and how long one
     /// command's response may take. A capture pass that hangs is worse than one that

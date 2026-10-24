@@ -74,10 +74,11 @@ in every real capture pass. With no mailbox saved it throws `CaptureError.denied
 — the board's "connect a mailbox" state — rather than returning an empty list that would
 look like a healthy, quiet inbox.
 
-**Still unverified against a real server.** Every protocol path is covered through
-`FakeIMAPTransport`; the TLS handshake and `NWConnection` byte framing in
-`TLSIMAPTransport` have never touched `imap.gmail.com`. Treat the first real connection
-as the test.
+**Verified against a real server; not yet against a real mailbox.** The TLS handshake,
+greeting and live line framing were exercised against `imap.gmail.com` by
+`TLSIMAPTransportLiveTests` (opt in with `THIRDHAND_LIVE_IMAP=1`). Authentication and
+everything after it have not run against a live mailbox — see the verification table
+below.
 
 **What it adds:** every **unread** message in `INBOX` as an item, classified, with no
 share-sheet action required. This is the "thread awaiting your reply" column the
@@ -135,14 +136,37 @@ rejected `LOGIN` all throw `CaptureError.denied(.gmail)`, which the engine repor
 **paused source** with a fix ("connect a mailbox"). Socket, TLS and protocol failures
 throw `CaptureError.underlying`. Only a genuinely empty inbox returns `[]`.
 
-**Not verified by the author of this change:** the TLS handshake, the byte-level
-`NWConnection` framing, and every server-specific behaviour — against a live
-`imap.gmail.com`. The protocol logic is covered end-to-end through
-`FakeIMAPTransport` (a scripted server that parses the request and answers in wire
-format), and `TLSIMAPTransport` is the untested remainder. A first real run should
-check: that Gmail's greeting is accepted, that `SELECT INBOX` succeeds after `LOGIN`,
-that a 200-message inbox returns 200 items, and that `BODY.PEEK` genuinely leaves
-messages unread in the Gmail web UI.
+**Now verified against a live server** by `TLSIMAPTransportLiveTests`, which run when
+`THIRDHAND_LIVE_IMAP=1` is set and are skipped otherwise so CI needs no network:
+
+```sh
+cd ThirdHandCore && THIRDHAND_LIVE_IMAP=1 swift test --filter TLSIMAPTransportLiveTests
+```
+
+| Property | How it is proven |
+|---|---|
+| TLS handshake completes | `open` returns a session against `imap.gmail.com:993` |
+| Greeting is real IMAP | the greeting is read and must be `* OK` / `* PREAUTH` |
+| Byte framing over a live socket | `A1 CAPABILITY` is sent and a tagged reply is read back line by line |
+| Host-name verification is on | an IP endpoint for the same server is refused (`NWError -9808`) |
+| Close is safe twice | no double-resume trap on the failure path |
+
+The host-name test was checked for vacuity rather than assumed: with
+`set_peer_authentication_required(_, false)` mutated in, that test **fails** because the
+connection opens. An earlier draft used `wrong.host.badssl.com` and passed even with
+verification disabled — the host closes the connection for unrelated reasons — so it was
+replaced. The framing and handshake tests were likewise measured against the mutation to
+confirm the rest of the suite is not a no-op.
+
+**Still unproven, and not claimed:** everything past authentication. No credentials are
+used, so `LOGIN` success, `SELECT INBOX`, a 200-message `SEARCH UNSEEN`, and a real
+`FETCH` of a message body have never run against a live server. A first real run should
+confirm those, and that `BODY.PEEK` leaves messages unread in the Gmail web UI.
+
+**Also unproven on iOS.** `swift test` is the only place these run — the package is
+tested on macOS and there is no iOS test action for `ThirdHandCore`, so the TLS test
+proves the macOS `Network.framework` path. The framing and parser code is
+platform-independent, but the socket layer is not identical across the two.
 
 #### The Gmail API path, if it is ever worth the paperwork
 
