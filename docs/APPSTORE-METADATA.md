@@ -406,6 +406,43 @@ calendar, that is expected — Third Hand shows what the device holds and nothin
 
 ---
 
+## 10b. Live App Store Connect state (as set by the release run)
+
+Verified by reading the API back, not by trusting a CLI exit code.
+
+| Field | State |
+| --- | --- |
+| Version string | `0.1.0` |
+| Attached build | **4** (`f68da751-9c57-4a8d-9d68-6a3bef27c1c2`), VALID, in `Third Hand Beta` |
+| Copyright | `2026 Steve Frost` |
+| Release type | `AFTER_APPROVAL` (manual release once approved) |
+| Description | set, 3 182 chars |
+| Keywords | set, 86 chars |
+| Promotional text | set, 153 chars |
+| Support URL | `https://steveafrost.com/thirdhand/support` |
+| Marketing URL | `https://steveafrost.com/thirdhand` |
+| App name | `Third Hand — What Needs You` |
+| Subtitle | `Your day, ordered by urgency` |
+| Privacy policy URL | GitHub `docs/PRIVACY.md` |
+| Age rating | **4+**, every content question None/No |
+| Screenshots | 10 in one `APP_IPHONE_67` set, all `COMPLETE`, order verified |
+| **Review contact phone** | **not set — requires a human value, do not invent** |
+| App Privacy answers | **not set — the API and `asc` cannot write these; portal only** |
+
+Two fields still need a person:
+
+1. **Review contact phone.** Required by `appStoreReviewDetails`; the API
+   rejects a placeholder and no real number is recorded anywhere in this repo.
+2. **App Privacy questionnaire.** `asc` v0.18.2 has no subcommand for it and the
+   API exposes no writable resource, so it must be answered in the web UI. The
+   answers to give are in §5.
+
+Note that `POST /v1/appStoreVersionSubmissions` is not how a version is submitted
+any more — it returns `403`, "does not allow 'CREATE'; allowed operation is
+'DELETE'". Submission happens through the review-submission object or the portal.
+
+---
+
 ## 11. Pre-submission field checklist
 
 - [ ] App name `Third Hand — What Needs You`
