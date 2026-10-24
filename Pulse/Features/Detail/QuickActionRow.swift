@@ -53,6 +53,16 @@ public struct QuickActionRow: View {
         }
     }
 
+    /// The title a quick action renders, in one place so it can be asserted.
+    ///
+    /// Exists because the doubling bug was invisible to the compiler and only
+    /// caught by reading a screenshot: `Label("Open \u{201C}\(action.label)\u{201D}")`
+    /// against a label of "Open thread". A test can call this; a `View`'s private
+    /// label expression cannot be reached without snapshotting pixels.
+    static func title(for action: QuickAction) -> String {
+        action.label
+    }
+
     /// A quick action that already opens this item's own URL is the same button,
     /// so the row must not offer both "Open thread" and "Open link" pointing at
     /// the same page.
@@ -70,7 +80,7 @@ public struct QuickActionRow: View {
                     Button("Open", systemImage: "arrow.up.right.square") { onOpen(url) }
                 }
             } label: {
-                Label(action.label, systemImage: "ellipsis.circle")
+                Label(Self.title(for: action), systemImage: "ellipsis.circle")
             }
             .frame(minHeight: PulseSpacing.minimumHitTarget)
             .buttonStyle(.bordered)
@@ -79,7 +89,7 @@ public struct QuickActionRow: View {
             Button {
                 onCopy(action)
             } label: {
-                Label(action.label, systemImage: "doc.on.doc")
+                Label(Self.title(for: action), systemImage: "doc.on.doc")
             }
             .buttonStyle(.bordered)
             .frame(minHeight: PulseSpacing.minimumHitTarget)
@@ -89,7 +99,7 @@ public struct QuickActionRow: View {
             Button {
                 onOpen(url)
             } label: {
-                Label(action.label, systemImage: "arrow.up.right.square")
+                Label(Self.title(for: action), systemImage: "arrow.up.right.square")
             }
             .buttonStyle(.bordered)
             .frame(minHeight: PulseSpacing.minimumHitTarget)

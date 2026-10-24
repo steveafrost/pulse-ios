@@ -393,7 +393,7 @@ glyph, `.title2` `.semibold` heading, `.body` `TextSecondary` centred at max wid
 
 | State | Glyph · tint | Heading | Body | Buttons · footnote |
 | --- | --- | --- | --- | --- |
-| **9.1 Genuinely clear** (captured before, nothing needs the user) | `checkmark.circle.fill` · `StatusDone` | "You're all clear" | "Nothing needs you right now. Pulse is watching your calendar and reminders and will put the next thing here." | `Refresh` (`.bordered`, not prominent) · "Last checked 2 minutes ago" |
+| **9.1 Genuinely clear** (captured before, nothing needs the user) | `checkmark.circle.fill` · `StatusDone` | "You're all clear" | "Nothing needs you right now. Pulse is watching your calendar and reminders, and you can share a Slack thread, a pull request, or an email here to add it." | `Refresh` (`.bordered`, not prominent) · "Last checked 2 minutes ago" |
 | **9.2 Never captured** (no sources connected) | `sparkles` · `HorizonNow` | "Let's see what needs you" | "Connect your calendar and reminders. Pulse reads them on this device and never sends anything anywhere." | `Connect Calendar` (`glassProminent`), `Not now` (`.plain`) · "You can turn sources on or off later in Settings." If only Reminders is available the primary becomes `Connect Reminders`. |
 | **9.3 Permission denied** | `calendar.badge.exclamationmark` · `StatusError` | "Pulse can't see your calendar" (the paused source's name: "Pulse can't see your reminders") | "Calendar access is off. Turn it on in Settings and Pulse will fill this board." | `Open Settings` (`.bordered`), `Choose sources` (`.plain`) · "Pulse reads on this device. Nothing leaves it." If reminders still work, those items render above this as a non-blocking banner instead of a full-screen state. |
 

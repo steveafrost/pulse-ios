@@ -152,9 +152,9 @@ public struct EmptyBoardView: View {
     private var bodyCopy: String {
         switch reason {
         case .allClear:
-            "Nothing needs you right now. Pulse is watching your calendar and reminders and will put the next thing here."
+            "Nothing needs you right now. Pulse is watching your calendar and reminders, and you can share a Slack thread, a pull request, or an email here to add it."
         case .neverCaptured:
-            "Connect your calendar and reminders. Pulse reads them on this device and never sends anything anywhere."
+            "Connect your calendar and reminders, or share a link into Pulse. Everything is read on this device and never sent anywhere."
         case .filtered:
             "Every item is filtered out. Clear the filter to see the whole board."
         case .denied(let identity):
