@@ -49,13 +49,11 @@ struct ThirdHandApp: App {
     /// been closed from the Mac a second ago.
     @MainActor
     private func handle(_ url: URL) {
-        guard url.scheme == "pulse" else { return }
-        if url.host == "item" {
-            let id = url.pathComponents.dropFirst().joined()
-            guard !id.isEmpty else { return }
-            pendingItemID = id.removingPercentEncoding ?? id
+        if let id = DeepLink.itemID(from: url) {
+            pendingItemID = id
         }
     }
+
 
     /// Read by `BoardView` on appear, then cleared.
     @State private var pendingItemID: String?
@@ -265,5 +263,30 @@ enum AppLinks {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
         #endif
+    }
+}
+
+/// The widget deep links, parsed as a value so the scheme contract is testable.
+///
+/// `App.onOpenURL` cannot be driven from a unit test, and the bug this replaces was
+/// invisible precisely for that reason: the app registered `thirdhand` in its
+/// Info.plist while the handler compared against `pulse`, so every widget tap was
+/// silently dropped and both sides still "looked" correct in isolation.
+enum DeepLink {
+    /// The scheme in `project.yml` → `CFBundleURLSchemes`, and the one every
+    /// `widgetURL` / `Link` in `ThirdHandWidgets` uses. One constant, so those cannot
+    /// disagree again without this line changing.
+    static let scheme = "thirdhand"
+
+    /// The item id in `thirdhand://item/<id>`, or `nil` for the whole-widget tap
+    /// (`thirdhand://board`) and for any URL that is not ours.
+    ///
+    /// An unknown id is not an error here: the board ignores an id it no longer has,
+    /// because the item may have been closed from the Mac a second ago.
+    static func itemID(from url: URL) -> String? {
+        guard url.scheme == scheme, url.host == "item" else { return nil }
+        let raw = url.pathComponents.dropFirst().joined()
+        guard !raw.isEmpty else { return nil }
+        return raw.removingPercentEncoding ?? raw
     }
 }

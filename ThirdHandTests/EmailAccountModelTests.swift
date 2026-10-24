@@ -34,6 +34,68 @@ struct EmailAccountModelTests {
         return (model, writer, secrets)
     }
 
+    // MARK: Provider
+
+    @Test("picking iCloud fills in Apple's IMAP host without the user typing it")
+    func icloudFillsHost() {
+        let (model, _, _) = makeModel()
+        // The default the screen opens on must not be the reason an iCloud user
+        // ends up pointed at imap.gmail.com.
+        model.draftProvider = .icloud
+        #expect(model.draftHost == "imap.mail.me.com")
+    }
+
+    @Test("switching provider replaces a stale host rather than leaving both")
+    func switchingProviderReplacesHost() {
+        let (model, _, _) = makeModel()
+        model.draftProvider = .gmail
+        #expect(model.draftHost == "imap.gmail.com")
+        model.draftProvider = .fastmail
+        #expect(model.draftHost == "imap.fastmail.com", "the previous host survived the switch")
+    }
+
+    @Test("choosing Other keeps what the user already typed")
+    func otherKeepsTypedHost() {
+        let (model, _, _) = makeModel()
+        model.draftHost = "mail.internal.example.com"
+        model.draftProvider = .other
+        // Clearing the field here would delete a host the user just typed, which is
+        // the one case the picker is not allowed to be helpful about.
+        #expect(model.draftHost == "mail.internal.example.com")
+    }
+
+    @Test("a saved iCloud account opens the picker on iCloud, not Gmail")
+    func existingAccountSelectsProvider() {
+        let (model, _, _) = makeModel(account: EmailAccount.icloud(username: "steve@example.com"))
+        #expect(model.draftProvider == .icloud)
+        #expect(model.draftHost == "imap.mail.me.com")
+    }
+
+    @Test("a saved account on an unknown host opens on Other")
+    func unknownHostSelectsOther() {
+        let custom = EmailAccount(host: "mail.example.com", username: "steve@example.com")
+        let (model, _, _) = makeModel(account: custom)
+        #expect(model.draftProvider == .other)
+        #expect(model.draftHost == "mail.example.com")
+    }
+
+    @Test("an iCloud save reaches the Keychain under the iCloud key, not Gmail's")
+    func icloudSaveUsesICloudKeychainKey() throws {
+        var (model, _, secrets) = makeModel()
+        model.draftProvider = .icloud
+        model.draftAddress = "steve@example.com"
+
+        #expect(model.save(password: "app-specific-pw"))
+
+        let expected = EmailAccount.icloud(username: "steve@example.com").keychainAccount
+        #expect(try secrets.secret(for: expected) != nil, "the secret is not under the iCloud key")
+        // Sharing a key with Gmail would silently reuse one provider's password for
+        // another account on the same address.
+        #expect(
+            try secrets.secret(for: EmailAccount.gmail(username: "steve@example.com").keychainAccount) == nil
+        )
+    }
+
     // MARK: Phase
 
     @Test("no configured mailbox reads as not connected")

@@ -143,6 +143,14 @@ throw `CaptureError.underlying`. Only a genuinely empty inbox returns `[]`.
 cd ThirdHandCore && THIRDHAND_LIVE_IMAP=1 swift test --filter TLSIMAPTransportLiveTests
 ```
 
+**Any provider that accepts `LOGIN` over implicit TLS works**, not just Gmail. The
+screen offers iCloud, Gmail, Outlook, Yahoo and Fastmail presets and fills the host in;
+"Other" takes any IMAP host. All five endpoints were checked to complete a TLS
+handshake and answer an IMAP greeting, and each was checked to reject a deliberately
+wrong password with `NO [AUTHENTICATIONFAILED]` — meaning `LOGIN` is understood, so an
+iCloud ("Apple Mail") account authenticates through the same path as Gmail. A provider
+offering only OAuth would need a different client; none of these do.
+
 | Property | How it is proven |
 |---|---|
 | TLS handshake completes | `open` returns a session against `imap.gmail.com:993` |

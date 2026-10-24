@@ -44,7 +44,19 @@ public final class EmailAccountModel {
     public private(set) var status: Status
     /// The field values the form edits. Only meaningful in the form.
     public var draftAddress: String = ""
-    public var draftHost: String = EmailAccount.gmail(username: "").host
+    public var draftHost: String = EmailAccount.Provider.gmail.imapHost ?? ""
+    /// Which provider the user picked. Drives the host field and the password
+    /// guidance; `.other` leaves the host to the user.
+    public var draftProvider: EmailAccount.Provider = .gmail {
+        didSet {
+            // Switching provider replaces the host with that provider's endpoint, so
+            // the common path needs no typing and cannot drift out of sync with the
+            // guidance underneath. `.other` deliberately keeps whatever was typed.
+            if draftProvider != .other, let host = draftProvider.imapHost {
+                draftHost = host
+            }
+        }
+    }
     /// Set when a save attempt failed, for an inline message under the form.
     public private(set) var saveError: String?
 
@@ -69,6 +81,9 @@ public final class EmailAccountModel {
             self.status = .notConnected
             self.draftAddress = account.username
             self.draftHost = account.host
+            // Show the picker on the provider that owns the stored host, so an
+            // existing Gmail account does not open showing iCloud guidance.
+            self.draftProvider = EmailAccount.Provider.matching(host: account.host) ?? .other
         } else {
             self.phase = .notConnected
             self.status = .notConnected
@@ -196,12 +211,12 @@ public final class EmailAccountModel {
     to sign in to your mail server over an encrypted connection.
     """
 
-    /// Where to get an app-specific password, per provider. Gmail is the common case
-    /// and the only one the guidance names, because a wrong guess about another
-    /// provider's settings page is worse than no link.
+    /// Provider-agnostic fallback, used only where a provider has no specific
+    /// guidance. The per-provider text lives on `EmailAccount.Provider`, next to the
+    /// host it belongs to, so the two cannot drift apart.
     public static let appPasswordHint = """
-    Gmail needs an app-specific password: Google Account → Security → 2-Step \
-    Verification → App passwords. Your normal Google password will not work here.
+    Most mail providers need an app-specific password rather than your normal one, \
+    especially when two-step verification is on.
     """
 }
 

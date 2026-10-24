@@ -41,9 +41,92 @@ public struct EmailAccount: Sendable, Hashable, Codable {
         self.mailbox = mailbox
     }
 
-    /// The common case: a Gmail account using an app-specific password.
+    /// A mail provider whose IMAP endpoint is known, so the screen can fill the host
+    /// in rather than asking the user to look it up.
+    ///
+    /// Every entry here is reachable with plain `LOGIN` over implicit TLS, which is
+    /// the only authentication this client implements. That was measured, not assumed:
+    /// a `LOGIN` with a deliberately wrong password returns `NO [AUTHENTICATIONFAILED]`
+    /// from both endpoints -- a rejected credential, not an unsupported command. A
+    /// provider that advertised only `AUTH=OAUTH2` would need a different client.
+    public enum Provider: String, CaseIterable, Sendable, Hashable, Codable {
+        case icloud
+        case gmail
+        case outlook
+        case yahoo
+        case fastmail
+        /// Anything else: the user supplies the host.
+        case other
+
+        public var displayName: String {
+            switch self {
+            case .icloud: "iCloud"
+            case .gmail: "Gmail"
+            case .outlook: "Outlook"
+            case .yahoo: "Yahoo"
+            case .fastmail: "Fastmail"
+            case .other: "Other"
+            }
+        }
+
+        /// The IMAPS host, or `nil` for `.other`.
+        public var imapHost: String? {
+            switch self {
+            case .icloud: "imap.mail.me.com"
+            case .gmail: "imap.gmail.com"
+            case .outlook: "outlook.office365.com"
+            case .yahoo: "imap.mail.yahoo.com"
+            case .fastmail: "imap.fastmail.com"
+            case .other: nil
+            }
+        }
+
+        /// What the user has to do to get a password, in the provider's own terms.
+        ///
+        /// This is the single most common failure point, and "app-specific password"
+        /// is Gmail's phrase, not iCloud's -- iCloud calls it an app password and
+        /// creates it at appleid.apple.com, where the account's normal password will
+        /// simply be rejected.
+        public var passwordGuidance: String {
+            switch self {
+            case .icloud:
+                "Use an app password, not your Apple Account password: appleid.apple.com → Sign-In and Security → App-Specific Passwords."
+            case .gmail:
+                "Use an app-specific password: myaccount.google.com → Security → 2-Step Verification → App passwords."
+            case .outlook:
+                "Use an app password if your account has two-step verification on. Microsoft has retired basic auth for many accounts, so this may not be available."
+            case .yahoo:
+                "Generate an app password: account.yahoo.com → Account Security."
+            case .fastmail:
+                "Use an app password: app.fastmail.com → Settings → Privacy & Security → App passwords. Your normal password may also work."
+            case .other:
+                "Your provider's IMAP password. If two-step verification is on, this is usually an app-specific password."
+            }
+        }
+
+        /// The provider that owns a host, for showing the right guidance once a host
+        /// has been typed rather than picked.
+        public static func matching(host: String) -> Provider? {
+            let needle = host.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            guard !needle.isEmpty else { return nil }
+            return allCases.first { $0 != .other && $0.imapHost?.lowercased() == needle }
+        }
+    }
+
+    /// A Gmail account using an app-specific password.
     public static func gmail(username: String) -> EmailAccount {
         EmailAccount(host: "imap.gmail.com", username: username)
+    }
+
+    /// An iCloud Mail account ("Apple Mail") using an app-specific password.
+    public static func icloud(username: String) -> EmailAccount {
+        EmailAccount(host: "imap.mail.me.com", username: username)
+    }
+
+    /// An account for a known provider, or `nil` for `.other` / an unknown host.
+    public static func make(provider: Provider, username: String) -> EmailAccount? {
+        guard let host = provider.imapHost else { return nil }
+        return EmailAccount(host: host, username: username)
     }
 
     /// The Keychain account key this mailbox's password is stored under.

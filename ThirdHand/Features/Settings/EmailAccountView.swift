@@ -105,19 +105,34 @@ public struct EmailAccountView: View {
                         .accessibilityIdentifier("email.address")
                 }
 
-                field(
-                    label: "Mail server",
-                    error: model.isHostValid ? nil : "Enter the IMAP host, for example imap.gmail.com."
-                ) {
-                    TextField("imap.gmail.com", text: $model.draftHost)
-                        .textContentType(.URL)
-                        .keyboardType(.URL)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .accessibilityIdentifier("email.host")
+                field(label: "Provider", error: nil) {
+                    Picker("Provider", selection: $model.draftProvider) {
+                        ForEach(EmailAccount.Provider.allCases, id: \.self) { provider in
+                            Text(provider.displayName).tag(provider)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .accessibilityIdentifier("email.provider")
                 }
 
-                field(label: "App-specific password", error: nil) {
+                // Only "Other" asks for a host. A known provider fills it in, which
+                // removes the single most common typo (a mail host that is close to,
+                // but not, the provider's).
+                if model.draftProvider == .other {
+                    field(
+                        label: "Mail server",
+                        error: model.isHostValid ? nil : "Enter the IMAP host, for example imap.mail.me.com."
+                    ) {
+                        TextField("imap.mail.me.com", text: $model.draftHost)
+                            .textContentType(.URL)
+                            .keyboardType(.URL)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .accessibilityIdentifier("email.host")
+                    }
+                }
+
+                field(label: "App password", error: nil) {
                     SecureField("Password", text: $password)
                         // `.password` opts into the Keychain's autofill *suggestion*
                         // without ever putting the value in a form the app can read
@@ -246,7 +261,10 @@ public struct EmailAccountView: View {
             .foregroundStyle(ThirdHandColor.textSecondary)
 
             DisclosureGroup("How do I get one?") {
-                Text(EmailAccountModel.appPasswordHint)
+                // Provider-specific, because the phrase "app-specific password" is
+                // Gmail's and pasting Gmail's instructions under iCloud sends the
+                // user looking for a setting Apple does not have by that name.
+                Text(model.draftProvider.passwordGuidance)
                     .font(ThirdHandTypography.meta)
                     .foregroundStyle(ThirdHandColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
