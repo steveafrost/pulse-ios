@@ -19,6 +19,8 @@ Status as of 24 October 2026:
 | Internal tester | done — `hello@steveafrost.com` |
 | Build uploaded and processed | done — `0.1.0` (**2**), `processingState: VALID` |
 | Build attached to the beta group | **not verified** — see below |
+| Version string matches the binary | done — record and `MARKETING_VERSION` are both `0.1.0` |
+| Build linked to the version | **no** — portal step; blocks App Store submission, not TestFlight |
 
 ### The one unverified step
 
@@ -27,8 +29,21 @@ no read-back for a build's groups. The build is processed and the group has a
 tester, but whether the build is *in* the group has not been observed. Check the
 TestFlight tab: if the build is listed under "Third Hand Beta", this row is done.
 
-Note `0.1.0` is what shipped, while the ASC version record is `1.0`. TestFlight
-accepts that; the first App Store submission will need them to agree.
+### Version string
+
+The version record was created as `1.0` while the binary is `0.1.0`. The record
+now reads `0.1.0` too, so `project.yml`'s `MARKETING_VERSION` stays the single
+source of truth and the uploaded build 2 still belongs to this version — no
+rebuild or re-upload was needed. Pre-1.0 is the honest label for a first beta.
+
+### The build is not linked to the version (App Store only)
+
+`asc versions check-readiness` reports `buildCheck.linked: false`. `asc` v0.18.2
+has no subcommand that links a build to a version, so this is a portal step.
+
+It does **not** block TestFlight: testers get builds through the beta group, not
+the version record. It does block **App Store submission** — pick the build under
+the version's "Build" section before submitting for review.
 
 ---
 
@@ -176,11 +191,11 @@ TXT
 )"
 ```
 
-If the internal group already contains the build (it does once a build is
-uploaded and the group is the only one), `add-beta-group` is unnecessary. It is
-idempotent either way.
+`add-beta-group` is idempotent: re-running it is safe. It prints nothing and
+returns exit 0 whether or not the build was already in the group, so success
+output is not evidence — check the TestFlight tab instead.
 
-### What to test — build 1 (0.1.0, build 1)
+### What to test — build 2 (0.1.0, build 2)
 
 Paste into the build's Test Information → What to Test:
 
@@ -250,7 +265,7 @@ and the widget, or from an unsigned extension. Both are prevented here by
 - [ ] `fastlane ios beta` succeeded, upload accepted
 - [ ] Build reached `processingState: VALID`
 - [ ] Build attached to the group
-- [ ] "What to Test" notes set for build 1
+- [ ] "What to Test" notes set for build 2
 - [ ] At least one internal tester invited and accepted
 - [ ] Tester installed from TestFlight and saw a populated board
 - [ ] Feedback route agreed (issues on GitHub, or email — see [`SUPPORT.md`](SUPPORT.md))

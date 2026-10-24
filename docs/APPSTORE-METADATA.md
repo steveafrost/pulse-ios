@@ -1,8 +1,10 @@
 # App Store metadata — Third Hand
 
 Everything App Store Connect asks for on the version page, ready to paste.
-Verified against `asc` v0.18.2 and against build 1 (`0.1.0`) of the archive in
-§10 of `RELEASE.md`.
+Verified against `asc` v0.18.2 and against the archive described in §10 of
+`RELEASE.md`. The version record and `MARKETING_VERSION` are both `0.1.0`;
+build 2 is the one uploaded to TestFlight (build 1 was rejected on
+iPad orientations, 90474).
 
 Companion docs: [`APPSTORE-SETUP.md`](APPSTORE-SETUP.md) (account plumbing and
 portal click-paths) and [`PRIVACY.md`](PRIVACY.md) (the policy behind §5).
