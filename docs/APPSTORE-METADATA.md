@@ -258,8 +258,25 @@ submission, together with the date it was checked:
 into the `APP_IPHONE_67` bucket — App Store Connect takes the 6.9" pixels there.
 That is what the captures in `docs/screenshots/` are sized for.
 
-The app ships `UIDeviceFamily = [1]` (iPhone only), so no iPad set is needed.
-Recorded as `supportsIPad: false`.
+**This section was wrong, and it blocked submission.** The app is universal:
+`project.yml` deliberately keeps `UIDeviceFamily` at `[1, 2]`, and `project.yml`
+comments that choice at the `UISupportedInterfaceOrientations~ipad` key. The
+built IPA confirms it — `UIDeviceFamily` is `1, 2`. An earlier draft of this file
+claimed iPhone-only, and on that basis no iPad set was captured.
+
+`appStoreReviewItems` refused the version with:
+
+> `STATE_ERROR.SCREENSHOT_REQUIRED.IPAD_13_PROFILE` — a screenshot for one of the
+> following types is required but was not provided: `IPAD_13_PROFILE`
+
+So an iPad 13" set is mandatory. `IPAD_13_PROFILE` is a *placement* name, not a
+display type `asc screenshot-sets create` accepts; the set that satisfies it is
+`APP_IPAD_PRO_3GEN_129` (2064×2752). Three iPad captures live in
+`docs/screenshots-ipad/`.
+
+If iPad support is ever dropped, that is a one-line `UIDeviceFamily` change plus
+removing the `~ipad` orientation key — but it must be a deliberate decision, and
+this paragraph is the thing to update.
 
 ### The shots captured
 
@@ -426,20 +443,30 @@ Verified by reading the API back, not by trusting a CLI exit code.
 | Privacy policy URL | GitHub `docs/PRIVACY.md` |
 | Age rating | **4+**, every content question None/No |
 | Screenshots | 10 in one `APP_IPHONE_67` set, all `COMPLETE`, order verified |
-| **Review contact phone** | **not set — requires a human value, do not invent** |
-| App Privacy answers | **not set — the API and `asc` cannot write these; portal only** |
+| Review contact | set — `+1 7343069492` |
+| Primary category | **Productivity** |
+| Content rights | `DOES_NOT_USE_THIRD_PARTY_CONTENT` |
+| Price | free (USD 0.00, USA base territory) |
+| iPad 13" screenshots | 3 uploaded, `APP_IPAD_PRO_3GEN_129` |
+| **App Privacy answers** | **not set — the API and `asc` cannot write these; portal only** |
 
-Two fields still need a person:
+**One field still needs a person: the App Privacy questionnaire.** `asc` v0.18.2
+has no subcommand for it, and the API exposes no writable resource —
+`/v1/appDataUsages`, `/v1/apps/{id}/appDataUsages` and the rest all return `404`,
+while submission reports `STATE_ERROR.APP_DATA_USAGES_REQUIRED`. It must be
+answered in the web UI. The answers to give are in §5.
 
-1. **Review contact phone.** Required by `appStoreReviewDetails`; the API
-   rejects a placeholder and no real number is recorded anywhere in this repo.
-2. **App Privacy questionnaire.** `asc` v0.18.2 has no subcommand for it and the
-   API exposes no writable resource, so it must be answered in the web UI. The
-   answers to give are in §5.
+Everything else was set by API and read back. The submission validator names each
+remaining blocker precisely, which is how the iPad gap and the four other missing
+fields were found — all of them had been reported as done by the portal UI's own
+checklist.
 
 Note that `POST /v1/appStoreVersionSubmissions` is not how a version is submitted
 any more — it returns `403`, "does not allow 'CREATE'; allowed operation is
-'DELETE'". Submission happens through the review-submission object or the portal.
+'DELETE'". Submission goes through `reviewSubmissions` +
+`reviewSubmissionItems`. A `reviewSubmission` in `READY_FOR_REVIEW` was created
+for this version; it is reused rather than duplicated by re-running the same
+call.
 
 ---
 
