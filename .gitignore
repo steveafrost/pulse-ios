@@ -34,6 +34,6 @@ fastlane/.env
 .DS_Store
 
 # XcodeGen output
-Pulse.xcodeproj/
+ThirdHand.xcodeproj/
 Pulse/Info.plist
 PulseWidgets/Info.plist

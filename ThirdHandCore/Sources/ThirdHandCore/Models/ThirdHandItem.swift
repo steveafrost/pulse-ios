@@ -166,7 +166,7 @@ public struct ThirdHandItemAction: Codable, Sendable, Hashable {
 // MARK: - ThirdHandItem
 
 /// One thing that needs the user. Field-for-field identical to `ThirdHandItem` in
-/// `bb-plugin-pulse/types.ts` and the table in `docs/DATA-CONTRACT.md`.
+/// `bb-plugin-thirdhand/types.ts` and the table in `docs/DATA-CONTRACT.md`.
 public struct ThirdHandItem: Codable, Sendable, Hashable, Identifiable {
     public typealias ID = String
 

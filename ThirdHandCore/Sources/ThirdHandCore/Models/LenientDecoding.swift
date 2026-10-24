@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Lenient wire enums
 //
 // The snapshot is produced by this app but *read* by other implementations
-// (the `bb-plugin-pulse` mirror, and later possibly a newer iOS build). A
+// (the `bb-plugin-thirdhand` mirror, and later possibly a newer iOS build). A
 // value this build has never heard of must not make a whole parse fail: that
 // would turn "the Mac plugin added a source" into "the app shows nothing".
 //

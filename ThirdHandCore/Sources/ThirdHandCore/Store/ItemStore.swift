@@ -11,7 +11,7 @@ import Foundation
 /// (`upsert`, `userAction`) must be atomic with respect to the other.
 ///
 /// Behaviour is a faithful port of `upsert` / `userAction` / `effectiveStatus` /
-/// `sortItems` in `bb-plugin-pulse/lib/store.mjs`; the places where Swift needs a
+/// `sortItems` in `bb-plugin-thirdhand/lib/store.mjs`; the places where Swift needs a
 /// decision the JS did not have to make are called out in comments.
 public actor ItemStore {
     /// Items keyed by id, plus the insertion order so reads are deterministic --

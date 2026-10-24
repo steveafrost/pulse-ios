@@ -14,12 +14,12 @@
 require 'json'
 
 ROOT          = File.expand_path('..', __dir__)
-PROJECT       = 'Pulse.xcodeproj'
-SCHEME        = 'Pulse'
-TEAM_ID       = ENV.fetch('PULSE_TEAM_ID', '4QJ25Y85MX')
-BUNDLE_ID     = 'com.steveafrost.pulse'
+PROJECT       = 'ThirdHand.xcodeproj'
+SCHEME        = 'ThirdHand'
+TEAM_ID       = ENV.fetch('THIRDHAND_TEAM_ID', '4QJ25Y85MX')
+BUNDLE_ID     = 'com.steveafrost.thirdhand'
 BUILD_DIR     = File.join(ROOT, 'build')
-ARCHIVE_PATH  = File.join(BUILD_DIR, 'Pulse.xcarchive')
+ARCHIVE_PATH  = File.join(BUILD_DIR, 'ThirdHand.xcarchive')
 EXPORT_PATH   = File.join(BUILD_DIR, 'export')
 EXPORT_PLIST  = File.join(ROOT, 'fastlane', 'ExportOptions.plist')
 DOTENV_PATH   = File.join(ROOT, 'fastlane', '.env')
@@ -57,10 +57,10 @@ end
 # Fail before the four-minute archive rather than after it.
 def require_asc_auth!
   load_dotenv
-  app_id = ENV['PULSE_ASC_APP_ID'].to_s.strip
+  app_id = ENV['THIRDHAND_ASC_APP_ID'].to_s.strip
   if app_id.empty?
     UI.user_error!(<<~MSG)
-      PULSE_ASC_APP_ID is empty - there is no App Store Connect app record for
+      THIRDHAND_ASC_APP_ID is empty - there is no App Store Connect app record for
       #{BUNDLE_ID}, so there is nothing to upload to.
 
       Create it first: App Store Connect -> My Apps -> + -> New App
@@ -69,7 +69,7 @@ def require_asc_auth!
         Bundle:   #{BUNDLE_ID}
         SKU:      pulse-ios-001
 
-      Then add PULSE_ASC_APP_ID=<numeric id> to the gitignored fastlane env file
+      Then add THIRDHAND_ASC_APP_ID=<numeric id> to the gitignored fastlane env file
       (see fastlane/.env.example). Nothing was built or uploaded.
     MSG
   end
@@ -162,8 +162,8 @@ platform :ios do
   desc 'Create/find the internal beta group and add testers (asc)'
   lane :groups do
     load_dotenv
-    app_id = ENV['PULSE_ASC_APP_ID'].to_s.strip
-    UI.user_error!('PULSE_ASC_APP_ID is empty - create the app record first (docs/APPSTORE-SETUP.md §3).') if app_id.empty?
+    app_id = ENV['THIRDHAND_ASC_APP_ID'].to_s.strip
+    UI.user_error!('THIRDHAND_ASC_APP_ID is empty - create the app record first (docs/APPSTORE-SETUP.md §3).') if app_id.empty?
     UI.user_error!('No App Store Connect credentials - see the `fastlane beta` error for the login command.') unless have_credentials?
 
     groups = JSON.parse(`asc testflight groups list --app-id #{app_id}`)['data'] || []
@@ -176,15 +176,15 @@ platform :ios do
 
     UI.success("beta group: #{group['id']} (#{group['name']})")
 
-    # Testers may be supplied as PULSE_BETA_TESTERS=a@b.c,d@e.f. No address is ever
+    # Testers may be supplied as THIRDHAND_BETA_TESTERS=a@b.c,d@e.f. No address is ever
     # invented: an empty list means "add them in App Store Connect".
-    ENV.fetch('PULSE_BETA_TESTERS', '').split(',').map(&:strip).reject(&:empty?).each do |email|
+    ENV.fetch('THIRDHAND_BETA_TESTERS', '').split(',').map(&:strip).reject(&:empty?).each do |email|
       UI.message("adding tester #{email}")
       sh("asc testflight testers add --beta-group-id #{group['id']} --email #{email.shellescape}")
     end
 
-    if ENV.fetch('PULSE_BETA_TESTERS', '').strip.empty?
-      UI.message('PULSE_BETA_TESTERS unset - add internal testers in App Store Connect ' \
+    if ENV.fetch('THIRDHAND_BETA_TESTERS', '').strip.empty?
+      UI.message('THIRDHAND_BETA_TESTERS unset - add internal testers in App Store Connect ' \
                  '(TestFlight -> Internal Testing -> Pulse Beta -> +).')
     end
     group

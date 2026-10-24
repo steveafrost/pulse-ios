@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Wire enums
 //
 // Every enum here uses the exact string raw values from `docs/DATA-CONTRACT.md`
-// and `bb-plugin-pulse/types.ts`. The JSON on disk is the contract, so the raw
+// and `bb-plugin-thirdhand/types.ts`. The JSON on disk is the contract, so the raw
 // values are never derived from the Swift case names.
 //
 // All of them decode leniently (see `LenientDecoding.swift`): an unknown string

@@ -1,8 +1,8 @@
-# fastlane/Appfile — Pulse iOS
+# fastlane/Appfile — Third Hand iOS
 #
 # The identifiers are already registered in the developer portal
 # (docs/APPSTORE-SETUP.md §1). Team id is the seed id from the Apple account.
-app_identifier("com.steveafrost.pulse")
+app_identifier("com.steveafrost.thirdhand")
 team_id("4QJ25Y85MX")
 
 # No apple_id / itc_team_id: every App Store Connect call goes through the `asc`

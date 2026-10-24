@@ -1,7 +1,7 @@
 # Third Hand — Visual Design Specification
 
 v1, pre-implementation. iOS 27 SDK, Swift 6, SwiftUI. Targets: `Third Hand` (iOS),
-`ThirdHandWidgets`, Mac mirror `bb-plugin-pulse`. Normative: a named SwiftUI modifier or
+`ThirdHandWidgets`, Mac mirror `bb-plugin-thirdhand`. Normative: a named SwiftUI modifier or
 SF Symbol is what ships, and a stated number is the value.
 
 ## 1. Principles

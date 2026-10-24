@@ -11,7 +11,7 @@ import Foundation
 /// - `Store/`   `ItemStore` (an `actor`) -- the sticky-state machine -- plus
 ///              `Horizon` derivation and the board sort.
 ///
-/// `STORE.md`-style behaviour is a port of `bb-plugin-pulse/lib/store.mjs`; the
+/// `STORE.md`-style behaviour is a port of `bb-plugin-thirdhand/lib/store.mjs`; the
 /// JSON shape is `docs/DATA-CONTRACT.md` v1.
 public enum ThirdHandCore {
     /// The `schemaVersion` this build writes into `snapshot.json`.

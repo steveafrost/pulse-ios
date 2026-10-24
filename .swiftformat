@@ -37,4 +37,4 @@
 --wrapconditions preserve
 
 # Generated / vendored output must never be formatted.
---exclude PulseCore/.build,.build,DerivedData,build,Pulse.xcodeproj
+--exclude PulseCore/.build,.build,DerivedData,build,ThirdHand.xcodeproj

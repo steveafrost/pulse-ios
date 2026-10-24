@@ -1,7 +1,7 @@
 # Third Hand Data Contract — v1
 
 The single source of truth for item shape and sync. Both the iOS app and the
-`bb-plugin-pulse` mirror implement this. Change it here first, then in both
+`bb-plugin-thirdhand` mirror implement this. Change it here first, then in both
 implementations, then bump `schemaVersion`.
 
 ## Roles
@@ -9,7 +9,7 @@ implementations, then bump `schemaVersion`.
 | Component | Role |
 | --- | --- |
 | `ThirdHandApp` (iOS) | **Owner.** Reads sources, applies capture rules, owns user actions. |
-| `bb-plugin-pulse` (Mac) | **Mirror.** Reads the snapshot, renders it, forwards user actions. |
+| `bb-plugin-thirdhand` (Mac) | **Mirror.** Reads the snapshot, renders it, forwards user actions. |
 | iCloud Drive ubiquity container | Transport. UTF-8 JSON files. |
 
 The plugin may never author items. Its Done/Snooze/Dismiss writes go back to
