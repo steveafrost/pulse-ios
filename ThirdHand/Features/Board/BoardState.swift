@@ -22,6 +22,14 @@ public enum BoardState: Sendable, Equatable {
         /// renders 9.2 ("Let's see what needs you", "Connect your calendar") at
         /// someone who just said no, which is both wrong and nagging.
         case denied(SourceIdentity)
+
+        /// The source a paused-board state names, or `.calendar` for the reasons that
+        /// name none. The board uses it to send "Open Settings" to the right place: a
+        /// paused mailbox is fixed by the mailbox form, everything else by iOS Settings.
+        public var pausedSource: SourceIdentity {
+            if case .denied(let identity) = self { return identity }
+            return .calendar
+        }
     }
 
     public var showsSections: Bool {

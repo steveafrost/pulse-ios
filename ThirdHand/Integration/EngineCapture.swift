@@ -39,7 +39,12 @@ public struct EngineCapture: CaptureProviding {
                     reason: error.isPermissionDenied ? .denied : .failed(error.message)
                 )
             },
-            ranAt: report.finishedAt
+            ranAt: report.finishedAt,
+            // The mail source is reported as `.gmail` because that is the contract's
+            // case for mail, so this is the count the mailbox screen wants. It is the
+            // number of unread messages the pass turned into items, which is what
+            // "N unread" on the mailbox row means.
+            emailUnreadCount: report.countsBySource[.gmail] ?? 0
         )
     }
 

@@ -45,11 +45,25 @@ public struct CaptureOutcome: Sendable {
     public var detected: [DetectedItem]
     public var failures: [SourceFailure]
     public var ranAt: Date
+    /// How many unread messages the mail source found on this pass.
+    ///
+    /// Carried separately from `detected` because the mailbox screen's job is to
+    /// report the *mailbox*, not the board: a message that was classified away, or
+    /// that the store already had, still means the account signed in and has unread
+    /// mail. `.zero` is the honest answer for a build with no account, so the screen
+    /// can say "Not connected" instead of "0 unread".
+    public var emailUnreadCount: Int
 
-    public init(detected: [DetectedItem], failures: [SourceFailure] = [], ranAt: Date) {
+    public init(
+        detected: [DetectedItem],
+        failures: [SourceFailure] = [],
+        ranAt: Date,
+        emailUnreadCount: Int = 0
+    ) {
         self.detected = detected
         self.failures = failures
         self.ranAt = ranAt
+        self.emailUnreadCount = emailUnreadCount
     }
 
     public static func empty(at instant: Date) -> CaptureOutcome {

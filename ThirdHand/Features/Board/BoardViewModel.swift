@@ -26,6 +26,16 @@ public final class BoardViewModel {
     /// functioned before sync existed and must not depend on it.
     public private(set) var sync: SyncCoordinator?
 
+    /// Called with every capture pass, set by the app so the mailbox screen can
+    /// report what the mailbox actually did.
+    ///
+    /// A closure rather than a stored model for the same reason `sync.captureHandler`
+    /// is one: the board is the only thing that runs a pass, and the Settings screen
+    /// is not a dependency the board should carry. A pass is the only event that knows
+    /// whether a mailbox signed in, so without this hook the mailbox row can only ever
+    /// report its state at first launch.
+    public var onCaptureOutcome: (@MainActor (CaptureOutcome) -> Void)?
+
     #if canImport(ActivityKit) && os(iOS)
     /// The Live Activity owner (#31), when this build has one. Optional so previews
     /// and tests run without ActivityKit and without the app group.
@@ -197,6 +207,7 @@ public final class BoardViewModel {
             lastCapturedAt: outcome.ranAt,
             now: nowDate
         )
+        onCaptureOutcome?(outcome)
         persist()
     }
 

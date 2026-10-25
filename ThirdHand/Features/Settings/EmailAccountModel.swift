@@ -162,6 +162,35 @@ public final class EmailAccountModel {
         draftHost = EmailAccount.gmail(username: "").host
     }
 
+    // MARK: Capture feedback
+
+    /// Folds one capture pass into the state this screen reports.
+    ///
+    /// Without this the screen tells the truth once, at construction, and then lies
+    /// forever: `status` was only ever set in `init`, so a mailbox that had just
+    /// signed in and found twelve unread messages still read "Not connected", and a
+    /// refused app password still read like a mailbox nobody had set up. Nothing fed
+    /// the pass back in, even though the pass is the only thing that knows whether
+    /// the mailbox works.
+    ///
+    /// `phase` wins over the transport in one case: a mailbox whose Keychain secret
+    /// is gone cannot have checked anything, and `statusLine` already renders
+    /// "Password needed" for it — a transport status would only contradict that.
+    public func apply(_ outcome: CaptureOutcome) {
+        if case .needsPassword = phase { return }
+        guard case .connected = phase else {
+            // No mailbox configured. The pass failing is expected and not the user's
+            // mail server's fault, so it must not read as a broken mailbox.
+            status = .notConnected
+            return
+        }
+        if let failure = outcome.failures.first(where: { $0.identity == .email }) {
+            status = .failed(failure.message)
+        } else {
+            status = .unread(outcome.emailUnreadCount)
+        }
+    }
+
     // MARK: Copy
 
     /// The account-state line the source chip and this screen both show.

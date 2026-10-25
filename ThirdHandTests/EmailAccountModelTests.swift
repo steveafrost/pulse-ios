@@ -141,6 +141,67 @@ struct EmailAccountModelTests {
         #expect(model.statusLine != "Not connected")
     }
 
+    // MARK: Capture feedback
+
+    @Test("a pass that found unread mail makes the screen say so")
+    func passReportsUnread() {
+        let account = EmailAccount.gmail(username: "s@example.com")
+        let secrets = InMemorySecretStore(secrets: [account.keychainAccount: "app-pass"])
+        let (model, _, _) = makeModel(account: account, secrets: secrets)
+        // Stale at construction: nothing had checked yet.
+        #expect(model.status == .notConnected)
+
+        model.apply(CaptureOutcome(detected: [], ranAt: Fixtures.fixtureNow, emailUnreadCount: 12))
+        #expect(model.status == .unread(12))
+        #expect(model.statusLine == "12 unread messages")
+    }
+
+    @Test("a refused sign-in reads as a failure, not as an unconnected mailbox")
+    func passReportsFailure() {
+        let account = EmailAccount.gmail(username: "s@example.com")
+        let secrets = InMemorySecretStore(secrets: [account.keychainAccount: "wrong"])
+        let (model, _, _) = makeModel(account: account, secrets: secrets)
+
+        let failure = SourceFailure(identity: .email, reason: .denied)
+        model.apply(CaptureOutcome(detected: [], failures: [failure], ranAt: Fixtures.fixtureNow))
+        // `.denied` for mail means the credential was refused or is missing; either way
+        // the row must not report a count, because no mail was read.
+        #expect(model.status == .failed(failure.message))
+    }
+
+    @Test("another source's failure is not the mailbox's fault")
+    func passIgnoresOtherSources() {
+        let account = EmailAccount.gmail(username: "s@example.com")
+        let secrets = InMemorySecretStore(secrets: [account.keychainAccount: "app-pass"])
+        let (model, _, _) = makeModel(account: account, secrets: secrets)
+
+        let calendar = SourceFailure(identity: .calendar, reason: .denied)
+        model.apply(CaptureOutcome(detected: [], failures: [calendar], ranAt: Fixtures.fixtureNow, emailUnreadCount: 3))
+        #expect(model.status == .unread(3))
+    }
+
+    @Test("with no mailbox configured, a failing pass does not blame the mail server")
+    func passWithoutAccount() {
+        let (model, _, _) = makeModel()
+        let failure = SourceFailure(identity: .email, reason: .denied)
+        model.apply(CaptureOutcome(detected: [], failures: [failure], ranAt: Fixtures.fixtureNow))
+        // The pass always fails when there is no account -- that is what `denied(.gmail)`
+        // means. Reporting `.failed` would show an error for a form not yet filled in.
+        #expect(model.status == .notConnected)
+    }
+
+    @Test("a lost Keychain secret keeps saying 'Password needed' whatever the pass found")
+    func passRespectsNeedsPassword() {
+        let account = EmailAccount.gmail(username: "s@example.com")
+        let (model, _, _) = makeModel(account: account)
+        #expect(model.phase == .needsPassword(account))
+
+        model.apply(CaptureOutcome(detected: [], ranAt: Fixtures.fixtureNow, emailUnreadCount: 5))
+        // A mailbox with no secret cannot have read anything, so a count here would be
+        // a claim the app cannot support.
+        #expect(model.statusLine == "Password needed")
+    }
+
     // MARK: Validation
 
     @Test("a plausible address is accepted", arguments: [

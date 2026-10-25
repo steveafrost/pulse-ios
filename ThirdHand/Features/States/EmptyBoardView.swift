@@ -108,15 +108,24 @@ public struct EmptyBoardView: View {
             // §9.3: Open Settings is the way back; "Choose sources" re-runs the
             // preamble instead of refusing outright, which is what "Not now" in
             // 9.2 left the board able to do.
+            //
+            // A paused *mailbox* is the one case where iOS Settings has nothing to
+            // turn on: there is no mail row there at all. The caller routes its
+            // button to the mailbox form, so the label says what the button does.
             VStack(spacing: ThirdHandSpacing.xs) {
-                Button("Open Settings", action: onOpenSettings)
+                Button(identity == .email ? "Connect a mailbox" : "Open Settings", action: onOpenSettings)
                     .buttonStyle(.bordered)
                     .accessibilityIdentifier("board.empty.openSettings")
-                Button("Choose sources") { onConnect(identity) }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(ThirdHandColor.textSecondary)
-                    .frame(minHeight: ThirdHandSpacing.minimumHitTarget)
-                    .accessibilityIdentifier("board.empty.chooseSources")
+                // "Choose sources" re-runs the EventKit preamble. Mail has no
+                // permission to re-ask for, so the button would be a second dead end
+                // on the same screen -- the mailbox form above is the whole fix.
+                if identity != .email {
+                    Button("Choose sources") { onConnect(identity) }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(ThirdHandColor.textSecondary)
+                        .frame(minHeight: ThirdHandSpacing.minimumHitTarget)
+                        .accessibilityIdentifier("board.empty.chooseSources")
+                }
             }
         }
     }
@@ -158,7 +167,15 @@ public struct EmptyBoardView: View {
         case .filtered:
             "Every item is filtered out. Clear the filter to see the whole board."
         case .denied(let identity):
-            "\(identity.title) access is off. Turn it on in Settings and Third Hand will fill this board."
+            // Mail is not a permission and cannot be turned on in iOS Settings -- it is
+            // an account the user has to add, with an app password, on a screen this
+            // app provides. Sending them to iOS Settings to look for a mailbox toggle
+            // is the dead end that made email look broken.
+            if identity == .email {
+                "No mailbox is connected, so there is no mail to read. Add one and Third Hand will put the messages that need you on this board."
+            } else {
+                "\(identity.title) access is off. Turn it on in Settings and Third Hand will fill this board."
+            }
         }
     }
 

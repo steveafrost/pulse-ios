@@ -5,6 +5,9 @@ import SwiftUI
 struct ThirdHandApp: App {
     @State private var permission = PermissionCoordinator()
     @State private var model: BoardViewModel
+    /// The mailbox screen's state, created once so the form the user fills in and the
+    /// status the board reports are the same object.
+    @State private var mailbox: EmailAccountModel
 
     init() {
         let shared = SharedStore()
@@ -23,6 +26,21 @@ struct ThirdHandApp: App {
             shared: shared,
             sync: sync
         )
+
+        // The mailbox screen's state. Constructed here so the same instance is used by
+        // the Settings row, the form and the status line -- and so a capture pass can
+        // report back into it.
+        let mailbox = EmailAccountModel(
+            accounts: UserDefaultsEmailAccountProvider(),
+            accountsWriter: UserDefaultsEmailAccountProvider(),
+            secrets: KeychainSecretStore()
+        )
+        _mailbox = State(initialValue: mailbox)
+
+        // Every pass tells the mailbox screen what the mailbox did. Without this the
+        // screen's status is whatever it was at launch. Set before the model is stored
+        // so the first pass already reports.
+        model.onCaptureOutcome = { outcome in mailbox.apply(outcome) }
 
         // The two directions the sync layer needs back into the UI, kept as
         // closures so `Third Hand` is not a dependency of the sync types.
@@ -67,7 +85,8 @@ struct ThirdHandApp: App {
                 model: model,
                 permission: permission,
                 onOpenSettings: AppLinks.openSettings,
-                deepLinkItemID: pendingItemID
+                deepLinkItemID: pendingItemID,
+                mailbox: mailbox
             )
             .pulseSyncPolling(model.sync)
             .task { await permission.load() }

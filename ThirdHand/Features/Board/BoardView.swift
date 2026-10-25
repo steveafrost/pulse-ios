@@ -8,10 +8,33 @@ public struct BoardView: View {
     @State private var model: BoardViewModel
     @State private var route: ThirdHandItem?
     @State private var isClosedPresented = false
+    @State private var isSettingsPresented = false
+    @State private var isMailboxPresented = false
+    @State private var isSettingsMailboxPresented = false
+    /// The mailbox state the board last ran a pass against.
+    ///
+    /// Dismissing the form is not proof anything changed -- the user may have opened
+    /// it and closed it -- so a pass is only worth spending when the account actually
+    /// did change. Comparing the phase is the cheap version of that question: connect
+    /// and disconnect both move it.
+    @State private var passAimedAt: EmailAccountModel.Phase?
     @Namespace private var boardNamespace
 
     let permission: PermissionCoordinator
     var onOpenSettings: () -> Void
+
+    /// The mailbox, when this build has one to configure.
+    ///
+    /// This is what makes the mailbox screen reachable at all. Until now the screen
+    /// existed and nothing could open it: it was constructed only inside the DEBUG
+    /// `DemoRoot`, and every "Open Settings" button on the board called
+    /// `AppLinks.openSettings`, which opens *iOS* Settings — a place with no mailbox
+    /// row, no form and no password field. A user told to connect a mailbox could
+    /// walk the whole app and never find the form.
+    ///
+    /// Optional so previews, tests and the `EmptyCapture` builds still construct a
+    /// board with exactly the arguments they already passed.
+    var mailbox: EmailAccountModel?
 
     /// #29: an item id arrived from a widget tap (`thirdhand://item/<id>`). Consumed once
     /// on appear, then the board routes to that item's detail.
@@ -25,12 +48,14 @@ public struct BoardView: View {
         model: BoardViewModel,
         permission: PermissionCoordinator,
         onOpenSettings: @escaping () -> Void = {},
-        deepLinkItemID: String? = nil
+        deepLinkItemID: String? = nil,
+        mailbox: EmailAccountModel? = nil
     ) {
         _model = State(initialValue: model)
         self.permission = permission
         self.onOpenSettings = onOpenSettings
         self.deepLinkItemID = deepLinkItemID
+        self.mailbox = mailbox
     }
 
     public var body: some View {
@@ -68,6 +93,17 @@ public struct BoardView: View {
             .navigationTitle("Third Hand")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if mailbox != nil {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            isSettingsPresented = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                        }
+                        .accessibilityLabel("Settings")
+                        .accessibilityIdentifier("board.settings")
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isClosedPresented = true
@@ -78,6 +114,16 @@ public struct BoardView: View {
                     .accessibilityIdentifier("board.closed")
                 }
             }
+            .sheet(isPresented: $isSettingsPresented) {
+                if let mailbox { settingsSheet(mailbox) }
+            }
+            // The mailbox form opened straight from a board banner. It needs its own
+            // sheet slot because the Settings sheet is not up in that path -- SwiftUI
+            // drops a second `.sheet` presented from the same view while the first is
+            // still on screen.
+            .sheet(isPresented: $isMailboxPresented, onDismiss: checkMailboxIfChanged) {
+                if let mailbox { EmailAccountView(model: mailbox) }
+            }
             .navigationDestination(item: $route) { item in
                 ItemDetailView(model: model.detailModel(for: item), namespace: boardNamespace)
             }
@@ -85,6 +131,7 @@ public struct BoardView: View {
                 ClosedItemsView(model: model.closedModel())
             }
             .task {
+                passAimedAt = mailbox?.phase
                 await load()
                 routeDeepLinkIfNeeded()
             }
@@ -94,6 +141,74 @@ public struct BoardView: View {
             .accessibilityIdentifier("board.root")
         }
         .pulseMotionScope()
+    }
+
+    /// The in-app Settings screen, with the mailbox row wired to the real form.
+    ///
+    /// `onOpenEmail` used to be `{}` — the row was drawn, tapped, and did nothing.
+    /// It now opens the mailbox screen, which is the only place a mailbox can be
+    /// connected.
+    @ViewBuilder
+    private func settingsSheet(_ mailbox: EmailAccountModel) -> some View {
+        SettingsView(
+            sources: settingsSources,
+            emailStatus: mailbox.status,
+            lastChecked: model.captureStatus.lastCapturedAt,
+            onOpenEmail: { isSettingsMailboxPresented = true }
+        )
+        // Presented *inside* the Settings sheet: a sheet presented from the board
+        // while Settings is already up is silently dropped.
+        .sheet(isPresented: $isSettingsMailboxPresented, onDismiss: checkMailboxIfChanged) {
+            EmailAccountView(model: mailbox)
+        }
+    }
+
+    /// Runs a capture pass when the mailbox was connected or disconnected while the
+    /// sheet was up.
+    ///
+    /// Without it the screen reports "Not connected" until the next scheduled pass, so
+    /// connecting a mailbox looks like it did nothing. A pass is the only thing that
+    /// can turn a saved credential into a real answer.
+    private func checkMailboxIfChanged() {
+        guard let mailbox else { return }
+        defer { passAimedAt = mailbox.phase }
+        guard passAimedAt != mailbox.phase else { return }
+        Task { await model.refresh() }
+    }
+
+    /// The source truth table, read from the same permission state the board uses.
+    ///
+    /// Each row carries its own label and glyph because the wire enum does not line
+    /// up with the user's words: reminders and shared links both travel as `.other`,
+    /// so reading `source.title` would label Reminders "Link".
+    private var settingsSources: [SettingsView.SourceRow] {
+        func status(_ value: PermissionStatus) -> (String, Bool) {
+            switch value {
+            case .granted: ("Connected", false)
+            case .notDetermined: ("Not turned on", true)
+            case .denied: ("Off in iOS Settings", true)
+            case .restricted: ("Not allowed on this device", true)
+            }
+        }
+        let calendar = status(model.permissionState.calendar)
+        let reminders = status(model.permissionState.reminders)
+        return [
+            .init(id: "calendar", source: .calendar, title: "Calendar", systemImage: "calendar", state: calendar.0, needsAttention: calendar.1),
+            .init(id: "reminders", source: .other, title: "Reminders", systemImage: "checklist", state: reminders.0, needsAttention: reminders.1),
+        ]
+    }
+
+    /// Where "Open Settings" should go for one failure.
+    ///
+    ///
+    /// A paused *mailbox* has no fix in iOS Settings — there is no row there to turn
+    /// on — so that button has to open the form the user can actually complete. Every
+    /// other source really is fixed in iOS Settings.
+    private func settingsDestination(for identity: SourceIdentity) -> () -> Void {
+        if identity == .email, mailbox != nil {
+            return { isMailboxPresented = true }
+        }
+        return onOpenSettings
     }
 
     /// Opens the item a widget row pointed at, if the board still has it.
@@ -118,14 +233,17 @@ public struct BoardView: View {
                 ErrorBoardView(
                     failures: [SourceFailure(identity: .calendar, reason: .failed(message))],
                     onRetry: { Task { await model.refresh() } },
-                    onOpenSettings: onOpenSettings
+                    onOpenSettings: settingsDestination(for: .calendar)
                 )
             }
         case .empty(let reason):
             ScrollView {
                 VStack(spacing: ThirdHandSpacing.s) {
                     ForEach(model.state.failures) { failure in
-                        SourceBanner(failure: failure, onOpenSettings: onOpenSettings)
+                        SourceBanner(
+                            failure: failure,
+                            onOpenSettings: settingsDestination(for: failure.identity)
+                        )
                     }
                     EmptyBoardView(
                         reason: reason,
@@ -135,7 +253,7 @@ public struct BoardView: View {
                         onRefresh: { Task { await model.refresh() } },
                         onConnect: { identity in Task { await connect(identity) } },
                         onNotNow: { permission.declineForNow() },
-                        onOpenSettings: onOpenSettings,
+                        onOpenSettings: settingsDestination(for: reason.pausedSource),
                         onResetFilters: model.resetFilters
                     )
                 }
@@ -149,7 +267,10 @@ public struct BoardView: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: ThirdHandSpacing.xxl) {
                 ForEach(model.state.failures) { failure in
-                    SourceBanner(failure: failure, onOpenSettings: onOpenSettings)
+                    SourceBanner(
+                        failure: failure,
+                        onOpenSettings: settingsDestination(for: failure.identity)
+                    )
                 }
 
                 ForEach(Array(model.visibleHorizons.enumerated()), id: \.element) { sectionIndex, horizon in
