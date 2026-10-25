@@ -423,6 +423,31 @@ calendar, that is expected — Third Hand shows what the device holds and nothin
 
 ---
 
+## 10a. Why build 5 replaced build 4
+
+Build 4 was uploaded, validated and attached to version 0.1.0, and would have
+shipped with a bug that makes the app's core function fail on hardware.
+
+On a physical device the app showed *"Couldn't refresh · Try again / sync path
+escapes the container root: snapshot.json"*. `SyncPaths.resolve` ends with a
+belt-and-braces containment check comparing `url.standardizedFileURL` against
+`root.standardizedFileURL`. Standardising a path resolves symlinks only for the
+components that exist, so a root that exists folds away the `/private` prefix
+while a child that has never been written keeps it. The app was rejecting its own
+file. It bit only the **first** write of each file, and never in the simulator,
+because the simulator usually falls back to an app-group container instead of the
+real ubiquity container — so the code had never once run on hardware.
+
+Fixed in `8761755` by canonicalising the root once with
+`resolvingSymlinksInPath()` and building children from it. Core 337 → 341 tests,
+app 118 unchanged. Build 5 (`0722dd6`) carries the fix.
+
+The lesson worth keeping: this was not a regression from build 4. It was
+pre-existing code that no test and no simulator run could reach. Passing suites
+were not evidence that the sync path worked.
+
+---
+
 ## 10b. Live App Store Connect state (as set by the release run)
 
 Verified by reading the API back, not by trusting a CLI exit code.
@@ -430,7 +455,7 @@ Verified by reading the API back, not by trusting a CLI exit code.
 | Field | State |
 | --- | --- |
 | Version string | `0.1.0` |
-| Attached build | **4** (`f68da751-9c57-4a8d-9d68-6a3bef27c1c2`), VALID, in `Third Hand Beta` |
+| Attached build | **5** (`3a020fa8-e5b0-4d42-a2e8-ca12d821c58b`), VALID, in `Third Hand Beta` |
 | Copyright | `2026 Steve Frost` |
 | Release type | `AFTER_APPROVAL` (manual release once approved) |
 | Description | set, 3 182 chars |
