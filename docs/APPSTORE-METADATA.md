@@ -411,12 +411,15 @@ No in-app purchases, no subscriptions, no ads, no external links out except the
 Settings app.
 ```
 
-Two things a reviewer is likely to test, and what they will see:
+Three things a reviewer is likely to test, and what they will see:
 
 1. **Denying both permissions.** No crash, no dead end: the board shows the
    "Let's see what needs you" connect state with a button that re-opens Settings.
 2. **Killing and relaunching mid-snooze.** The snooze survives the relaunch and
    expires on schedule. Losing state on relaunch would look like a bug.
+3. **Connecting a mailbox.** Board gear (top-left) → Mailbox → add an address and
+   an app password. iOS Settings has no mail row and is not where this is
+   configured, which is worth stating because earlier builds routed there.
 
 If a reviewer cannot see any items because the simulator or device has an empty
 calendar, that is expected — Third Hand shows what the device holds and nothing else.
@@ -448,6 +451,28 @@ were not evidence that the sync path worked.
 
 ---
 
+## 10a-bis. Why build 6 replaced build 5
+
+Build 5 was uploaded and attached to 0.1.0, but it was built from a tree that
+predates the mailbox fix, so email was unusable on it: the connect form could not
+be opened in a Release build at all.
+
+`SettingsView` and `EmailAccountView` were constructed only inside the DEBUG
+`DemoRoot`, and every "Open Settings" on the board called `AppLinks.openSettings`
+— which opens *iOS* Settings, where there is no mailbox row and no password
+field. The screen existed and no shipped build could reach it. Fixed in `88174fe`
+by giving the board a gear that presents Settings, wiring the Mailbox row to the
+form (it was `{}`), and feeding each capture pass back into
+`EmailAccountModel.status` so the row reports something true. 122 app tests, 362
+core tests, 5 new. Build 6 (`95519c1`) carries it.
+
+The honest caveat: everything past authentication (`LOGIN`, `SELECT`,
+`SEARCH UNSEEN`, `FETCH`) is still unproven against a real mailbox. Build 6 makes
+the form reachable and the status truthful; it does not prove the transport works
+on a live account.
+
+---
+
 ## 10b. Live App Store Connect state (as set by the release run)
 
 Verified by reading the API back, not by trusting a CLI exit code.
@@ -455,7 +480,7 @@ Verified by reading the API back, not by trusting a CLI exit code.
 | Field | State |
 | --- | --- |
 | Version string | `0.1.0` |
-| Attached build | **5** (`3a020fa8-e5b0-4d42-a2e8-ca12d821c58b`), VALID, in `Third Hand Beta` |
+| Attached build | **6** (`f510bc13-0e15-4b34-b2ce-147cace190ed`), VALID |
 | Copyright | `2026 Steve Frost` |
 | Release type | `AFTER_APPROVAL` (manual release once approved) |
 | Description | set, 3 182 chars |
