@@ -502,6 +502,19 @@ Settings, so the app could say "Calendar is off" and offer nothing about it. It 
 now a real screen with the only thing it needs: a per-source truth table with the
 fix beside each degraded source.
 
+**It was still unreachable, which is what broke email.** The screen was built but
+only ever constructed inside the DEBUG `DemoRoot`, so in a Release build there was
+no way to open it: the board's toolbar had only the "Recently closed" button, and
+every "Open Settings" on the board went to *iOS* Settings. A user told to connect
+a mailbox could walk the entire app and never find the form — the mailbox screen
+existed and nothing could present it. The board now carries a gear (top-leading)
+when the build has a mailbox, and a paused *mailbox* routes its button to
+`EmailAccountView` rather than to iOS Settings, which has no mail row to turn on.
+Two smaller defects fell out of the same path: `onOpenEmail` was `{}`, so the
+Settings → Mailbox row was inert; and `EmailAccountModel.status` was set only in
+`init`, so a mailbox that had just signed in still read "Not connected". A capture
+pass now feeds its result back through `EmailAccountModel.apply(_:)`.
+
 Three rows were **deliberately not built**, because they would each be a lie:
 
 - *Appearance / density.* The app follows the system. A density switch that only
