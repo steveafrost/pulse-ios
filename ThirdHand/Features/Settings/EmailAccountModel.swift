@@ -240,7 +240,7 @@ public final class EmailAccountModel {
     /// reaches the screen, so it takes the provider as a parameter rather than
     /// hardcoding one vendor's vocabulary for everybody.
     public static func passwordRationale(for provider: EmailAccount.Provider) -> String {
-        let noun = provider == .gmail ? "app-specific password" : "app password"
+        let noun = provider.passwordNoun
         return """
         Your \(noun) is kept in the iOS Keychain on this device only. It is never \
         shown again, never written to a log, and never leaves the phone except to \

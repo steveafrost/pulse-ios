@@ -265,14 +265,29 @@ public struct EmailAccountView: View {
             .foregroundStyle(ThirdHandColor.textSecondary)
 
             DisclosureGroup("How do I get one?") {
-                // Provider-specific, because the phrase "app-specific password" is
-                // Gmail's and pasting Gmail's instructions under iCloud sends the
-                // user looking for a setting Apple does not have by that name.
-                Text(model.draftProvider.passwordGuidance)
-                    .font(ThirdHandTypography.meta)
-                    .foregroundStyle(ThirdHandColor.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, ThirdHandSpacing.xxs)
+                VStack(alignment: .leading, spacing: ThirdHandSpacing.s) {
+                    // Provider-specific, because the phrase "app-specific password" is
+                    // Gmail's and pasting Gmail's instructions under iCloud sends the
+                    // user looking for a setting Apple does not have by that name.
+                    Text(model.draftProvider.passwordGuidance)
+                        .font(ThirdHandTypography.meta)
+                        .foregroundStyle(ThirdHandColor.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    // The prose above is a path across an app switch; the button is
+                    // that path in one tap. Offered only where the provider has a
+                    // single page to land on (see `appPasswordURL`); where it does
+                    // not, the prose is the whole answer rather than half of one.
+                    if let url = model.draftProvider.appPasswordURL,
+                       let name = model.draftProvider.appPasswordURLHost {
+                        Link(destination: url) {
+                            Label("Open \(name) settings", systemImage: "arrow.up.right.square")
+                                .font(ThirdHandTypography.meta)
+                        }
+                        .accessibilityIdentifier("email.appPasswordLink")
+                    }
+                }
+                .padding(.top, ThirdHandSpacing.xxs)
             }
             .font(ThirdHandTypography.meta)
             .foregroundStyle(ThirdHandColor.textTertiary)

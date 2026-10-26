@@ -96,7 +96,13 @@ password, and that never leaves the device.
 **What is deliberately not claimed:**
 - **No OAuth.** There is no Google Cloud project, no client id, no consent screen, and
   no token refresh. If OAuth is ever added, it replaces `EmailCredentials` and leaves
-  `IMAPClient` untouched.
+  `IMAPClient` untouched. On iOS this is not only a cost decision: there is no public
+  API for a third-party app to read another app's mail. Apple's `MailKit` — the only
+  framework that can see a `MEMessage` — is macOS 12+ with no iOS availability, and
+  `MFMailComposeViewController` composes but never reads. The app-password IMAP path
+  is the documented access route for every provider listed here, which is why these
+  presets all work without one. (Confirmed against Apple's support pages 102654 and
+  102525, and the `MailKit`/`MEMessage` availability metadata, Oct 2025.)
 - **Not Gmail-specific.** `EmailAccount` takes any IMAPS host and port. Gmail is the
   convenience initialiser (`EmailAccount.gmail(username:)`), not a special case.
 - **Attachments and bodies are not read.** One `FETCH` per message, headers only

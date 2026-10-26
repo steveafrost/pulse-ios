@@ -67,14 +67,54 @@ struct EmailProviderTests {
     func icloudGuidanceIsNotGmailGuidance() {
         // The failure this prevents: the screen defaulted to Gmail's wording, so an
         // iCloud user was told to open Google Account settings for a password Apple
-        // issues at appleid.apple.com.
+        // issues at account.apple.com.
         let icloud = EmailAccount.Provider.icloud.passwordGuidance
-        #expect(icloud.contains("appleid.apple.com"), "iCloud guidance lacks the right URL")
+        #expect(icloud.contains("account.apple.com"), "iCloud guidance lacks the right URL")
         #expect(!icloud.contains("myaccount.google.com"), "iCloud guidance mentions Google")
         #expect(
             !EmailAccount.Provider.gmail.passwordGuidance.contains("appleid"),
             "Gmail guidance mentions Apple"
         )
+    }
+
+    @Test("iCloud guidance no longer points at the retired appleid.apple.com host")
+    func icloudGuidanceUsesCurrentHost() {
+        // Apple moved the account pages to account.apple.com; appleid.apple.com only
+        // redirects now. The prose and the button must agree, because both are read
+        // as instructions and a mismatch looks like one of them is stale.
+        let provider = EmailAccount.Provider.icloud
+        #expect(!provider.passwordGuidance.contains("appleid.apple.com"))
+        #expect(provider.passwordGuidance.contains("account.apple.com"))
+        #expect(provider.appPasswordURL?.host() == "account.apple.com")
+    }
+
+    @Test("every provider that offers a password link points at its own domain")
+    func appPasswordURLHostsMatchTheProvider() {
+        // Cheap guard against a copy-paste that points Fastmail's button at Google.
+        // `.outlook` and `.other` are nil by design (see the property's doc comment),
+        // so they are excluded rather than required to produce a URL.
+        let expected: [EmailAccount.Provider: String] = [
+            .icloud: "account.apple.com",
+            .gmail: "myaccount.google.com",
+            .yahoo: "account.yahoo.com",
+            .fastmail: "app.fastmail.com"
+        ]
+        for (provider, host) in expected {
+            #expect(provider.appPasswordURL?.host() == host, "\(provider.rawValue) link is wrong")
+        }
+        #expect(EmailAccount.Provider.outlook.appPasswordURL == nil)
+        #expect(EmailAccount.Provider.other.appPasswordURL == nil)
+    }
+
+    @Test("the credential is named the way each provider names it")
+    func passwordNounIsProviderSpecific() {
+        // Apple does not use the phrase "app-specific"; Google does. A user told to
+        // look for the wrong phrase concludes the setting does not exist.
+        #expect(EmailAccount.Provider.gmail.passwordNoun == "app-specific password")
+        #expect(EmailAccount.Provider.icloud.passwordNoun == "app password")
+        for provider in EmailAccount.Provider.allCases {
+            #expect(!provider.passwordNoun.isEmpty, "\(provider.rawValue) has no noun")
+        }
     }
 
     @Test("a stored host maps back to its provider, so the picker opens on the right one")

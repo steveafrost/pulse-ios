@@ -69,6 +69,33 @@ public struct EmailAccount: Sendable, Hashable, Codable {
             }
         }
 
+        /// Where the password link lands, for naming the button.
+        ///
+        /// "Open Apple Account settings" reads better than a bare URL and better than
+        /// "Open settings" (which is ambiguous — the screen already has an unrelated
+        /// "Open Settings" affordance for iOS Settings). `nil` exactly when
+        /// `appPasswordURL` is, so the two cannot disagree.
+        public var appPasswordURLHost: String? {
+            switch self {
+            case .icloud: "Apple Account"
+            case .gmail: "Google Account"
+            case .yahoo: "Yahoo Account"
+            case .fastmail: "Fastmail"
+            case .outlook, .other: nil
+            }
+        }
+
+        /// The name the provider gives the credential, in its own words.
+        ///
+        /// iCloud calls it an "app password"; Google calls it an "app-specific
+        /// password". The distinction is not pedantry: a user searching Apple's
+        /// settings for "app-specific" finds nothing, because Apple does not use the
+        /// phrase. Views ask for this rather than hardcoding one vendor's vocabulary
+        /// for every provider.
+        public var passwordNoun: String {
+            self == .gmail ? "app-specific password" : "app password"
+        }
+
         /// The IMAPS host, or `nil` for `.other`.
         public var imapHost: String? {
             switch self {
@@ -81,16 +108,39 @@ public struct EmailAccount: Sendable, Hashable, Codable {
             }
         }
 
+        /// Where the user generates the credential, when the provider has one page.
+        ///
+        /// A URL rather than prose so the screen can offer a button instead of asking
+        /// the user to memorise a path across an app switch. `nil` for `.other`, whose
+        /// host is unknown, and for providers whose page is a maze rather than a link.
+        ///
+        /// **Apple changed this one.** The old guidance said `appleid.apple.com`;
+        /// Apple's current support page (102654, Oct 2025) says `account.apple.com`,
+        /// and `appleid.apple.com` now only redirects. The redirect works, but a
+        /// dead-looking URL under a security instruction is the kind of small lie that
+        /// makes a user stop trusting the rest of the screen.
+        public var appPasswordURL: URL? {
+            switch self {
+            case .icloud: URL(string: "https://account.apple.com")
+            case .gmail: URL(string: "https://myaccount.google.com/apppasswords")
+            case .yahoo: URL(string: "https://account.yahoo.com")
+            case .fastmail: URL(string: "https://app.fastmail.com/settings/security/apppasswords")
+            // Microsoft's page depends on the tenant and whether basic auth is still
+            // enabled, so there is no single link that is reliably true.
+            case .outlook, .other: nil
+            }
+        }
+
         /// What the user has to do to get a password, in the provider's own terms.
         ///
         /// This is the single most common failure point, and "app-specific password"
         /// is Gmail's phrase, not iCloud's -- iCloud calls it an app password and
-        /// creates it at appleid.apple.com, where the account's normal password will
+        /// creates it at account.apple.com, where the account's normal password will
         /// simply be rejected.
         public var passwordGuidance: String {
             switch self {
             case .icloud:
-                "Use an app password, not your Apple Account password: appleid.apple.com → Sign-In and Security → App-Specific Passwords."
+                "Use an app password, not your Apple Account password: account.apple.com → Sign-In and Security → App-Specific Passwords."
             case .gmail:
                 "Use an app-specific password: myaccount.google.com → Security → 2-Step Verification → App passwords."
             case .outlook:
