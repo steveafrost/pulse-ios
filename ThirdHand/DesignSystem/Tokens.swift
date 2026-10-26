@@ -97,6 +97,8 @@ public enum ThirdHandRadius {
     public static let sheetTop: CGFloat = 28
     public static let chip: CGFloat = 4
     public static let capsule: CGFloat = 999
+    /// Unused since the row rail was removed; kept until the next asset sweep so
+    /// this edit does not touch the design-token surface for unrelated views.
     public static let rail: CGFloat = 1.5
 }
 
@@ -148,12 +150,11 @@ public enum ThirdHandTracking {
     public static let count: CGFloat = 0.5
 }
 
-// MARK: - Rails and hairlines
+// MARK: - Hairlines
 
 public enum ThirdHandMetrics {
-    public static let railWidth: CGFloat = 3
-    /// The rail is a quiet spine at rest and thickens only for the urgent row.
-    public static let railWidthUrgent: CGFloat = 4
+    /// `railWidth` / `railWidthUrgent` were removed with the row rail. Cards no
+    /// longer carry a leading spine, so there is no width to tune.
     public static let hairline: CGFloat = 1
     public static let kindGlyphSize: CGFloat = 20
     public static let newnessDot: CGFloat = 6

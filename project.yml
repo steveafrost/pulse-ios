@@ -48,6 +48,11 @@ targets:
     info:
       path: ThirdHand/Info.plist
       properties:
+        # CFBundleDisplayName is what the Home Screen and TCC alerts show, and it
+        # has been Pulse since the rename. CFBundleName was not set, so it defaulted
+        # to the target name `ThirdHand` and leaked the old name into the places
+        # that fall back to it. Set explicitly so the two cannot disagree.
+        CFBundleName: Pulse
         CFBundleDisplayName: Pulse
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"

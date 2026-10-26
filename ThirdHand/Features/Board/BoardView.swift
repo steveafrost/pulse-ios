@@ -63,7 +63,6 @@ public struct BoardView: View {
             ZStack(alignment: .bottomTrailing) {
                 ThirdHandColor.surfaceCanvas.ignoresSafeArea()
                 content
-                floatingChrome
             }
             .safeAreaInset(edge: .top) {
                 VStack(spacing: ThirdHandSpacing.xs) {
@@ -328,27 +327,18 @@ public struct BoardView: View {
         ThirdHandSpacing.boardBottomInset + scaledChromeHeight
     }
 
-    // MARK: Floating chrome (§6.3: capsule + FAB share one container)
-
-    private var floatingChrome: some View {
-        VStack(alignment: .trailing, spacing: ThirdHandSpacing.m) {
-            ThirdHandFAB(
-                title: model.fabTitle,
-                caption: model.fabCaption,
-                systemImage: model.topNowItem == nil ? "arrow.clockwise" : "checkmark"
-            ) {
-                if let item = model.topNowItem {
-                    Task { await model.complete(item) }
-                } else {
-                    Task { await model.refresh() }
-                }
-            }
-            .accessibilityIdentifier("board.fab")
-        }
-        .padding(.trailing, ThirdHandSpacing.screenMargin)
-        .padding(.bottom, ThirdHandSpacing.m)
-        .thirdHandGlassContainer(spacing: ThirdHandSpacing.m)
-    }
+    // MARK: No floating action button
+    //
+    // The FAB used to sit bottom-right and complete whatever the topmost Now item
+    // was. That is the wrong gesture for this product: Pulse is a board you work
+    // item by item, and a single button that silently finishes "the most important
+    // thing" both guesses which thing you meant and hides the one action that
+    // should stay deliberate. Completion lives on each row's own control, where the
+    // item you touched is the item that closes.
+    //
+    // Refresh did not depend on it either: the capture capsule at the top and
+    // pull-to-refresh both drive `model.refresh()`, so removing the FAB stranded no
+    // behaviour.
 
     // MARK: Intents
 

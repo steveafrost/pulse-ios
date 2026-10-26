@@ -63,13 +63,15 @@ public struct BoardItemRow: View {
 
     private var card: some View {
         HStack(alignment: .top, spacing: ThirdHandSpacing.s) {
-            if horizon.hasRail {
-                RoundedRectangle(cornerRadius: ThirdHandRadius.rail, style: .continuous)
-                    .fill(item.railTint(horizon: horizon, now: now))
-                    .frame(width: item.isUrgent(now: now) ? ThirdHandMetrics.railWidthUrgent : ThirdHandMetrics.railWidth)
-                    .accessibilityHidden(true)
-            }
-
+            /// The leading rail lived here: a 3pt neutral spine (4pt `HorizonNow`
+            /// when urgent), absent for Nice to Know. It never encoded source --
+            /// that is the badge on the meta line -- it encoded *which horizon the
+            /// card is in*, which the section header already says and the card's
+            /// position makes obvious. Two cues for one fact, and the rail was the
+            /// weaker one, so it is gone. `isUrgent` survives in `railTint` because
+            /// the horizon is still worth knowing in code; it is just not drawn as
+            /// a stripe any more.
+            ///
             /// The meta strip is a sibling of the title block, not a child of it:
             /// inside the text column the horizontal scroller is clipped to that
             /// column's width, so dates truncate to "Oct 2".
@@ -98,8 +100,10 @@ public struct BoardItemRow: View {
                     metaLine
                 }
             }
-            /// §5.1 rule 1: rail rows inset text an extra 3+12pt.
-            .padding(.leading, horizon.hasRail ? ThirdHandSpacing.s : 0)
+            /// §5.1 rule 1 used to inset rail rows 3+12pt. With the rail gone every
+            /// row uses the same leading edge, so the card's own `m` padding is the
+            /// only left inset and columns of titles finally line up across
+            /// horizons.
         }
         .padding(.horizontal, ThirdHandSpacing.m)
         .padding(.vertical, ThirdHandSpacing.s)

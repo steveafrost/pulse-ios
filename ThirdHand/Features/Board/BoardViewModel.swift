@@ -123,17 +123,9 @@ public final class BoardViewModel {
         (board[.now] ?? []).filter { $0.kind != .fyi }.count
     }
 
-    /// §8.1: the FAB resolves the topmost open Now item; `title` doubles as its
-    /// VoiceOver label so the two cannot disagree.
-    public var topNowItem: ThirdHandItem? {
-        items(in: .now).first
-    }
-
-    public var fabTitle: String {
-        topNowItem == nil ? "Refresh board" : "Done"
-    }
-
-    public var fabCaption: String? { topNowItem?.title }
+    /// §8.1's `topNowItem` / `fabTitle` / `fabCaption` were the floating action
+    /// button's inputs. The FAB is gone (completion is per row, by design), so the
+    /// three went with it rather than lingering as an API nothing calls.
 
     /// Sources present on the board, in §8.1 order, with counts for the chips.
     public var availableSources: [(identity: SourceIdentity, count: Int)] {

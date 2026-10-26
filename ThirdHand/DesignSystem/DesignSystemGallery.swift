@@ -121,7 +121,6 @@ public struct DesignSystemGallery: View {
                 onRetry: {}
             )
 
-            ThirdHandFAB(title: "Done", caption: "Pick the launch date", systemImage: "checkmark") {}
         }
     }
 }
