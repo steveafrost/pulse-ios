@@ -149,25 +149,7 @@ jobs:
           fi
 
       - name: Install linters
-        # Pinned to the versions the tree was formatted with. `brew install` with no
-        # version ties the result to whatever Homebrew shipped that morning: 0.64.3
-        # began flagging `redundantReturn` cases 0.64.1 accepted, which read as a
-        # mysterious CI-only failure in files a local run had just cleaned. Homebrew
-        # has no versioned formula for either tool, so the release binary is pinned.
-        env:
-          SWIFTFORMAT_VERSION: 0.64.3
-          SWIFTLINT_VERSION: 0.65.1
-        run: |
-          set -euo pipefail
-          brew install swiftlint
-          curl -fsSL -o /tmp/swiftformat.zip \
-            "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.artifactbundle.zip"
-          unzip -q /tmp/swiftformat.zip -d /tmp/swiftformat
-          sudo install -m 755 \
-            "/tmp/swiftformat/swiftformat.artifactbundle/swiftformat-${SWIFTFORMAT_VERSION}-macos/bin/swiftformat" \
-            /usr/local/bin/swiftformat
-          echo "swiftformat $(swiftformat --version) (pinned ${SWIFTFORMAT_VERSION})"
-          echo "swiftlint $(swiftlint version) (pinned ${SWIFTLINT_VERSION})"
+        run: brew install swiftlint swiftformat
 
       - name: Lint
         run: bash Scripts/lint.sh

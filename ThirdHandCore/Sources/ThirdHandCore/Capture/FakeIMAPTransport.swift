@@ -253,9 +253,9 @@ enum FakeServer {
         guard let tag = tokens.first else { return [] }
         let rest = tokens.dropFirst()
 
-        // `rest` is a slice, so its indices start at 1; a named accessor keeps that
-        // arithmetic in one place rather than spelling `rest[2]` at each use.
         func token(_ offset: Int) -> String? {
+            // `rest` is a slice, so its indices start at 1; this accessor keeps that
+            // arithmetic in one place rather than spelling `rest[2]` at each use.
             let index = rest.startIndex + offset
             return index < rest.endIndex ? String(rest[index]) : nil
         }
