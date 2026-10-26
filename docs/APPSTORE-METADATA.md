@@ -1,4 +1,4 @@
-# App Store metadata — Third Hand
+# App Store metadata — Pulse
 
 Everything App Store Connect asks for on the version page, ready to paste.
 Verified against `asc` v0.18.2 and against the archive described in §10 of
@@ -19,16 +19,16 @@ portal click-paths) and [`PRIVACY.md`](PRIVACY.md) (the policy behind §5).
 
 | Field | Value | Limit | Length |
 | --- | --- | --- | --- |
-| App Store name | `Third Hand — What Needs You` | 30 | 22 |
-| Home Screen name (`CFBundleDisplayName`) | `Third Hand` | — | 5 |
+| App Store name | `Pulse — What Needs You` | 30 | 22 |
+| Home Screen name (`CFBundleDisplayName`) | `Pulse` | — | 5 |
 | Bundle ID | `com.steveafrost.thirdhand` | — | — |
 | SKU | `thirdhand-ios-001` | — | — |
 | Subtitle | `Your day, ordered by urgency` | 30 | 28 |
 
-**The plain name `Third Hand` is taken.** An exact-title app by `ua.com.pulse.app`
+**The plain name `Pulse` is taken.** An exact-title app by `ua.com.pulse.app`
 sits in the US, GB, CA, AU, DE, FR and JP storefronts, and other developers hold
-near-identical titles. `Third Hand — What Needs You` was verified free in US and GB
-(see `APPSTORE-SETUP.md` §3). The Home Screen label stays `Third Hand`; that is
+near-identical titles. `Pulse — What Needs You` was verified free in US and GB
+(see `APPSTORE-SETUP.md` §3). The Home Screen label stays `Pulse`; that is
 independent of App Store name uniqueness, and `CFBundleDisplayName` already says
 so.
 
@@ -54,9 +54,9 @@ why it leads with the value proposition rather than a release note.
 competitor claims, no pricing.
 
 ```text
-Third Hand answers one question: what needs me right now?
+Pulse answers one question: what needs me right now?
 
-Most task apps ask you to maintain them. Third Hand doesn't. It reads the calendar and reminders already on your iPhone, works out what actually needs you, and puts it on one board in the order you'd want to deal with it.
+Most task apps ask you to maintain them. Pulse doesn't. It reads the calendar and reminders already on your iPhone, works out what actually needs you, and puts it on one board in the order you'd want to deal with it.
 
 FOUR HORIZONS, ONE GLANCE
 
@@ -90,7 +90,7 @@ Home Screen widgets in three sizes and all three Lock Screen families, plus a Li
 
 YOUR DATA STAYS YOURS
 
-Third Hand has no account and no server of its own. It reads your calendar and reminders on the device, and nothing leaves it.
+Pulse has no account and no server of its own. It reads your calendar and reminders on the device, and nothing leaves it.
 
 - Calendar and Reminders are read on this device and stored on this device
 - No analytics, no tracking, no third-party SDKs
@@ -106,13 +106,13 @@ Optionally, you can connect a mailbox over IMAP so messages that need a reply sh
 - Message headers are read on the device; nothing is uploaded anywhere
 - Disconnecting deletes the stored password and the cached mail items
 
-If you delete the app, Third Hand has nothing left to delete.
+If you delete the app, Pulse has nothing left to delete.
 
 WHO IT IS FOR
 
 People who already keep a calendar and a reminders list, and who want one honest view of what those two things are asking of them today - without another system to maintain.
 
-Third Hand is a productivity app for iOS. It needs access to Calendar and Reminders to be useful; you can grant either, both, or neither, and turn them off again in Settings at any time.
+Pulse is a productivity app for iOS. It needs access to Calendar and Reminders to be useful; you can grant either, both, or neither, and turn them off again in Settings at any time.
 ```
 
 ---
@@ -124,7 +124,7 @@ tasks,agenda,todo,calendar,reminder,focus,priority,daily,planner,productivity,pe
 ```
 
 86 characters (limit 100), comma-separated with no spaces. No word is repeated
-from the app name (`Third Hand`, `What`, `Needs`, `You`) — that would waste
+from the app name (`Pulse`, `What`, `Needs`, `You`) — that would waste
 characters, because App Store search already indexes the name and subtitle
 separately.
 
@@ -182,7 +182,7 @@ on for the repo first. See §7 for the switch.
 
 ### App Privacy detail (the free-text field)
 
-> Third Hand does not collect any data. Calendar and reminders are read on the device
+> Pulse does not collect any data. Calendar and reminders are read on the device
 > and stay there. Your board is mirrored to your own private iCloud container so
 > it can reach your Mac; that copy belongs to your Apple ID and is never visible
 > to the developer. If you choose to connect a mailbox, its password is kept in the
@@ -245,7 +245,7 @@ submission, together with the date it was checked:
 `asc` v0.18.2 accepts these display types for `asc screenshot-sets create
 --display-type` (rejected types omitted):
 
-| Display type | Device | Pixels | Needed for Third Hand |
+| Display type | Device | Pixels | Needed for Pulse |
 | --- | --- | --- | --- |
 | `APP_IPHONE_67` | iPhone 6.7"/6.9" | 1290×2796 or 1320×2868 | **Yes** — primary |
 | `APP_IPHONE_65` | iPhone 6.5" | 1242×2688 or 1284×2778 | Yes — fallback/compat |
@@ -372,7 +372,7 @@ asc screenshots upload --set-id <SET_ID> --file docs/screenshots/01-board-now-69
 ```
 First release.
 
-Third Hand reads your calendar and reminders and puts what actually needs you on one
+Pulse reads your calendar and reminders and puts what actually needs you on one
 board, in four horizons: Now, Next, Later and Nice to Know. Done and snooze stick,
 snooze comes back on its own, and everything is reversible from Recently Closed.
 
@@ -396,7 +396,7 @@ Paste into **App Store Connect → App Version → App Review Information → No
 ```
 No login or demo account is required. The app has no account system at all.
 
-Third Hand reads the user's Calendar and Reminders to build one board of what needs
+Pulse reads the user's Calendar and Reminders to build one board of what needs
 attention. On first launch it shows a preamble explaining this, then raises the
 system prompts for Calendar ("Allow Full Access") and Reminders. Granting either,
 both, or neither works: with neither granted, the board shows the connect state
@@ -422,7 +422,7 @@ Three things a reviewer is likely to test, and what they will see:
    configured, which is worth stating because earlier builds routed there.
 
 If a reviewer cannot see any items because the simulator or device has an empty
-calendar, that is expected — Third Hand shows what the device holds and nothing else.
+calendar, that is expected — Pulse shows what the device holds and nothing else.
 
 ---
 
@@ -488,7 +488,7 @@ Verified by reading the API back, not by trusting a CLI exit code.
 | Promotional text | set, 153 chars |
 | Support URL | `https://steveafrost.com/thirdhand/support` |
 | Marketing URL | `https://steveafrost.com/thirdhand` |
-| App name | `Third Hand — What Needs You` |
+| App name | `Pulse — What Needs You` |
 | Subtitle | `Your day, ordered by urgency` |
 | Privacy policy URL | GitHub `docs/PRIVACY.md` |
 | Age rating | **4+**, every content question None/No |
@@ -522,7 +522,7 @@ call.
 
 ## 11. Pre-submission field checklist
 
-- [ ] App name `Third Hand — What Needs You`
+- [ ] App name `Pulse — What Needs You`
 - [ ] Subtitle `Your day, ordered by urgency`
 - [ ] Promotional text pasted (§2)
 - [ ] Description pasted (§3)

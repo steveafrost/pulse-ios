@@ -186,7 +186,7 @@ final class ImminentMeetingController {
 
     private func log(_ message: String) {
         #if DEBUG
-        print("[Third Hand] live activity: \(message)")
+        print("[Pulse] live activity: \(message)")
         #endif
     }
 }

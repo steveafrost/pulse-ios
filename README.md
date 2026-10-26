@@ -1,8 +1,8 @@
-# Third Hand iOS
+# Pulse iOS
 
 One board of what needs you — from your Calendar and Reminders, sorted into
 **Now / Next / Later / Nice to Know**. Standalone on iOS, and the source of
-truth for the [bb](https://github.com/steveafrost/bb-plugin-thirdhand) Third Hand plugin,
+truth for the [bb](https://github.com/steveafrost/bb-plugin-thirdhand) Pulse plugin,
 which mirrors the same board on your Mac.
 
 ## Status

@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 /// write one line into the app group, and get out of the way (M7.1).
 ///
 /// **Why an extension at all.** Slack, Gmail and GitHub have no OAuth app for
-/// Third Hand, so the only honest way to see them is for the user to hand Third Hand a link.
+/// Pulse, so the only honest way to see them is for the user to hand Pulse a link.
 /// The share sheet is where that happens, and the extension cannot reach the app's
 /// `ItemStore` -- it is a separate, short-lived process. So it appends to
 /// `shared-links.jsonl` through `SharedLinkWriter` and the app's next capture pass
@@ -20,7 +20,7 @@ final class ShareViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
 
-        label.text = "Adding to Third Hand…"
+        label.text = "Adding to Pulse…"
         label.textAlignment = .center
         label.numberOfLines = 0
 
@@ -45,7 +45,7 @@ final class ShareViewController: UIViewController {
         guard let payload = await Self.payload(from: input) else {
             // Nothing link-shaped. Say so rather than a silent dismiss: a share that
             // vanishes reads as broken.
-            finish(message: "Third Hand needs a link to share. Try sharing the message from its own menu.")
+            finish(message: "Pulse needs a link to share. Try sharing the message from its own menu.")
             return
         }
 
@@ -60,7 +60,7 @@ final class ShareViewController: UIViewController {
             )
             extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
         } catch {
-            finish(message: "Third Hand could not save that link.")
+            finish(message: "Pulse could not save that link.")
         }
     }
 

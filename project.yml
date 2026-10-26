@@ -17,7 +17,7 @@ settings:
     # hand; CURRENT_PROJECT_VERSION is bumped by Scripts/bump-build.sh and by the
     # fastlane beta lane. Never hardcode either in Info.plist (see docs/RELEASE.md).
     MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "6"
+    CURRENT_PROJECT_VERSION: "7"
   # Release hardening (issue #35). Release-only: whole-module optimization makes
   # Debug slow and undebuggable, and dSYMs are only wanted for shipped builds.
   configs:
@@ -48,7 +48,7 @@ targets:
     info:
       path: ThirdHand/Info.plist
       properties:
-        CFBundleDisplayName: Third Hand
+        CFBundleDisplayName: Pulse
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen:
@@ -65,8 +65,8 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         ITSAppUsesNonExemptEncryption: false
-        NSCalendarsFullAccessUsageDescription: Third Hand reads your calendar to show what needs a reply, a decision or your attention. Nothing leaves your device.
-        NSRemindersFullAccessUsageDescription: Third Hand reads your reminders so overdue and due-today tasks show up on your board. Nothing leaves your device.
+        NSCalendarsFullAccessUsageDescription: Pulse reads your calendar to show what needs a reply, a decision or your attention. Nothing leaves your device.
+        NSRemindersFullAccessUsageDescription: Pulse reads your reminders so overdue and due-today tasks show up on your board. Nothing leaves your device.
         NSSupportsLiveActivities: true
         UIBackgroundModes:
           - fetch
@@ -103,7 +103,7 @@ targets:
     info:
       path: ThirdHandWidgets/Info.plist
       properties:
-        CFBundleDisplayName: Third Hand
+        CFBundleDisplayName: Pulse
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:
@@ -118,7 +118,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.steveafrost.thirdhand.widgets
 
   # M7.1. The Share Extension is the honest on-device capture path for Slack,
-  # Gmail and GitHub: no OAuth app exists for Third Hand, so the user hands it a link
+  # Gmail and GitHub: no OAuth app exists for Pulse, so the user hands it a link
   # and the app turns that link into an item. It shares the app group with the
   # app (that is the only channel it has) and depends on ThirdHandCore for the
   # `SharedLinkWriter`, so the write format cannot drift from the reader.
@@ -132,7 +132,7 @@ targets:
     info:
       path: ThirdHandShare/Info.plist
       properties:
-        CFBundleDisplayName: Third Hand
+        CFBundleDisplayName: Pulse
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:

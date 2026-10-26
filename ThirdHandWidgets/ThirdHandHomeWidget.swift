@@ -196,7 +196,7 @@ struct ThirdHandHomeWidget: Widget {
         StaticConfiguration(kind: Self.kind, provider: ThirdHandProvider()) { entry in
             ThirdHandHomeWidgetView(entry: entry)
         }
-        .configurationDisplayName("Third Hand Now")
+        .configurationDisplayName("Pulse Now")
         .description("What needs you right now.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }

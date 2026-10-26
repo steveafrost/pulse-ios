@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Deliberately distinct from `ThirdHandStoreError`: a store error is about item
 /// semantics, a sync error is about the wire. The app maps them to different UI
-/// states -- `unsupportedSchemaVersion` is the contract's "update Third Hand" banner,
+/// states -- `unsupportedSchemaVersion` is the contract's "update Pulse" banner,
 /// everything else is a retryable sync failure.
 public enum ThirdHandSyncError: Error, Sendable, Hashable, CustomStringConvertible {
     /// `snapshot.json` on disk was written by a build newer than this one. Per the
@@ -37,13 +37,13 @@ public enum ThirdHandSyncError: Error, Sendable, Hashable, CustomStringConvertib
     public var description: String {
         switch self {
         case .unsupportedSchemaVersion(let found, let supported):
-            "snapshot schemaVersion \(found) is newer than this build supports (\(supported)); update Third Hand"
+            "snapshot schemaVersion \(found) is newer than this build supports (\(supported)); update Pulse"
         case .pathEscapesRoot(let path):
             "sync path escapes the container root: \(path)"
         case .iCloudUnavailable:
-            "iCloud is unavailable; sign in to iCloud to mirror Third Hand to the Mac"
+            "iCloud is unavailable; sign in to iCloud to mirror Pulse to the Mac"
         case .iCloudDirectoryUnavailable(let why):
-            "couldn't create the Third Hand folder in iCloud Drive: \(why)"
+            "couldn't create the Pulse folder in iCloud Drive: \(why)"
         case .iCloudDownloadTimedOut(let path):
             "timed out downloading \(path) from iCloud"
         case .atomicWriteFailed(let why):

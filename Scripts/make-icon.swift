@@ -1,12 +1,34 @@
 #!/usr/bin/env swift
 //
-// Scripts/make-icon.swift — reproducible App Store icon generator for Third Hand.
+// Scripts/make-icon.swift — reproducible App Store icon generator for Pulse.
 //
 // Produces the iOS 18/27 single-size 1024x1024 icon plus the dark and tinted
 // appearance variants. Flat, opaque, full-bleed: no alpha, no rounded corners,
 // no gradient, no text (docs/DESIGN.md §1-2: urgency is position, not colour;
-// HorizonNow is the accent). The mark is a single bold pulse glyph so it still
-// reads at 40 pt.
+// HorizonNow is the accent).
+//
+// The mark: one pulse waveform carrying three beats — calendar, mail, reminders —
+// with the centre beat dominant. Keeping the pulse on three things at once, all
+// on one line, resolving to one answer. The dominant centre beat is the one thing
+// that needs you; the smaller outer beats are the sources that are quiet but
+// still watched.
+//
+// What earlier attempts got wrong, recorded because each is a tempting idea that
+// does not survive 40 pt:
+//
+//   * **Three ribbons converging.** Literal and legible at 1024, but at 40 pt the
+//     three hairlines fuse into a wedge and the convergence reads as a printing
+//     defect. One line with three beats says "three" using amplitude instead of
+//     count, which is what survives downscaling.
+//   * **A detachable attention dot.** Shipped for two iterations: a disc floating
+//     over the peak. It cannot win — small enough not to crowd the beat, it
+//     rasterises to a speck at 40 pt; large enough to read, it collides with the
+//     beat and looks like an exclamation mark. The dominant beat carries the
+//     emphasis instead.
+//   * **Edge-bleeding strokes.** A line that runs off both edges reads as a
+//     banner, not an icon: it has no silhouette and looks cropped in a rounded
+//     mask. The mark is fully contained now, with margins the OS mask cannot eat.
+//   * **Thin strokes.** Anything under ~110 pt at 1024 disappears at 40 pt.
 //
 // Run:  swift Scripts/make-icon.swift
 // Out:  ThirdHand/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
@@ -72,26 +94,65 @@ func makeContext() -> CGContext {
     return ctx
 }
 
-/// The mark: one board-wide pulse. It bleeds off both edges rather than sitting
-/// centred, which keeps the "full-bleed, no margin" contract and reads as a line
-/// drawn under the board rather than a medical squiggle. A single filled dot at
-/// the apex is the "one thing that needs you now" (docs/DESIGN.md §1: one numeric
-/// emphasis per screen). Two shapes only, so it survives 40 pt.
-func pulsePath() -> CGPath {
-    let points: [CGPoint] = [
-        CGPoint(x: -40, y: 560),
-        CGPoint(x: 214, y: 560),
-        CGPoint(x: 296, y: 646),
-        CGPoint(x: 392, y: 560),
-        CGPoint(x: 468, y: 560),
-        CGPoint(x: 566, y: 380),   // apex of the spike
-        CGPoint(x: 668, y: 706),   // the trough
-        CGPoint(x: 756, y: 468),
-        CGPoint(x: 820, y: 560),
-        CGPoint(x: 1064, y: 560),  // bleeds off the right edge
-    ]
+// MARK: - Geometry
+
+/// The centreline the waveform rides on.
+///
+/// Above the geometric centre (512) because the beats' troughs reach further down
+/// than their peaks reach up — the large centre beat's peak is 236 above the line
+/// and its trough 148 below. Sitting on 506 balances that visual mass; on 512 the
+/// mark looks like it has slid down the icon.
+let centreline: CGFloat = 506
+
+/// Every mark coordinate is an offset from the canvas centre, so the geometry is
+/// independent of where the centreline sits.
+let mid: CGFloat = 512
+
+/// The three beats: a small one for the first source, the dominant centre one,
+/// and a slightly larger small one for the third.
+///
+/// `halfWidth` and `up`/`down` are what make the difference between "a heartbeat
+/// monitor" and "one thing needs you": two of these are quiet, one is not. Three
+/// equal beats reads as decoration; three beats with a clear centre reads as a
+/// priority.
+struct Beat {
+    /// Horizontal offset from the canvas centre. Symmetric, so the dominant beat
+    /// is optically centred while the outer two balance it.
+    let dx: CGFloat
+    /// How far the peak rises above the centreline.
+    let up: CGFloat
+    /// How far the trough drops below the centreline.
+    let down: CGFloat
+    /// Half the width of this beat's span.
+    let halfWidth: CGFloat
+}
+
+let beats: [Beat] = [
+    Beat(dx: -252, up: 96, down: 66, halfWidth: 92),
+    Beat(dx: 0, up: 236, down: 148, halfWidth: 104),
+    Beat(dx: 252, up: 118, down: 80, halfWidth: 96),
+]
+
+/// Where the flat run enters and leaves the mark.
+///
+/// Not touching the canvas edges: an edge-bleeding line has no silhouette and
+/// looks cropped once the OS applies its rounded mask.
+let markInset: CGFloat = 158
+
+/// Stroke weight. 124 at 1024 is the thinnest weight that still renders as a
+/// continuous line at the 40 pt size iOS asks for.
+let strokeWeight: CGFloat = 124
+
+/// The mark: a flat run in, three beats, a flat run out.
+func markPath() -> CGPath {
     let path = CGMutablePath()
-    path.addLines(between: points)
+    path.move(to: CGPoint(x: markInset, y: centreline))
+    for beat in beats {
+        path.addLine(to: CGPoint(x: mid + beat.dx - beat.halfWidth, y: centreline))
+        path.addLine(to: CGPoint(x: mid + beat.dx, y: centreline - beat.up))
+        path.addLine(to: CGPoint(x: mid + beat.dx + beat.halfWidth, y: centreline + beat.down))
+    }
+    path.addLine(to: CGPoint(x: CGFloat(size) - markInset, y: centreline))
     return path
 }
 
@@ -105,22 +166,18 @@ func render(_ variant: Variant) -> CGImage {
                              alpha: 1))
     ctx.fill(CGRect(x: 0, y: 0, width: size, height: size))
 
-    let ink = CGColor(srgbRed: variant.glyph.0,
-                      green: variant.glyph.1,
-                      blue: variant.glyph.2,
-                      alpha: 1)
-    ctx.setStrokeColor(ink)
-    ctx.setLineWidth(72)
+    ctx.setStrokeColor(CGColor(srgbRed: variant.glyph.0,
+                               green: variant.glyph.1,
+                               blue: variant.glyph.2,
+                               alpha: 1))
+    ctx.setLineWidth(strokeWeight)
+    // Round caps and joins: the beats are sharp changes of direction, and a miter
+    // join spikes out at the peaks — visible as little horns at small sizes.
     ctx.setLineCap(.round)
     ctx.setLineJoin(.round)
-    ctx.addPath(pulsePath())
-    ctx.strokePath()
 
-    // The attention point: a filled disc floating above the apex of the spike,
-    // clear of the stroke so the mark reads as "one thing flagged", not a
-    // lollipop. 96 pt across reads at 40 pt display.
-    ctx.setFillColor(ink)
-    ctx.fillEllipse(in: CGRect(x: 566 - 50, y: 312 - 50, width: 100, height: 100))
+    ctx.addPath(markPath())
+    ctx.strokePath()
 
     guard let image = ctx.makeImage() else { fatalError("no image") }
     return image

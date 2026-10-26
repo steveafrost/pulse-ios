@@ -103,7 +103,7 @@ struct ThirdHandAccessoryWidget: Widget {
         StaticConfiguration(kind: Self.kind, provider: ThirdHandProvider()) { entry in
             ThirdHandAccessoryWidgetView(entry: entry)
         }
-        .configurationDisplayName("Third Hand")
+        .configurationDisplayName("Pulse")
         .description("What needs you, on the Lock Screen.")
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
     }

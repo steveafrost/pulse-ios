@@ -57,7 +57,7 @@ public enum ItemIdentity {
         "gmail:message:\(messageID)"
     }
 
-    /// `<source>:link:<hash>` for a link the user shared into Third Hand (M7.1).
+    /// `<source>:link:<hash>` for a link the user shared into Pulse (M7.1).
     ///
     /// The URL is normalised here rather than trusted from the caller: passing a raw
     /// share would otherwise mint a different id for every `utm_` variant, which is

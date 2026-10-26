@@ -61,7 +61,7 @@ public enum ThirdHandStoreError: Error, Sendable, Hashable, CustomStringConverti
         case .unknownVerb(let verb):
             "unknown action \(verb)"
         case .unsupportedSchemaVersion(let found, let supported):
-            "snapshot schemaVersion \(found) is newer than this build supports (\(supported)); update Third Hand"
+            "snapshot schemaVersion \(found) is newer than this build supports (\(supported)); update Pulse"
         }
     }
 

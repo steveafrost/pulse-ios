@@ -28,7 +28,7 @@ public enum KeychainError: Error, Sendable, Hashable, CustomStringConvertible {
 
 /// Store/read/delete one credential per account key.
 ///
-/// This is the only type in Third Hand that talks to `SecItem`. The protocol exists
+/// This is the only type in Pulse that talks to `SecItem`. The protocol exists
 /// so `EmailSource` can be tested on a machine with no Keychain (the macOS test host
 /// gives `errSecMissingEntitlement` for data-protection items), which is why
 /// `InMemorySecretStore` can stand in for it exactly.
@@ -41,7 +41,7 @@ public enum KeychainError: Error, Sendable, Hashable, CustomStringConvertible {
 /// second device does not clone the mail password. `kSecAttrSynchronizable` is never
 /// set, and there is no `applicationPassword`/`kSecAttrGeneric` copy of the secret.
 public struct KeychainSecretStore: SecretStoring, @unchecked Sendable {
-    /// The Keychain service all Third Hand IMAP passwords are filed under.
+    /// The Keychain service all Pulse IMAP passwords are filed under.
     ///
     /// One service, one account per mailbox (`EmailAccount.keychainAccount`), so a
     /// delete of one mailbox cannot touch another's secret.

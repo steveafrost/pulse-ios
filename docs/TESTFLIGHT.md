@@ -1,6 +1,6 @@
-# TestFlight — Third Hand Beta
+# TestFlight — Pulse Beta
 
-The internal TestFlight setup for Third Hand: the group, who is in it, how a build gets
+The internal TestFlight setup for Pulse: the group, who is in it, how a build gets
 there, and what testers should do with it.
 
 **Current state: build uploaded and processed.** The app record, internal group
@@ -15,7 +15,7 @@ Status as of 24 October 2026:
 | Bundle IDs registered (`…thirdhand`, `…thirdhand.widgets`, `…thirdhand.share`) | done — `3SV5SH94CF`, `8UHD7M7N6D`, `9NL57L5636` |
 | App Groups + iCloud container entitlements in the archive | done — verified in the exported `.ipa` |
 | App Store Connect app record | done — **`6826457943`**, SKU `thirdhand-ios-001` |
-| Internal group `Third Hand Beta` | done — `db830c96-822f-404b-a867-905261424a1b` |
+| Internal group `Pulse Beta` | done — `db830c96-822f-404b-a867-905261424a1b` |
 | Internal tester | done — `hello@steveafrost.com` |
 | Build uploaded and processed | done — `0.1.0` (**2**), `processingState: VALID` |
 | Build attached to the beta group | **not verified** — see below |
@@ -27,7 +27,7 @@ Status as of 24 October 2026:
 `asc builds add-beta-group` exits 0 and prints nothing, twice, and `asc` exposes
 no read-back for a build's groups. The build is processed and the group has a
 tester, but whether the build is *in* the group has not been observed. Check the
-TestFlight tab: if the build is listed under "Third Hand Beta", this row is done.
+TestFlight tab: if the build is listed under "Pulse Beta", this row is done.
 
 ### Version string
 
@@ -59,7 +59,7 @@ $ asc apps list | jq -r '.data[].bundleId' | grep -c pulse
 0
 ```
 
-Ten apps are in the account and none is Third Hand. So:
+Ten apps are in the account and none is Pulse. So:
 
 1. Open <https://appstoreconnect.apple.com/apps>
 2. **My Apps** → **+** → **New App**
@@ -68,16 +68,16 @@ Ten apps are in the account and none is Third Hand. So:
    | Field | Value |
    | --- | --- |
    | Platform | iOS |
-   | Name | `Third Hand — What Needs You` |
+   | Name | `Pulse — What Needs You` |
    | Primary Language | English (U.S.) |
-   | Bundle ID | `Third Hand` (`com.steveafrost.thirdhand`) |
+   | Bundle ID | `Pulse` (`com.steveafrost.thirdhand`) |
    | SKU | `thirdhand-ios-001` |
    | User Access | Full Access |
 
 4. **Create**
 
-The name field will reject plain `Third Hand` — it is already held by another
-developer. `Third Hand — What Needs You` was confirmed available; see
+The name field will reject plain `Pulse` — it is already held by another
+developer. `Pulse — What Needs You` was confirmed available; see
 [`APPSTORE-SETUP.md`](APPSTORE-SETUP.md) §3.
 
 Then copy the numeric id out of the URL (`…/apps/<ID>/…`) and record it:
@@ -109,7 +109,7 @@ THIRDHAND_ASC_APP_ID=<ID> fastlane ios groups
 Or by hand:
 
 ```sh
-asc testflight groups create --app-id <ID> --name "Third Hand Beta" --internal
+asc testflight groups create --app-id <ID> --name "Pulse Beta" --internal
 asc testflight groups list   --app-id <ID> --pretty
 ```
 
@@ -120,17 +120,17 @@ until one is uploaded:
 {
   "data": {
     "id": "<GROUP_ID>",
-    "name": "Third Hand Beta",
+    "name": "Pulse Beta",
     "isInternalGroup": true
   }
 }
 ```
 
-### Why "Third Hand Beta" and not "Third Hand Internal"
+### Why "Pulse Beta" and not "Pulse Internal"
 
-The name shows in the TestFlight app under the app icon. `Third Hand Beta` reads as a
-product stage; `Third Hand Internal` reads as a team. Either works technically; the
-fastlane lane looks for the literal string `Third Hand Beta`, so if you rename it,
+The name shows in the TestFlight app under the app icon. `Pulse Beta` reads as a
+product stage; `Pulse Internal` reads as a team. Either works technically; the
+fastlane lane looks for the literal string `Pulse Beta`, so if you rename it,
 rename it in `fastlane/Fastfile` too (`groups` lane).
 
 ---
@@ -158,7 +158,7 @@ No address is hardcoded anywhere in this repo. With `THIRDHAND_BETA_TESTERS` uns
 lane adds nobody and prints the click-path instead.
 
 Each tester gets an Apple email inviting them to test, and must accept it once.
-Then: **TestFlight app → Third Hand → Install**. Builds then update automatically.
+Then: **TestFlight app → Pulse → Install**. Builds then update automatically.
 
 **Tester list** (fill in as people are added — nothing is invented here):
 
@@ -200,7 +200,7 @@ output is not evidence — check the TestFlight tab instead.
 Paste into the build's Test Information → What to Test:
 
 ```
-Thanks for testing the first Third Hand build. Five things matter most:
+Thanks for testing the first Pulse build. Five things matter most:
 
 1. BOARD ORDER. Items should be grouped Now / Next / Later / Nice to Know and
    ordered by urgency inside each group. Does the order match your intuition
@@ -261,7 +261,7 @@ and the widget, or from an unsigned extension. Both are prevented here by
 ## 7. Checklist to first tester
 
 - [ ] App record created, `THIRDHAND_ASC_APP_ID` recorded (§1)
-- [ ] Internal group `Third Hand Beta` created (§2)
+- [ ] Internal group `Pulse Beta` created (§2)
 - [ ] `fastlane ios beta` succeeded, upload accepted
 - [ ] Build reached `processingState: VALID`
 - [ ] Build attached to the group

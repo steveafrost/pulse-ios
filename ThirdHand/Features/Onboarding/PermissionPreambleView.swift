@@ -27,7 +27,7 @@ public struct PermissionPreambleView: View {
                 .accessibilityHidden(true)
 
             VStack(spacing: ThirdHandSpacing.xs) {
-                Text("Third Hand reads your \(step == .calendar ? "calendar" : "reminders") to know what needs you.")
+                Text("Pulse reads your \(step == .calendar ? "calendar" : "reminders") to know what needs you.")
                     .font(ThirdHandTypography.emptyTitle)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(ThirdHandColor.textPrimary)

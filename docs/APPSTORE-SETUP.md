@@ -1,4 +1,4 @@
-# App Store Connect & Developer Portal Setup — Third Hand iOS
+# App Store Connect & Developer Portal Setup — Pulse iOS
 
 Account-side plumbing for the first TestFlight upload. No Swift, no build, no upload.
 Last updated by the provisioning pass on `main`.
@@ -26,7 +26,7 @@ Both App IDs were created with `platform: ios`, which the API normalises to `UNI
 asc bundle-ids list --identifier "com.steveafrost.thirdhand" --pretty
 ```
 
-> Note: bare `asc bundle-ids list` is paginated to the first 20 rows and the Third Hand IDs do
+> Note: bare `asc bundle-ids list` is paginated to the first 20 rows and the Pulse IDs do
 > not appear in that page. Always pass `--identifier` when checking.
 
 ### Capabilities: not settable by this CLI
@@ -61,16 +61,16 @@ Both bundle ids need **App Groups**; the main app additionally needs **iCloud**.
 ### 2a. Create the App Group — do this first
 
 1. <https://developer.apple.com/account/resources/identifiers/list/appGroup> → **Identifiers → App Groups** → **+**
-2. Register an App Group: Description `Third Hand`, Identifier `group.com.steveafrost.thirdhand` → **Continue** → **Register**
+2. Register an App Group: Description `Pulse`, Identifier `group.com.steveafrost.thirdhand` → **Continue** → **Register**
 
 ### 2b. Create the iCloud container
 
 1. <https://developer.apple.com/account/resources/identifiers/list/cloudContainer> → **Identifiers → iCloud Containers** → **+**
-2. Description `Third Hand`, Identifier `iCloud.com.steveafrost.thirdhand` → **Continue** → **Register**
+2. Description `Pulse`, Identifier `iCloud.com.steveafrost.thirdhand` → **Continue** → **Register**
 
 ### 2c. Main app — `com.steveafrost.thirdhand`
 
-1. <https://developer.apple.com/account/resources/identifiers/list> → **Identifiers → App IDs** → click `Third Hand` (`com.steveafrost.thirdhand`)
+1. <https://developer.apple.com/account/resources/identifiers/list> → **Identifiers → App IDs** → click `Pulse` (`com.steveafrost.thirdhand`)
 2. Under **Capabilities**, tick:
    - **App Groups** → **Configure** → tick `group.com.steveafrost.thirdhand` → **Continue**
    - **iCloud** → **Configure** → *Enable iCloud*; tick **CloudKit**? **NO**; tick **iCloud Documents** → **Continue**.
@@ -81,7 +81,7 @@ Both bundle ids need **App Groups**; the main app additionally needs **iCloud**.
 
 ### 2d. Widget — `com.steveafrost.thirdhand.widgets`
 
-1. Same **App IDs** list → click `Third Hand Widgets` (`com.steveafrost.thirdhand.widgets`)
+1. Same **App IDs** list → click `Pulse Widgets` (`com.steveafrost.thirdhand.widgets`)
 2. Tick **App Groups** → **Configure** → tick `group.com.steveafrost.thirdhand` → **Continue**
 3. **Save**. No iCloud capability on the widget. Do **not** tick Push or In-App Purchase —
    neither is needed for the MVP.
@@ -89,7 +89,7 @@ Both bundle ids need **App Groups**; the main app additionally needs **iCloud**.
 Entitlements already declared in `project.yml` and matching the above:
 
 ```yaml
-# Third Hand target
+# Pulse target
 com.apple.developer.icloud-container-identifiers: [iCloud.com.steveafrost.thirdhand]
 com.apple.developer.icloud-services: [CloudDocuments]
 com.apple.developer.ubiquity-container-identifiers: [iCloud.com.steveafrost.thirdhand]
@@ -102,29 +102,29 @@ com.apple.security.application-groups: [group.com.steveafrost.thirdhand]
 
 ## 3. App record — portal steps (TODO)
 
-### The name "Third Hand" is TAKEN
+### The name "Pulse" is TAKEN
 
-An exact-title match exists on the App Store: **`Third Hand`** by `ua.com.pulse.app`
-(present in the US, GB, CA, AU, DE, FR and JP storefronts, plus separate "Third Hand"
-titles from other developers). The name `Third Hand` cannot be used as the App Store name.
+An exact-title match exists on the App Store: **`Pulse`** by `ua.com.pulse.app`
+(present in the US, GB, CA, AU, DE, FR and JP storefronts, plus separate "Pulse"
+titles from other developers). The name `Pulse` cannot be used as the App Store name.
 
 Ranked alternatives (all verified **free** — no exact-title match in US or GB):
 
-1. **`Third Hand — What Needs You`** — recommended. Keeps the brand, states the value prop,
+1. **`Pulse — What Needs You`** — recommended. Keeps the brand, states the value prop,
    and is the closest to the product line "what needs me right now?".
-2. **`Third Hand Board`** — short, matches the Now/Next/Later/Nice-to-Know board metaphor.
-3. **`Third Hand Daily`** — short, works if the product leans into the daily-review rhythm.
+2. **`Pulse Board`** — short, matches the Now/Next/Later/Nice-to-Know board metaphor.
+3. **`Pulse Daily`** — short, works if the product leans into the daily-review rhythm.
 
 Use the full name in the App Store listing; the Home Screen display name can stay
-`Third Hand` (`CFBundleDisplayName`) — that is independent of App Store name uniqueness.
+`Pulse` (`CFBundleDisplayName`) — that is independent of App Store name uniqueness.
 
 ### Create it
 
 1. <https://appstoreconnect.apple.com/apps> → **My Apps** → **+** → **New App**
 2. Platform **iOS**
-3. Name: **`Third Hand — What Needs You`** (or #2/#3 if that is rejected)
+3. Name: **`Pulse — What Needs You`** (or #2/#3 if that is rejected)
 4. Primary Language: **English (U.S.)**
-5. Bundle ID: **`Third Hand` (`com.steveafrost.thirdhand`)** — appears in the picker now that §1 is done
+5. Bundle ID: **`Pulse` (`com.steveafrost.thirdhand`)** — appears in the picker now that §1 is done
 6. SKU: **`thirdhand-ios-001`**
 7. User Access: Full Access → **Create**
 
@@ -133,7 +133,7 @@ Record the resulting numeric **Apple ID / app id** here once created: `_________
 ### Why the CLI could not do it
 
 ```
-$ asc apps create --name "Third Hand" --bundle-id com.steveafrost.thirdhand --sku thirdhand-ios-001
+$ asc apps create --name "Pulse" --bundle-id com.steveafrost.thirdhand --sku thirdhand-ios-001
 Error: Unknown option '--name'
 Usage: asc apps <subcommand>
 
@@ -147,13 +147,13 @@ There is no public-API app-creation endpoint. The only CLI route is the private 
 which needs a browser cookie session that this environment does not have:
 
 ```
-$ asc iris apps create --name "Third Hand" --bundle-id com.steveafrost.thirdhand --sku thirdhand-ios-001
+$ asc iris apps create --name "Pulse" --bundle-id com.steveafrost.thirdhand --sku thirdhand-ios-001
 Error: No App Store Connect cookies found. Log in to appstoreconnect.apple.com in your browser, or set ASC_IRIS_COOKIES environment variable.
 ```
 
 If you want to try the CLI instead of clicking: log in to App Store Connect in Safari,
 set `ASC_IRIS_COOKIES`, then
-`asc iris apps create --name "Third Hand — What Needs You" --bundle-id com.steveafrost.thirdhand --sku thirdhand-ios-001 --primary-locale en-US --platforms IOS --version 1.0`.
+`asc iris apps create --name "Pulse — What Needs You" --bundle-id com.steveafrost.thirdhand --sku thirdhand-ios-001 --primary-locale en-US --platforms IOS --version 1.0`.
 
 ---
 
@@ -230,7 +230,7 @@ no web browsing, no ads, no chat, no gambling.
 
 - **Support URL**: `https://github.com/steveafrost/thirdhand-ios` (verified reachable, HTTP 200;
   the repo remote is exactly this). This is the existing, correct destination — no better
-  Third Hand-specific site exists yet.
+  Pulse-specific site exists yet.
 - **Marketing URL**: optional. Use the same GitHub URL until a landing page exists.
 - **Privacy Policy URL**: still required for submission even when zero data is collected.
   Not settable before the app record; supply a URL before submitting for review.
@@ -282,7 +282,7 @@ answer is Data Not Collected.
 - [x] App ID `com.steveafrost.thirdhand.widgets` registered — resource id `33GP8PGDGU`
 - [x] Both App IDs on seed `4QJ25Y85MX`, platform iOS/UNIVERSAL
 - [x] Category ids `PRODUCTIVITY` + `BUSINESS` validated against the API
-- [x] App Store name availability checked — `Third Hand` is taken; 3 alternatives verified free
+- [x] App Store name availability checked — `Pulse` is taken; 3 alternatives verified free
 - [x] Confirmed Apple Distribution certificate already exists (no new cert created)
 
 ### Still needs the portal
@@ -292,13 +292,13 @@ answer is Data Not Collected.
 - [ ] Create iCloud container `iCloud.com.steveafrost.thirdhand`
       — Identifiers → iCloud Containers → **+**
 - [ ] Enable **App Groups** on `com.steveafrost.thirdhand` (tick the group)
-      — Identifiers → App IDs → Third Hand → Capabilities → App Groups → Configure
+      — Identifiers → App IDs → Pulse → Capabilities → App Groups → Configure
 - [ ] Enable **iCloud** on `com.steveafrost.thirdhand`, sub-option **iCloud Documents** only
       (not CloudKit), container `iCloud.com.steveafrost.thirdhand`
-      — Identifiers → App IDs → Third Hand → Capabilities → iCloud → Configure
+      — Identifiers → App IDs → Pulse → Capabilities → iCloud → Configure
 - [ ] Enable **App Groups** on `com.steveafrost.thirdhand.widgets` (tick the group)
-      — Identifiers → App IDs → Third Hand Widgets → Capabilities → App Groups → Configure
-- [ ] Create the app record (name `Third Hand — What Needs You`, SKU `thirdhand-ios-001`)
+      — Identifiers → App IDs → Pulse Widgets → Capabilities → App Groups → Configure
+- [ ] Create the app record (name `Pulse — What Needs You`, SKU `thirdhand-ios-001`)
       — App Store Connect → My Apps → **+** → New App
 - [ ] Set primary category `PRODUCTIVITY`, secondary `BUSINESS`
       — App Information → Category
@@ -347,4 +347,4 @@ here; there is no shipping code yet.
 - `asc` version 0.18.2, authenticated profile `tiptrack`, active, source `file`.
 - No `ASC_IRIS_COOKIES` in the environment; the private API is therefore unavailable.
 - Existing DISTRIBUTION certificates: `N5XNR96XV9`, `N74D4ZRCV9` (both `STEVEN ALLEN FROST`).
-- No Provisioning Profiles exist yet for either Third Hand bundle id (`asc profiles list` returns `[]`).
+- No Provisioning Profiles exist yet for either Pulse bundle id (`asc profiles list` returns `[]`).

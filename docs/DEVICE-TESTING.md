@@ -39,13 +39,13 @@ evidence is treated as unverified.
 entire transport is untested against a real filesystem.
 
 1. Sign in to iCloud on the device, with **iCloud Drive ON**.
-2. Launch Third Hand. Open Settings (in-app) → the sync line must read a connected state,
+2. Launch Pulse. Open Settings (in-app) → the sync line must read a connected state,
    not "Not connected to iCloud".
 3. **Pass:** sync line names the Mac or shows a connected/publishing state.
    **Fail:** "Not connected to iCloud" while the device is demonstrably signed in —
    that means an entitlement or container-identifier problem, not an account one.
 4. Now turn **iCloud Drive OFF** (Settings → your name → iCloud → iCloud Drive).
-5. Relaunch Third Hand. **Pass:** the app still opens, the board renders from local
+5. Relaunch Pulse. **Pass:** the app still opens, the board renders from local
    storage, and the sync line clearly says iCloud is not connected. **Fail:** any
    crash, hang, or a board that silently shows stale data as if live.
 6. Turn iCloud Drive back ON. **Pass:** sync recovers without a reinstall.
@@ -75,11 +75,11 @@ worth noting; over 60 s is a product problem.
 
 ## 3. EventKit permissions on real hardware
 
-1. Fresh install. Open Third Hand → grant Calendar when prompted → confirm items appear.
+1. Fresh install. Open Pulse → grant Calendar when prompted → confirm items appear.
 2. Delete the app. Reinstall. Deny Calendar. **Pass:** the board explains what is
    missing and offers a route to Settings. **Fail:** an empty board with no
    explanation, or a crash.
-3. Go to Settings → Third Hand → enable Calendar. Return to the app. **Pass:** capture
+3. Go to Settings → Pulse → enable Calendar. Return to the app. **Pass:** capture
    resumes without a relaunch.
 4. Repeat for Reminders, including denying one and granting the other.
 5. Enable **Screen Time content restrictions** that restrict calendar access
@@ -94,12 +94,12 @@ scheduled on demand. Its real behaviour is a budget iOS grants, and only a devic
 over hours reveals whether the board stays fresh.
 
 1. Fully charge the device. Note the time.
-2. Use Third Hand normally, then leave it backgrounded for **at least 4 hours** without
+2. Use Pulse normally, then leave it backgrounded for **at least 4 hours** without
    opening it.
 3. At the end, check the timestamp on the board's capture capsule — it must be
    recent, not the time you backgrounded it.
-4. Check battery drain in Settings → Battery, filtering to Third Hand. Record the
-   percentage over the window. More than ~3% attributable to Third Hand is worth
+4. Check battery drain in Settings → Battery, filtering to Pulse. Record the
+   percentage over the window. More than ~3% attributable to Pulse is worth
    investigating.
 5. **Pass:** the board refreshed in the background and drain is modest.
    **Fail:** no refresh at all past 4 h (report it — iOS may be throttling because
@@ -113,7 +113,7 @@ over hours reveals whether the board stays fresh.
 3. On a Dynamic Island device, check all presentations: compact leading/trailing,
    minimal, expanded.
 4. End the meeting time. **Pass:** the activity ends cleanly, not stuck.
-5. Go to Settings → Third Hand → **turn Live Activities OFF**. Trigger another imminent
+5. Go to Settings → Pulse → **turn Live Activities OFF**. Trigger another imminent
    meeting. **Pass:** no crash, no stuck spinner, and the app behaves as documented.
    **Fail:** a crash or a phantom activity.
 

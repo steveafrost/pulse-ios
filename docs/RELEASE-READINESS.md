@@ -1,6 +1,6 @@
 # Release readiness — first TestFlight build
 
-Everything checked before the first Third Hand beta, what passed, and what is still
+Everything checked before the first Pulse beta, what passed, and what is still
 blocked. Issue references are to the repository tracker (#33–#38).
 
 **Verdict: build-ready, not upload-ready.** The archive, the export, the icon, the
@@ -130,7 +130,7 @@ $ fastlane ios build_only
 ==> archive 0.1.0 (1)
 ** ARCHIVE SUCCEEDED **
 ==> export .ipa
-Exported Third Hand to: /tmp/pulse-verify/build/export
+Exported Pulse to: /tmp/pulse-verify/build/export
 ** EXPORT SUCCEEDED **
 ipa: /tmp/pulse-verify/build/export/ThirdHand.ipa (1.8 MB, version 0.1.0 build 1)
 ```
@@ -213,13 +213,13 @@ nothing.
 Two required-reason API categories are used. The scan:
 
 ```console
-$ grep -rn "UserDefaults" --include=*.swift Third Hand ThirdHandCore/Sources ThirdHandWidgets | grep -v Tests | wc -l
+$ grep -rn "UserDefaults" --include=*.swift Pulse ThirdHandCore/Sources ThirdHandWidgets | grep -v Tests | wc -l
 9
-$ grep -rn "attributesOfItem\|modificationDate" --include=*.swift Third Hand ThirdHandCore/Sources ThirdHandWidgets
+$ grep -rn "attributesOfItem\|modificationDate" --include=*.swift Pulse ThirdHandCore/Sources ThirdHandWidgets
 ThirdHandCore/.../FileCloudContainer.swift:101,105,107,108
 ThirdHandCore/.../CloudContainer.swift:39,66
 ThirdHandCore/.../ICloudContainer.swift:78,87,95
-$ grep -rn "systemUptime\|mach_absolute_time\|statfs\|volumeAvailableCapacity" --include=*.swift Third Hand ThirdHandCore/Sources ThirdHandWidgets
+$ grep -rn "systemUptime\|mach_absolute_time\|statfs\|volumeAvailableCapacity" --include=*.swift Pulse ThirdHandCore/Sources ThirdHandWidgets
 (no matches)
 ```
 
@@ -318,15 +318,15 @@ its limit:
 
 | Field | Value | Length / limit |
 | --- | --- | --- |
-| Name | `Third Hand — What Needs You` | 22 / 30 |
+| Name | `Pulse — What Needs You` | 22 / 30 |
 | Subtitle | `Your day, ordered by urgency` | 28 / 30 |
 | Promotional text | see the doc | 155 / 170 |
 | Description | see the doc | 2 542 / 4 000 |
 | Keywords | 11 comma-separated terms | 86 / 100 |
 
 No keyword repeats a word from the name — that wastes characters, because the name
-and subtitle are separately indexed. Plain `Third Hand` is taken, which is why the name
-is qualified; the Home Screen label stays `Third Hand` via `CFBundleDisplayName`, and
+and subtitle are separately indexed. Plain `Pulse` is taken, which is why the name
+is qualified; the Home Screen label stays `Pulse` via `CFBundleDisplayName`, and
 those are independent fields.
 
 Category **Productivity**, no secondary. Age rating **4+** with every content
@@ -436,7 +436,7 @@ $ asc privacy 2>&1 | head -1
 Error: Unexpected argument 'privacy'
 ```
 
-Ten apps in the account, none is Third Hand. The App Store Connect web API has no
+Ten apps in the account, none is Pulse. The App Store Connect web API has no
 public create-app endpoint, so this is a click-path:
 
 **App Store Connect → My Apps → + → New App**
@@ -444,9 +444,9 @@ public create-app endpoint, so this is a click-path:
 | Field | Value |
 | --- | --- |
 | Platform | iOS |
-| Name | `Third Hand — What Needs You` |
+| Name | `Pulse — What Needs You` |
 | Primary Language | English (U.S.) |
-| Bundle ID | `Third Hand` (`com.steveafrost.thirdhand`) |
+| Bundle ID | `Pulse` (`com.steveafrost.thirdhand`) |
 | SKU | `thirdhand-ios-001` |
 | User Access | Full Access |
 

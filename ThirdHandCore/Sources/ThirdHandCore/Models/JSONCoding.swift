@@ -80,7 +80,7 @@ public enum ThirdHandJSON {
     /// The one date strategy both coders use.
     public static let dates = ThirdHandDateCoding()
 
-    /// Encoder for everything Third Hand writes: snapshot, command acks, tests.
+    /// Encoder for everything Pulse writes: snapshot, command acks, tests.
     public static func makeEncoder(prettyPrinted: Bool = false) -> JSONEncoder {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .custom { date, encoder in
@@ -91,7 +91,7 @@ public enum ThirdHandJSON {
         return encoder
     }
 
-    /// Decoder for everything Third Hand reads.
+    /// Decoder for everything Pulse reads.
     public static func makeDecoder() -> JSONDecoder {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder in

@@ -1,6 +1,11 @@
 import Foundation
 
-/// Namespace for the Third Hand domain layer.
+/// Namespace for the Pulse domain layer.
+///
+/// The app was renamed to Pulse; the module keeps its `ThirdHandCore` name because
+/// the bundle identifier it ships under (`com.steveafrost.thirdhand`) is permanent
+/// once an App Store record exists, and a module name that contradicts its bundle
+/// id is worse than one that lags the display name.
 ///
 /// This package is pure Swift: no EventKit, no filesystem, no UI. It can be
 /// tested with `swift test` on macOS with no simulator involved, which is what CI

@@ -10,7 +10,7 @@ import ThirdHandCore
 /// later on.
 public enum MirrorUnavailable: Equatable {
     /// `url(forUbiquityContainerIdentifier:)` returned nil: signed out of
-    /// iCloud, iCloud Drive off for Third Hand, or the entitlement is missing. On a
+    /// iCloud, iCloud Drive off for Pulse, or the entitlement is missing. On a
     /// simulator this is the normal case.
     case noContainer(String)
     /// The container resolved, but `Documents/ThirdHand/` could not be made. The

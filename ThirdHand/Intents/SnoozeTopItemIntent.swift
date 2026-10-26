@@ -57,7 +57,7 @@ struct SnoozeTopItemIntent: AppIntent {
         do {
             try source.writer.snooze(itemID: top.id, until: until, now: now)
         } catch {
-            let message = "Couldn't snooze \(top.title). Open Third Hand and try again."
+            let message = "Couldn't snooze \(top.title). Open Pulse and try again."
             return .result(dialog: IntentDialog(stringLiteral: message))
         }
 

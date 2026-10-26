@@ -43,7 +43,7 @@ struct ThirdHandApp: App {
         model.onCaptureOutcome = { outcome in mailbox.apply(outcome) }
 
         // The two directions the sync layer needs back into the UI, kept as
-        // closures so `Third Hand` is not a dependency of the sync types.
+        // closures so `Pulse` is not a dependency of the sync types.
         sync.captureHandler = { await capture.runFull() }
         sync.onStoreChanged = { await model.reloadAfterSync() }
         sync.onPublished = { model.refreshSyncStatus() }

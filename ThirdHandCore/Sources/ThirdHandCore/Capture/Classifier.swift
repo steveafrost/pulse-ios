@@ -17,7 +17,7 @@ import Foundation
 /// | Reminder overdue or due today, incomplete | `deadline` | high if overdue | |
 /// | Event/reminder with a link in notes and no action needed | `fyi` | low | collapsed under Nice to Know |
 /// | Imported mail awaiting a reply | `reply` | normal | share-sheet import path |
-/// | Link shared into Third Hand | by host: `review` / `reply` / `decision` / `followup` / `fyi` | normal, `fyi` low | `classifySharedLink` (M7.1) |
+/// | Link shared into Pulse | by host: `review` / `reply` / `decision` / `followup` / `fyi` | normal, `fyi` low | `classifySharedLink` (M7.1) |
 public enum Classifier {
     /// "Meeting accepted=false, start within 7d".
     public static let inviteHorizon: TimeInterval = 7 * CaptureWindow.secondsPerDay
@@ -128,7 +128,7 @@ public enum Classifier {
         "do we want", "decide", "decision needed", "which option", "vote on",
     ]
 
-    /// Row 7: a link the user shared into Third Hand, by host.
+    /// Row 7: a link the user shared into Pulse, by host.
     ///
     /// | Host | kind | priority |
     /// | --- | --- | --- |
@@ -140,7 +140,7 @@ public enum Classifier {
     /// | anything else | `fyi` | low |
     ///
     /// The rule is never "return nothing": a share the user made on purpose must
-    /// appear, even when Third Hand cannot tell what it wants. `fyi` for an unknown host
+    /// appear, even when Pulse cannot tell what it wants. `fyi` for an unknown host
     /// is the honest classification -- it is information, not a task.
     ///
     /// Decision outranks question because "should we ship Friday?" is a decision

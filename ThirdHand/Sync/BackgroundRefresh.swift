@@ -36,7 +36,7 @@ enum BackgroundRefresh {
         }
         #if DEBUG
         if isRegistered {
-            print("[Third Hand] registered \(SyncCoordinator.backgroundTaskIdentifier)")
+            print("[Pulse] registered \(SyncCoordinator.backgroundTaskIdentifier)")
         }
         #endif
     }
@@ -60,7 +60,7 @@ enum BackgroundRefresh {
             // Not fatal: no background slot just means freshness comes from the
             // foreground pass and the 15 s poll while active.
             #if DEBUG
-            print("[Third Hand] couldn't schedule background refresh: \(error)")
+            print("[Pulse] couldn't schedule background refresh: \(error)")
             #endif
         }
     }

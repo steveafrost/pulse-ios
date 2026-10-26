@@ -9,7 +9,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Third Hand</string>
+	<string>Pulse</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -38,9 +38,9 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>Third Hand reads your calendar to show what needs a reply, a decision or your attention. Nothing leaves your device.</string>
+	<string>Pulse reads your calendar to show what needs a reply, a decision or your attention. Nothing leaves your device.</string>
 	<key>NSRemindersFullAccessUsageDescription</key>
-	<string>Third Hand reads your reminders so overdue and due-today tasks show up on your board. Nothing leaves your device.</string>
+	<string>Pulse reads your reminders so overdue and due-today tasks show up on your board. Nothing leaves your device.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIBackgroundModes</key>

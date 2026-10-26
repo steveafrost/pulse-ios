@@ -90,7 +90,7 @@ public struct BoardView: View {
                 .padding(.bottom, ThirdHandSpacing.xs)
                 .background(.bar)
             }
-            .navigationTitle("Third Hand")
+            .navigationTitle("Pulse")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if mailbox != nil {

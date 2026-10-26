@@ -21,7 +21,7 @@ import Foundation
 /// | malformed server response | `CaptureError.underlying` |
 /// | genuinely no unread mail | `[]`, and the source is healthy |
 ///
-/// `denied` (rather than a new case) is the honest mapping: "Third Hand has no mail
+/// `denied` (rather than a new case) is the honest mapping: "Pulse has no mail
 /// access" is the same paused-source state Calendar shows when permission is off, and
 /// `CaptureReport.pausedSources` already surfaces it.
 public struct EmailSource: CaptureSource {

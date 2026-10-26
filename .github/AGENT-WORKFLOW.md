@@ -1,4 +1,4 @@
-# Agent workflow — Third Hand iOS
+# Agent workflow — Pulse iOS
 
 The convention every agent and subagent follows in this repo. The goal: an agent
 with zero prior context can pick up any issue and know exactly how to claim it,

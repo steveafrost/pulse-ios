@@ -8,7 +8,7 @@ import Foundation
 ///    tmp + rename. A reader sees the previous envelope or the new one.
 /// 2. **Never destructive.** If the file on disk carries a higher
 ///    `schemaVersion`, this build does not know all the fields and must not write
-///    over them. It throws and the app shows "update Third Hand".
+///    over them. It throws and the app shows "update Pulse".
 /// 3. **Deterministic.** Items are emitted sorted by id and keys are sorted by the
 ///    shared encoder, so two writes with nothing changed are byte-identical --
 ///    which is what lets the plugin's `generatedAt`-based change detection work

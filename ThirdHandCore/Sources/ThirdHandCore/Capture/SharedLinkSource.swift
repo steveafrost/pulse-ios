@@ -37,7 +37,7 @@ public enum SharedLinkTarget: String, Sendable, CaseIterable, Hashable {
 /// kind rules are unit-tested against plain arrays of `SharedLinkSnapshot`.
 ///
 /// **This source can only ever be as complete as what the user shared.** That is
-/// the point: Slack, Gmail and GitHub have no OAuth app for Third Hand, so a real
+/// the point: Slack, Gmail and GitHub have no OAuth app for Pulse, so a real
 /// pull-from-the-API source would have no way to authenticate and would silently
 /// return nothing. See `docs/DEFERRED-SOURCES.md`.
 public struct SharedLinkSource: CaptureSource {
@@ -88,7 +88,7 @@ public struct SharedLinkSource: CaptureSource {
             title: title(for: link, url: url, target: target),
             detail: detail(for: link),
             url: url,
-            // The share instant, not the message's: it is the only time Third Hand can
+            // The share instant, not the message's: it is the only time Pulse can
             // honestly claim to know, and the board's Horizon uses `due` for
             // "when does this need me". A shared link is never urgent, so `due`
             // stays nil and the item lands in Next/Later by kind.

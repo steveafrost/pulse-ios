@@ -1,6 +1,6 @@
-# Third Hand — Visual Design Specification
+# Pulse — Visual Design Specification
 
-v1, pre-implementation. iOS 27 SDK, Swift 6, SwiftUI. Targets: `Third Hand` (iOS),
+v1, pre-implementation. iOS 27 SDK, Swift 6, SwiftUI. Targets: `Pulse` (iOS),
 `ThirdHandWidgets`, Mac mirror `bb-plugin-thirdhand`. Normative: a named SwiftUI modifier or
 SF Symbol is what ships, and a stated number is the value.
 
@@ -148,7 +148,7 @@ SF Pro **Rounded** remains only on the Now badge.
 
 | Role | Style | Weight | Use |
 | --- | --- | --- | --- |
-| Board title | `.largeTitle` **Serif** | `.bold` | "Third Hand", inline at rest |
+| Board title | `.largeTitle` **Serif** | `.bold` | "Pulse", inline at rest |
 | Section header | `.title3` **Serif** | `.semibold` | "Now" + count |
 | Section hint | `.footnote` | `.regular` | "High priority or due today" |
 | Item title | `.headline` | `.semibold` | 2 lines |
@@ -439,7 +439,7 @@ a jump, and cross-fades step 5 over 0.2s; 7.3 is instant with no delay; and
 
 ### 8.1 Board (`BoardView`) — the app
 
-Layout as 4.1. Nav bar carries an inline `.largeTitle` "Third Hand" plus two glass
+Layout as 4.1. Nav bar carries an inline `.largeTitle` "Pulse" plus two glass
 toolbar buttons (`gearshape`, `ellipsis`). The filter bar is one horizontally
 scrolling `ScrollView` of chips — "All 11", then one per source present in the
 order Calendar / Reminders / Email / Slack / Docs; selecting one filters the board
@@ -493,7 +493,7 @@ footnote "Action sent to Mac" while a command is unacked; **error** — `alert`
 
 | Sheet | Content | States | Primary action |
 | --- | --- | --- | --- |
-| `SettingsView` (`.large`) | **What Third Hand can see** (one row per source: glyph, name, state), **Email** (one row → `EmailAccountView`), **Privacy** ("Everything stays on this device."), **About** (version/build) | granted / denied per source + "Open Settings" deep link | **none** — configuration never carries `glassProminent` |
+| `SettingsView` (`.large`) | **What Pulse can see** (one row per source: glyph, name, state), **Email** (one row → `EmailAccountView`), **Privacy** ("Everything stays on this device."), **About** (version/build) | granted / denied per source + "Open Settings" deep link | **none** — configuration never carries `glassProminent` |
 | `EmailAccountView` (`.large`) | See §8.4 | not connected / connected / password needed | `Connect` · `Save password` (`glassProminent`) |
 
 **What changed and why.** `SettingsView` has been specified here since v1 and did
@@ -561,7 +561,7 @@ no link.
 
 **The source chip and this screen share one copy source** (`statusLine`), so
 "Not connected" / "Checking…" / "N unread messages" cannot drift apart.
-| `PermissionPrimerView` (full-screen cover) | `calendar.badge.checkmark` (64pt, `HorizonNext`), "Third Hand reads your calendar and reminders to know what needs you.", bullets "Nothing leaves your device" / "No account" / "You can revoke any time", `Continue` (`glassProminent`), `Not now` (`.plain`, `TextSecondary`) | single | `Continue` raises the system prompt; Not now dismisses to 9.2 |
+| `PermissionPrimerView` (full-screen cover) | `calendar.badge.checkmark` (64pt, `HorizonNext`), "Pulse reads your calendar and reminders to know what needs you.", bullets "Nothing leaves your device" / "No account" / "You can revoke any time", `Continue` (`glassProminent`), `Not now` (`.plain`, `TextSecondary`) | single | `Continue` raises the system prompt; Not now dismisses to 9.2 |
 | `SnoozeSheet` (`.height(320)`) | Later today (5 PM), Tonight (8 PM), Tomorrow 9 AM, This weekend (Sat 9 AM), Pick a time… (`DatePicker` `.wheel`) | single | none — the options are the action; a tap snoozes and dismisses |
 
 ## 9. Empty states
@@ -572,9 +572,9 @@ glyph, `.title2` `.semibold` heading, `.body` `TextSecondary` centred at max wid
 
 | State | Glyph · tint | Heading | Body | Buttons · footnote |
 | --- | --- | --- | --- | --- |
-| **9.1 Genuinely clear** (captured before, nothing needs the user) | `checkmark.circle.fill` · `StatusDone` | "You're all clear" | "Nothing needs you right now. Third Hand is watching your calendar and reminders, and you can share a Slack thread, a pull request, or an email here to add it." | `Refresh` (`.bordered`, not prominent) · "Last checked 2 minutes ago" |
-| **9.2 Never captured** (no sources connected) | `sparkles` · `HorizonNow` | "Let's see what needs you" | "Connect your calendar and reminders. Third Hand reads them on this device and never sends anything anywhere." | `Connect Calendar` (`glassProminent`), `Not now` (`.plain`) · "You can turn sources on or off later in Settings." If only Reminders is available the primary becomes `Connect Reminders`. |
-| **9.3 Permission denied** | `calendar.badge.exclamationmark` · `StatusError` | "Third Hand can't see your calendar" (the paused source's name: "Third Hand can't see your reminders") | "Calendar access is off. Turn it on in Settings and Third Hand will fill this board." | `Open Settings` (`.bordered`), `Choose sources` (`.plain`) · "Third Hand reads on this device. Nothing leaves it." If reminders still work, those items render above this as a non-blocking banner instead of a full-screen state. |
+| **9.1 Genuinely clear** (captured before, nothing needs the user) | `checkmark.circle.fill` · `StatusDone` | "You're all clear" | "Nothing needs you right now. Pulse is watching your calendar and reminders, and you can share a Slack thread, a pull request, or an email here to add it." | `Refresh` (`.bordered`, not prominent) · "Last checked 2 minutes ago" |
+| **9.2 Never captured** (no sources connected) | `sparkles` · `HorizonNow` | "Let's see what needs you" | "Connect your calendar and reminders. Pulse reads them on this device and never sends anything anywhere." | `Connect Calendar` (`glassProminent`), `Not now` (`.plain`) · "You can turn sources on or off later in Settings." If only Reminders is available the primary becomes `Connect Reminders`. |
+| **9.3 Permission denied** | `calendar.badge.exclamationmark` · `StatusError` | "Pulse can't see your calendar" (the paused source's name: "Pulse can't see your reminders") | "Calendar access is off. Turn it on in Settings and Pulse will fill this board." | `Open Settings` (`.bordered`), `Choose sources` (`.plain`) · "Pulse reads on this device. Nothing leaves it." If reminders still work, those items render above this as a non-blocking banner instead of a full-screen state. |
 
 9.3 applies only when the board is **empty** because of the denial
 (`BoardState.EmptyReason.denied`). With any item renderable the denial is the
@@ -602,14 +602,14 @@ screenshot in 12. All twelve must pass before App Store submission.
 
 ## 11. Widgets and Live Activity
 
-**Widgets.** `.systemSmall` (Third Hand Now) shows the Now count in Rounded `.title`, the
+**Widgets.** `.systemSmall` (Pulse Now) shows the Now count in Rounded `.title`, the
 top item title over 2 lines and its source glyph. `.systemMedium` shows Now (≤2)
 and Next (≤2), title only, with a leading horizon glyph; a row tap deep-links
 `thirdhand://item/<id>`. `.systemLarge` shows all four headers with ≤3 rows each (title +
 due) and never scrolls or shows all.
 
 **Lock Screen.** `.accessoryRectangular` = Now count plus the first item title on 2
-lines. `.accessoryInline` = "Third Hand · 2 need you". `.accessoryCircular` = a `Gauge`
+lines. `.accessoryInline` = "Pulse · 2 need you". `.accessoryCircular` = a `Gauge`
 of the Now count (0–9, `.accessoryCircularCapacity`) with the count centred.
 
 **Live Activity.** Meeting title, countdown ("in 12 min"), short location — with the
@@ -633,7 +633,7 @@ Color("SurfaceCard") }` and nothing else; widgets never use material or glass.
 | 5 | 6.1" 1179×2556 | Board at default Dynamic Type, all four sections visible |
 | 6 | 6.1" | Board at **AX3** — wrapped title, hidden detail, horizontal meta |
 | 7 | 13" 2064×2752 | Board centred at 720pt with canvas margins; detail sheet at `.large` |
-| 8 | 13" | Home Screen with the small, medium and large Third Hand widgets |
+| 8 | 13" | Home Screen with the small, medium and large Pulse widgets |
 | 9 | 6.9" Lock Screen | All three Lock Screen widgets + Live Activity, expanded Dynamic Island |
 | 10–11 | 6.9" | Dark appearance of #1 (the tokens differ), then #1 with **Reduce Transparency on** to prove the material fallback |
 

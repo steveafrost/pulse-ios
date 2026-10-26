@@ -112,11 +112,11 @@ public enum HistoryCopy {
         }
     }
 
-    /// "You", "Third Hand", "Your Mac" — the three writers a person can name.
+    /// "You", "Pulse", "Your Mac" — the three writers a person can name.
     public static func actor(_ raw: String) -> String {
         switch raw {
         case "user": return "You"
-        case "capture": return "Third Hand"
+        case "capture": return "Pulse"
         case "mirror": return "Your Mac"
         default: return raw.replacingOccurrences(of: "-", with: " ").capitalizedFirst
         }

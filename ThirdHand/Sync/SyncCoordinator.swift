@@ -264,7 +264,7 @@ public final class SyncCoordinator {
         guard pollTask == nil else { return }
         log.append("polling every \(Int(Self.pollInterval.components.seconds))s")
         #if DEBUG
-        print("[Third Hand] polling started")
+        print("[Pulse] polling started")
         #endif
         pollTask = Task { [weak self] in
             while !Task.isCancelled {

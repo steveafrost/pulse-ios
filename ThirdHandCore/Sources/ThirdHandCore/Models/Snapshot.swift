@@ -123,7 +123,7 @@ public struct ThirdHandSnapshot: Codable, Sendable, Hashable {
     public init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         // A reader seeing a higher version must refuse to write and surface an
-        // "update Third Hand" state rather than silently dropping fields. Decoding
+        // "update Pulse" state rather than silently dropping fields. Decoding
         // succeeds; `validateVersion()` is the gate the writer calls.
         schemaVersion = try c.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? Self.currentSchemaVersion
         generatedAt = try c.decode(Date.self, forKey: .generatedAt)

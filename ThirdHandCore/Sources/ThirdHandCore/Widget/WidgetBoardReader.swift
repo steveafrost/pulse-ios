@@ -28,7 +28,7 @@ public struct WidgetBoardReader: @unchecked Sendable {
     ///
     /// `hasBoard` comes from the file's existence, not from a successful decode: a
     /// present-but-corrupt projection is a bug in us, not a fresh install, and the
-    /// widget should say "Nothing needs you" rather than "set up Third Hand".
+    /// widget should say "Nothing needs you" rather than "set up Pulse".
     public func snapshot() -> WidgetSnapshot {
         var snapshot = WidgetSnapshot(board: readBoard())
         snapshot.hasBoard = hasBoard

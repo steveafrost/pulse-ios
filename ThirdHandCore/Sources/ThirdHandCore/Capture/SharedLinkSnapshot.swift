@@ -1,6 +1,6 @@
 import Foundation
 
-/// One link the user shared into Third Hand, as plain values.
+/// One link the user shared into Pulse, as plain values.
 ///
 /// This is the boundary between the Share Extension (which writes a JSON line into
 /// the app group) and the detector rules. `SharedLinkSource` maps these into
@@ -8,9 +8,9 @@ import Foundation
 /// rules are testable on macOS without a share sheet, an extension host or a device.
 ///
 /// **Why this exists at all.** Slack, Gmail and GitHub have no OAuth app registered
-/// for Third Hand and this build must not pretend otherwise (issue #39). The honest
+/// for Pulse and this build must not pretend otherwise (issue #39). The honest
 /// on-device path is the one the user drives: they share a thread, a message or a
-/// pull request, and Third Hand remembers it. See `docs/DEFERRED-SOURCES.md` for what a
+/// pull request, and Pulse remembers it. See `docs/DEFERRED-SOURCES.md` for what a
 /// real API integration would need.
 public struct SharedLinkSnapshot: Sendable, Hashable {
     /// The absolute URL, as shared. `https:` only once normalised -- see

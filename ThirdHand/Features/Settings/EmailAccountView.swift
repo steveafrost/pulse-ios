@@ -66,7 +66,7 @@ public struct EmailAccountView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("Third Hand will forget the address and delete the password from the Keychain. Unread mail will stop appearing on your board.")
+                Text("Pulse will forget the address and delete the password from the Keychain. Unread mail will stop appearing on your board.")
             }
         }
     }
@@ -89,7 +89,7 @@ public struct EmailAccountView: View {
                     // user's own mail server on every check. Say what actually happens
                     // here, because this paragraph sits directly above the field where
                     // the user is about to type it.
-                    Text("Third Hand reads unread messages that need you and puts them on the board. It reads only the inbox, and only your password ever leaves the phone - sent to your own mail server, over an encrypted connection, to sign in.")
+                    Text("Pulse reads unread messages that need you and puts them on the board. It reads only the inbox, and only your password ever leaves the phone - sent to your own mail server, over an encrypted connection, to sign in.")
                         .font(ThirdHandTypography.emptyBody)
                         .foregroundStyle(ThirdHandColor.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)

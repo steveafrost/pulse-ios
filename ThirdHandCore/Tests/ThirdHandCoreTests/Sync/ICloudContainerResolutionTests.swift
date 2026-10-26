@@ -54,7 +54,7 @@ struct ICloudContainerResolutionTests {
 
     @Test("the nil-container error is not marked as requiring an app update")
     func nilContainerIsRetryable() {
-        // The distinction drives the UI: `requiresUpdate` is the "update Third Hand"
+        // The distinction drives the UI: `requiresUpdate` is the "update Pulse"
         // banner, and a signed-out user must not see that.
         #expect(ThirdHandSyncError.iCloudUnavailable.requiresUpdate == false)
     }

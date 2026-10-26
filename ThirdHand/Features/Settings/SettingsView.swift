@@ -6,7 +6,7 @@ import ThirdHandCore
 ///
 /// It exists for one reason: the board is a *view* of what the app can reach, and
 /// when a source is paused the board can only say "Calendar is off" — it cannot say
-/// what to do about it. This screen is where "what Third Hand can see" is stated
+/// what to do about it. This screen is where "what Pulse can see" is stated
 /// plainly, with the one fix per source beside it.
 ///
 /// Deliberately short. Settings screens fail by accumulating; every row here answers
@@ -101,7 +101,7 @@ public struct SettingsView: View {
 
     private var sourcesSection: some View {
         VStack(alignment: .leading, spacing: ThirdHandSpacing.s) {
-            eyebrow("What Third Hand can see")
+            eyebrow("What Pulse can see")
             VStack(spacing: 0) {
                 ForEach(Array(sources.enumerated()), id: \.element.id) { index, row in
                     sourceRow(row)
@@ -116,7 +116,7 @@ public struct SettingsView: View {
             // The board can only report the pause; the fix lives in iOS Settings,
             // so this is the one place the instruction can be given.
             if sources.contains(where: \.needsAttention) {
-                Text("A paused source is fixed in iOS Settings → Privacy & Security. Third Hand never re-asks on its own.")
+                Text("A paused source is fixed in iOS Settings → Privacy & Security. Pulse never re-asks on its own.")
                     .font(ThirdHandTypography.meta)
                     .foregroundStyle(ThirdHandColor.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -217,7 +217,7 @@ public struct SettingsView: View {
                 // claim that is subtly false is worse than a vague one, and this
                 // sentence is the one a user checks before typing a password.
                 Text(
-                    "Third Hand reads your calendar, reminders and mailbox on the phone. "
+                    "Pulse reads your calendar, reminders and mailbox on the phone. "
                         + "It has no server of its own, no account and no analytics. "
                         + "Two things can leave the device, both to places you already own: "
                         + "the board your Mac syncs over your own iCloud Drive, and your "
@@ -249,7 +249,7 @@ public struct SettingsView: View {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "0"
         let build = info?["CFBundleVersion"] as? String ?? "0"
-        return "Third Hand \(version) (\(build))"
+        return "Pulse \(version) (\(build))"
     }
 
     // MARK: Eyebrow

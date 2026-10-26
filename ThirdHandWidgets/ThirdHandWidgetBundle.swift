@@ -1,7 +1,7 @@
 import SwiftUI
 import WidgetKit
 
-/// The extension's `@main`: every widget surface Third Hand ships, in one bundle.
+/// The extension's `@main`: every widget surface Pulse ships, in one bundle.
 ///
 /// One bundle rather than three targets because a widget extension is the unit the
 /// system installs and the user adds from; three extensions would mean three entries

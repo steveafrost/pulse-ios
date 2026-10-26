@@ -1,4 +1,4 @@
-# Third Hand Data Contract — v1
+# Pulse Data Contract — v1
 
 The single source of truth for item shape and sync. Both the iOS app and the
 `bb-plugin-thirdhand` mirror implement this. Change it here first, then in both
@@ -149,6 +149,6 @@ count it in the Now badge.
 ## Versioning
 
 `schemaVersion` is an integer. A reader seeing a higher version than it supports
-must refuse to write and surface an "update Third Hand" state rather than silently
+must refuse to write and surface an "update Pulse" state rather than silently
 dropping fields. Adding an optional field does not bump the version; removing or
 retyping a field does.

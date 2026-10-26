@@ -1,8 +1,8 @@
-# Third Hand iOS — Architecture
+# Pulse iOS — Architecture
 
 ## Product
 
-Third Hand answers one question: *what needs me right now?* It reads your calendar,
+Pulse answers one question: *what needs me right now?* It reads your calendar,
 reminders and (later) mail, classifies each thing into an action kind, and shows
 one board sorted into **Now / Next / Later / Nice to Know**. Done and Snooze
 stick. It exists standalone on iOS and also drives the existing bb plugin as a
@@ -12,7 +12,7 @@ mirror, so the same board is on the Mac nav rail.
 
 | Target | Kind | Purpose |
 | --- | --- | --- |
-| `Third Hand` | iOS app | The board, item detail, settings, capture scheduling. |
+| `Pulse` | iOS app | The board, item detail, settings, capture scheduling. |
 | `ThirdHandCore` | Swift package | Models, store, capture engine, sync. No UI. Unit-testable on macOS. |
 | `ThirdHandWidgets` | Widget extension | Home Screen + Lock Screen widgets, Live Activity for the next meeting. |
 | `ThirdHandIntents` | App Intents (in app) | Siri/Shortcuts: "What needs me", "Snooze the top item". |

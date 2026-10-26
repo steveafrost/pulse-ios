@@ -1,4 +1,4 @@
-# Third Hand — Accessibility
+# Pulse — Accessibility
 
 The pass for #22. Each line is a check, its method, its result, and the date.
 Where an automated check was not feasible in this milestone the manual method is
@@ -11,7 +11,7 @@ Date of this pass: 2026-10-23. Device: iPhone 17 Pro simulator, iOS 18 SDK path
 
 | Check | Method | Result |
 | --- | --- | --- |
-| No fixed point fonts | `grep -rn 'system(size:' Third Hand` (design tokens) | Pass — the only `.system(size:)` uses are the 20pt kind glyph and the 64pt empty-state glyph, both decorative and `accessibilityHidden` |
+| No fixed point fonts | `grep -rn 'system(size:' Pulse` (design tokens) | Pass — the only `.system(size:)` uses are the 20pt kind glyph and the 64pt empty-state glyph, both decorative and `accessibilityHidden` |
 | Dynamic Type through AX5 | `@Preview` variants at `.dynamicTypeSize(.accessibility5)` for board, detail, empty states and preamble | Pass — titles wrap, detail hides at AX3+, meta line becomes a horizontal scroller at AX2+, chips stop stretching |
 | No clipped row text | `.fixedSize(horizontal: false, vertical: true)` on every text block; no fixed row height | Pass |
 | Row is one VoiceOver element | `.accessibilityElement(children: .ignore)` + composed label/value/hint | Pass — `BoardItemRow.accessibilityLabel`/`accessibilityValue` implement DESIGN.md §5.3 verbatim |
