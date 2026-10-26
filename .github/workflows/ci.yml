@@ -129,14 +129,11 @@ jobs:
           retention-days: 14
 
   lint:
-    # Non-blocking by design. The tree is not lint-clean yet (ThirdHandCore is being
-    # written concurrently), so a hard failure here would block every PR for
-    # reasons unrelated to correctness. Flip `continue-on-error` to false — and
-    # drop this comment — once `bash Scripts/lint.sh` exits 0 on main.
+    # Blocking. `bash Scripts/lint.sh` exits 0 on the tree as of this commit, so a
+    # formatting or lint regression is now a real failure rather than noise.
     name: lint (swiftlint + swiftformat)
     runs-on: macos-15
     timeout-minutes: 15
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 

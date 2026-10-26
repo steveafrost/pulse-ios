@@ -7,12 +7,11 @@ import Foundation
 /// contract only ever names three files, so anything else is a bug or an attack.
 enum SyncPaths {
     static func resolve(_ relativePath: String, in root: URL) throws -> URL {
-        guard !relativePath.isEmpty else { throw ThirdHandSyncError.pathEscapesRoot(relativePath) }
-        guard !relativePath.hasPrefix("/") else { throw ThirdHandSyncError.pathEscapesRoot(relativePath) }
+        guard !relativePath.isEmpty,
+              !relativePath.hasPrefix("/") else { throw ThirdHandSyncError.pathEscapesRoot(relativePath) }
         let components = relativePath.split(separator: "/", omittingEmptySubsequences: false)
         for component in components {
-            guard !component.isEmpty else { throw ThirdHandSyncError.pathEscapesRoot(relativePath) }
-            guard component != ".." && component != "." else {
+            guard !component.isEmpty, component != "..", component != "." else {
                 throw ThirdHandSyncError.pathEscapesRoot(relativePath)
             }
         }
@@ -54,7 +53,7 @@ public struct FileCloudContainer: CloudContainer, @unchecked Sendable {
     private let fileManager: FileManager
 
     public init(root: URL, fileManager: FileManager = .default) {
-        self.rootURL = root
+        rootURL = root
         self.fileManager = fileManager
         try? fileManager.createDirectory(at: root, withIntermediateDirectories: true)
     }
@@ -74,7 +73,9 @@ public struct FileCloudContainer: CloudContainer, @unchecked Sendable {
             withIntermediateDirectories: true
         )
         let tmp = url.deletingLastPathComponent()
-            .appendingPathComponent("\(url.lastPathComponent).\(ProcessInfo.processInfo.processIdentifier).\(UUID().uuidString).tmp")
+            .appendingPathComponent(
+                "\(url.lastPathComponent).\(ProcessInfo.processInfo.processIdentifier).\(UUID().uuidString).tmp"
+            )
         do {
             try data.write(to: tmp, options: .atomic)
             if fileManager.fileExists(atPath: url.path) {
@@ -134,8 +135,8 @@ public final class LocalContainer: CloudContainer, @unchecked Sendable {
     private let fileManager: FileManager
 
     public init(root: URL, fileManager: FileManager = .default) {
-        self.rootURL = root
-        self.base = FileCloudContainer(root: root, fileManager: fileManager)
+        rootURL = root
+        base = FileCloudContainer(root: root, fileManager: fileManager)
         self.fileManager = fileManager
     }
 

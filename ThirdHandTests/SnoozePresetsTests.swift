@@ -1,6 +1,10 @@
-@testable import ThirdHand
 import Foundation
 import Testing
+@testable import ThirdHand
+
+// Force-unwrapping is the fixture style here on purpose: the calendar and the dates
+// below are fixed literals, and a bad one is a broken test that should stop the run at
+// the line that built it.
 
 /// #19: every preset asserted against a fixed `now` on a fixed calendar,
 /// including the "this evening disappears after 18:00" rule.
@@ -9,20 +13,22 @@ struct SnoozePresetsTests {
     /// 2026-10-23 09:00 UTC — a Friday.
     static func calendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
+        // swiftlint:disable:next force_unwrapping
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         calendar.firstWeekday = 2
         return calendar
     }
 
     static func date(_ y: Int, _ mo: Int, _ d: Int, _ h: Int, _ mi: Int = 0) -> Date {
-        Self.calendar().date(from: DateComponents(year: y, month: mo, day: d, hour: h, minute: mi))!
+        // swiftlint:disable:next force_unwrapping
+        calendar().date(from: DateComponents(year: y, month: mo, day: d, hour: h, minute: mi))!
     }
 
     @Test("In an hour is exactly one hour ahead")
     func inAnHour() {
         let now = Self.date(2026, 10, 23, 9)
         let presets = SnoozePresets(now: now, calendar: Self.calendar())
-        #expect(presets.laterToday?.date == now.addingTimeInterval(3_600))
+        #expect(presets.laterToday?.date == now.addingTimeInterval(3600))
         #expect(presets.laterToday?.label == "In an hour")
     }
 

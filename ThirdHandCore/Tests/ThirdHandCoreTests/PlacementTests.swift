@@ -206,7 +206,7 @@ struct PlacementPolicyTests {
         #expect(nowIDs.contains("reminders:untouched"))
         #expect(laterIDs == ["reminders:deferred"])
         // Nothing is dropped: a decision moves an item, it does not hide it.
-        let all = board.values.flatMap { $0 }.map(\.id)
+        let all = board.values.flatMap(\.self).map(\.id)
         #expect(!all.contains("reminders:closed"))
         #expect(all.count == 3)
     }
@@ -219,7 +219,7 @@ struct PlacementPolicyTests {
         let decisions: [ThirdHandItem.ID: PlacementDecision] = [
             kept.id: decision(for: kept, horizon: .later),
             changed.id: decision(for: changed, horizon: .later),
-            "reminders:vanished": decision(for: changed, horizon: .later),
+            "reminders:vanished": decision(for: changed, horizon: .later)
         ]
 
         var movedOn = changed
@@ -240,7 +240,7 @@ struct PlacementPolicyTests {
 @Suite("PlacementCache")
 struct PlacementCacheTests {
     @Test("saving and loading round-trips the decisions")
-    func roundTrip() throws {
+    func roundTrip() {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("placements-\(UUID().uuidString).json")
         defer { try? FileManager.default.removeItem(at: url) }
@@ -336,7 +336,7 @@ struct PlacementCoordinatorTests {
         let item = makeItem(due: Fixture.now)
         let coordinator = PlacementCoordinator(
             advisor: StubAdvisor(advice: [
-                PlacementAdvice(itemID: "reminders:ghost", horizon: .later, reason: "not real"),
+                PlacementAdvice(itemID: "reminders:ghost", horizon: .later, reason: "not real")
             ]),
             cache: .inMemory()
         )
@@ -381,7 +381,7 @@ struct PlacementCandidateTests {
     @Test("only Now and Next are sent to the model")
     func onlyActionableBucketsBecomeCandidates() {
         let nowItem = makeItem(id: "reminders:now", due: Fixture.now)
-        let nextItem = makeItem(id: "reminders:next", due: Fixture.now.addingTimeInterval(2 * 86_400))
+        let nextItem = makeItem(id: "reminders:next", due: Fixture.now.addingTimeInterval(2 * 86400))
         let laterItem = makeItem(id: "reminders:later", due: Fixture.date("2027-06-01T09:00:00Z"))
         let fyi = makeItem(id: "reminders:fyi", kind: .fyi)
 
@@ -462,7 +462,7 @@ struct AdvisorValidationTests {
         let advice = PlacementValidation.sanitize(
             [
                 PlacementValidation.RawVerdict(index: 0, horizon: "later", reason: "first"),
-                PlacementValidation.RawVerdict(index: 0, horizon: "next", reason: "second"),
+                PlacementValidation.RawVerdict(index: 0, horizon: "next", reason: "second")
             ],
             against: batch
         )

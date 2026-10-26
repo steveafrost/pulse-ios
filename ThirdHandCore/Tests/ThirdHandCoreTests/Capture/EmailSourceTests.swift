@@ -137,7 +137,7 @@ struct EmailSourceTests {
     @Test("a direct unread message with a question becomes reply/normal")
     func directQuestion() async throws {
         let (source, _, _) = EmailFixture.source(messages: [
-            EmailFixture.direct(uid: 7, messageID: "q-7@x", subject: "Can you review this today?"),
+            EmailFixture.direct(uid: 7, messageID: "q-7@x", subject: "Can you review this today?")
         ])
         let item = try #require(try await source.detect(now: Fixture.now, window: window).first)
         #expect(item.id == "gmail:message:q-7@x")
@@ -151,7 +151,7 @@ struct EmailSourceTests {
     @Test("a deadline subject becomes deadline/high")
     func deadline() async throws {
         let (source, _, _) = EmailFixture.source(messages: [
-            EmailFixture.direct(subject: "Invoice due Friday", to: [EmailFixture.me, EmailFixture.colleague]),
+            EmailFixture.direct(subject: "Invoice due Friday", to: [EmailFixture.me, EmailFixture.colleague])
         ])
         let item = try #require(try await source.detect(now: Fixture.now, window: window).first)
         #expect(item.kind == .deadline)
@@ -161,7 +161,7 @@ struct EmailSourceTests {
     @Test("a decision request becomes decision/normal")
     func decision() async throws {
         let (source, _, _) = EmailFixture.source(messages: [
-            EmailFixture.direct(subject: "Should we ship the beta this week"),
+            EmailFixture.direct(subject: "Should we ship the beta this week")
         ])
         let item = try #require(try await source.detect(now: Fixture.now, window: window).first)
         #expect(item.kind == .decision)
@@ -171,7 +171,7 @@ struct EmailSourceTests {
     @Test("an unread message addressed to nobody else but already a reply is followup, never fyi")
     func unreadReplyIsNeverFYI() async throws {
         let (source, _, _) = EmailFixture.source(messages: [
-            EmailFixture.direct(subject: "Re: numbers", inReplyTo: "orig@x"),
+            EmailFixture.direct(subject: "Re: numbers", inReplyTo: "orig@x")
         ])
         let item = try #require(try await source.detect(now: Fixture.now, window: window).first)
         #expect(item.kind == .followup)
@@ -181,10 +181,10 @@ struct EmailSourceTests {
     @Test("every classification of a direct unread message stays actionable")
     func neverFYI() async throws {
         let subjects = [
-            "Weekly digest",           // no question, no markers
-            "Re: Re: thread",          // a reply
-            "Fwd: something",          // forwarded
-            "",                        // no subject at all
+            "Weekly digest", // no question, no markers
+            "Re: Re: thread", // a reply
+            "Fwd: something", // forwarded
+            "", // no subject at all
             "Meeting notes 2026-10-20" // informational-looking
         ]
         let messages = subjects.enumerated().map { index, subject in
@@ -203,7 +203,7 @@ struct EmailSourceTests {
     func stableIdentity() async throws {
         let messages = [
             EmailFixture.direct(uid: 1, messageID: "a@x", subject: "First"),
-            EmailFixture.direct(uid: 2, messageID: "b@x", subject: "Second"),
+            EmailFixture.direct(uid: 2, messageID: "b@x", subject: "Second")
         ]
         let (firstSource, _, _) = EmailFixture.source(messages: messages)
         let (secondSource, _, _) = EmailFixture.source(messages: messages)
@@ -251,7 +251,7 @@ struct EmailSourceTests {
         let messages = [
             EmailFixture.snapshot(uid: 3, messageID: "b@x", subject: "B older"),
             EmailFixture.snapshot(uid: 1, messageID: "a@x", subject: "A"),
-            EmailFixture.snapshot(uid: 9, messageID: "b@x", subject: "B newer"),
+            EmailFixture.snapshot(uid: 9, messageID: "b@x", subject: "B newer")
         ]
         let items = EmailSource.detect(messages: messages, account: EmailFixture.account, now: Fixture.now)
         #expect(items.map(\.id) == ["gmail:message:a@x", "gmail:message:b@x"])
@@ -280,7 +280,7 @@ struct EmailSourceTests {
     @Test("an encoded-word subject is decoded for the card")
     func encodedSubject() async throws {
         let (source, _, _) = EmailFixture.source(messages: [
-            EmailFixture.direct(subject: "=?UTF-8?B?UXVlc3Rpb24gYWJvdXQgY29zdHM/?="),
+            EmailFixture.direct(subject: "=?UTF-8?B?UXVlc3Rpb24gYWJvdXQgY29zdHM/?=")
         ])
         let item = try #require(try await source.detect(now: Fixture.now, window: window).first)
         #expect(item.title == "Question about costs?")
@@ -290,7 +290,7 @@ struct EmailSourceTests {
     func detailLine() throws {
         let message = EmailFixture.snapshot(
             to: [EmailFixture.me, EmailFixture.colleague],
-            sentAt: Fixture.now.addingTimeInterval(-3 * 86_400)
+            sentAt: Fixture.now.addingTimeInterval(-3 * 86400)
         )
         let item = EmailSource.item(for: message, account: EmailFixture.account, now: Fixture.now)
         let detail = try #require(item.detail)
@@ -302,7 +302,7 @@ struct EmailSourceTests {
     @Test("no item ever carries a url, because IMAP has no permalink")
     func noURL() async throws {
         let (source, _, _) = EmailFixture.source(messages: [
-            EmailFixture.direct(subject: "See https://example.com/thing"),
+            EmailFixture.direct(subject: "See https://example.com/thing")
         ])
         let items = try await source.detect(now: Fixture.now, window: window)
         #expect(items.allSatisfy { $0.url == nil })
@@ -341,7 +341,7 @@ struct EmailSourceTests {
 
     @Test("the limit caps how many messages are fetched, oldest dropped")
     func limit() async throws {
-        let messages = (1...5).map { index in
+        let messages = (1 ... 5).map { index in
             EmailFixture.direct(uid: UInt32(index), messageID: "m\(index)@x", subject: "Message \(index)")
         }
         let (source, transport, _) = EmailFixture.source(messages: messages, limit: 2)
@@ -371,11 +371,11 @@ struct EmailSourceTests {
     }
 
     @Test("mail items land in the store and are counted under gmail")
-    func engineIntegration() async throws {
+    func engineIntegration() async {
         let store = ItemStore()
         let (source, _, _) = EmailFixture.source(messages: [
             EmailFixture.direct(uid: 1, messageID: "one@x", subject: "Ping?"),
-            EmailFixture.direct(uid: 2, messageID: "two@x", subject: "Invoice due today"),
+            EmailFixture.direct(uid: 2, messageID: "two@x", subject: "Invoice due today")
         ])
         let engine = CaptureEngine(sources: [source], store: store, now: { Fixture.now })
         let report = await engine.run(mode: .full)

@@ -56,18 +56,30 @@ public final class FakeIMAPTransport: IMAPTransport, @unchecked Sendable {
         var headerBlock: String {
             var lines = ["From: " + from.map(Self.format).joined(separator: ", ")]
             lines.append("To: " + to.map(Self.format).joined(separator: ", "))
-            if !cc.isEmpty { lines.append("Cc: " + cc.map(Self.format).joined(separator: ", ")) }
+            if !cc.isEmpty {
+                lines.append("Cc: " + cc.map(Self.format).joined(separator: ", "))
+            }
             lines.append("Subject: " + subject)
-            if let date { lines.append("Date: " + date) }
-            if let messageID { lines.append("Message-ID: <\(messageID)>") }
-            if let inReplyTo { lines.append("In-Reply-To: <\(inReplyTo)>") }
-            if let references { lines.append("References: <\(references)>") }
+            if let date {
+                lines.append("Date: " + date)
+            }
+            if let messageID {
+                lines.append("Message-ID: <\(messageID)>")
+            }
+            if let inReplyTo {
+                lines.append("In-Reply-To: <\(inReplyTo)>")
+            }
+            if let references {
+                lines.append("References: <\(references)>")
+            }
             // Blank line terminates the header block, exactly as on the wire.
             return lines.joined(separator: "\r\n") + "\r\n\r\n"
         }
 
         static func format(_ address: EmailAddress) -> String {
-            if let name = address.name { return "\"\(name)\" <\(address.address)>" }
+            if let name = address.name {
+                return "\"\(name)\" <\(address.address)>"
+            }
             return "<\(address.address)>"
         }
     }
@@ -104,16 +116,22 @@ public final class FakeIMAPTransport: IMAPTransport, @unchecked Sendable {
     }
 
     /// How many times `open` was called.
-    public var openCount: Int { lock.withLock { openedAccounts.count } }
+    public var openCount: Int {
+        lock.withLock { openedAccounts.count }
+    }
 
     /// The accounts `open` was called with. No secret: an account carries none.
-    public var accounts: [EmailAccount] { lock.withLock { openedAccounts } }
+    public var accounts: [EmailAccount] {
+        lock.withLock { openedAccounts }
+    }
 
     /// Every command line the client sent, in order, `LOGIN` included.
     ///
     /// Exposed only so a test can assert *which commands* were sent -- see
     /// `commandNames`. Never print this array.
-    public var commands: [String] { lock.withLock { requestLog } }
+    public var commands: [String] {
+        lock.withLock { requestLog }
+    }
 
     /// The command names sent, with arguments stripped: `["CAPABILITY", "LOGIN",
     /// "SELECT", "UID SEARCH", "UID FETCH", "LOGOUT"]`. This is the assertion surface
@@ -141,7 +159,7 @@ public final class FakeIMAPTransport: IMAPTransport, @unchecked Sendable {
 
     public func open(account: EmailAccount) async throws -> any IMAPSession {
         lock.withLock { openedAccounts.append(account) }
-        if case .connectionFails(let reason) = behaviour {
+        if case let .connectionFails(reason) = behaviour {
             throw IMAPError.connectionFailed(reason)
         }
         return FakeIMAPSession(
@@ -182,9 +200,9 @@ public final class FakeIMAPTransport: IMAPTransport, @unchecked Sendable {
                 while !pending.isEmpty {
                     let part = pending.removeFirst()
                     switch part {
-                    case .text(let text):
+                    case let .text(text):
                         return text
-                    case .literal(let literal):
+                    case let .literal(literal):
                         throw IMAPError.unexpectedResponse("literal served without a marker (\(literal.count) bytes)")
                     }
                 }
@@ -194,7 +212,7 @@ public final class FakeIMAPTransport: IMAPTransport, @unchecked Sendable {
 
         func readLiteral(count: Int) async throws -> String {
             try lock.withLock {
-                guard !pending.isEmpty, case .literal(let literal) = pending[0] else {
+                guard !pending.isEmpty, case let .literal(literal) = pending[0] else {
                     throw IMAPError.unexpectedResponse("no literal was queued for a \(count)-byte read")
                 }
                 pending.removeFirst()
@@ -235,9 +253,9 @@ enum FakeServer {
         guard let tag = tokens.first else { return [] }
         let rest = tokens.dropFirst()
 
-        // `rest` is a slice, so its indices start at 1; a named accessor keeps that
-        // arithmetic in one place rather than spelling `rest[2]` at each use.
         func token(_ offset: Int) -> String? {
+            // `rest` is a slice, so its indices start at 1; this accessor keeps that
+            // arithmetic in one place rather than spelling `rest[2]` at each use.
             let index = rest.startIndex + offset
             return index < rest.endIndex ? String(rest[index]) : nil
         }
@@ -253,7 +271,7 @@ enum FakeServer {
                 : "IMAP4rev1 AUTH=PLAIN AUTH=LOGIN"
             return [
                 .text("* CAPABILITY \(caps)"),
-                .text("\(tag) OK CAPABILITY completed"),
+                .text("\(tag) OK CAPABILITY completed")
             ]
 
         case "LOGIN":
@@ -270,7 +288,7 @@ enum FakeServer {
                 .text("* \(messages.count) EXISTS"),
                 .text("* 0 RECENT"),
                 .text("* OK [UIDVALIDITY 1] UIDs valid"),
-                .text("\(tag) OK [READ-WRITE] SELECT completed"),
+                .text("\(tag) OK [READ-WRITE] SELECT completed")
             ]
 
         case "UID" where token(1)?.uppercased() == "SEARCH":
@@ -280,7 +298,7 @@ enum FakeServer {
             let uids = messages.map { String($0.uid) }.joined(separator: " ")
             return [
                 .text("* SEARCH\(uids.isEmpty ? "" : " " + uids)"),
-                .text("\(tag) OK SEARCH completed"),
+                .text("\(tag) OK SEARCH completed")
             ]
 
         case "UID" where token(1)?.uppercased() == "FETCH":
@@ -288,23 +306,26 @@ enum FakeServer {
                 return [.text("\(tag) BAD FETCH is not allowed")]
             }
             guard let rawUID = token(2), let uid = UInt32(rawUID),
-                  let message = messages.first(where: { $0.uid == uid }) else {
+                  let message = messages.first(where: { $0.uid == uid })
+            else {
                 // Nothing to fetch: the message was expunged between SEARCH and FETCH.
                 return [.text("\(tag) OK FETCH completed")]
             }
             let block = message.headerBlock
             let count = block.utf8.count
             return [
-                .text("* 1 FETCH (UID \(uid) BODY[HEADER.FIELDS (FROM TO CC SUBJECT DATE MESSAGE-ID REFERENCES IN-REPLY-TO)] {\(count)}"),
+                .text(
+                    "* 1 FETCH (UID \(uid) BODY[HEADER.FIELDS (FROM TO CC SUBJECT DATE MESSAGE-ID REFERENCES IN-REPLY-TO)] {\(count)}"
+                ),
                 .literal(block),
                 .text(")"),
-                .text("\(tag) OK FETCH completed"),
+                .text("\(tag) OK FETCH completed")
             ]
 
         case "LOGOUT":
             return [
                 .text("* BYE logging out"),
-                .text("\(tag) OK LOGOUT completed"),
+                .text("\(tag) OK LOGOUT completed")
             ]
 
         case "NOOP":

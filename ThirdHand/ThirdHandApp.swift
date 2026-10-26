@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 @main
 struct ThirdHandApp: App {
@@ -49,8 +49,8 @@ struct ThirdHandApp: App {
         sync.onPublished = { model.refreshSyncStatus() }
 
         #if canImport(ActivityKit) && os(iOS)
-        // #31: one owner for the single Live Activity, kicked by every persist.
-        model.liveActivity = ImminentMeetingController()
+            // #31: one owner for the single Live Activity, kicked by every persist.
+            model.liveActivity = ImminentMeetingController()
         #endif
 
         _model = State(initialValue: model)
@@ -72,104 +72,105 @@ struct ThirdHandApp: App {
         }
     }
 
-
     /// Read by `BoardView` on appear, then cleared.
     @State private var pendingItemID: String?
 
     var body: some Scene {
         WindowGroup {
             #if DEBUG
-            DemoRoot(model: model, permission: permission)
+                DemoRoot(model: model, permission: permission)
             #else
-            BoardView(
-                model: model,
-                permission: permission,
-                onOpenSettings: AppLinks.openSettings,
-                deepLinkItemID: pendingItemID,
-                mailbox: mailbox
-            )
-            .pulseSyncPolling(model.sync)
-            .task { await permission.load() }
-            .onOpenURL { url in handle(url) }
+                BoardView(
+                    model: model,
+                    permission: permission,
+                    onOpenSettings: AppLinks.openSettings,
+                    deepLinkItemID: pendingItemID,
+                    mailbox: mailbox
+                )
+                .pulseSyncPolling(model.sync)
+                .task { await permission.load() }
+                .onOpenURL { url in handle(url) }
             #endif
         }
     }
 }
 
 #if DEBUG
-/// A debug-only root that can present any screen directly, so a visual check of
-/// the detail, the snooze sheet, the closed review, the empty states and the
-/// loading skeleton does not need a UI test target to drive the tap. Any build
-/// without `-ThirdHandDemoScreen` renders the ordinary board.
-struct DemoRoot: View {
-    let model: BoardViewModel
-    let permission: PermissionCoordinator
+    /// A debug-only root that can present any screen directly, so a visual check of
+    /// the detail, the snooze sheet, the closed review, the empty states and the
+    /// loading skeleton does not need a UI test target to drive the tap. Any build
+    /// without `-ThirdHandDemoScreen` renders the ordinary board.
+    struct DemoRoot: View {
+        let model: BoardViewModel
+        let permission: PermissionCoordinator
 
-    private var screen: DemoSeed.Screen { DemoSeed.screen }
+        private var screen: DemoSeed.Screen {
+            DemoSeed.screen
+        }
 
-    var body: some View {
-        switch screen {
-        case .board, .empty, .loading:
-            BoardView(model: model, permission: permission, onOpenSettings: AppLinks.openSettings)
-                .pulseSyncPolling(model.sync)
-                .task { await permission.load() }
-        case .detail:
-            ItemDetailView(model: model.detailModel(for: Fixtures.withThreeQuickActions))
-        case .snooze:
-            /// `Fixtures.fixtureNow` is a fixed instant, so the demo uses the real
-            /// calendar: the labels then read the local clock, as the app does.
-            SnoozeMenu(now: Date()) { _ in }
-        case .closed:
-            ClosedItemsView(model: model.closedModel())
-        case .preamble:
-            PermissionPreambleView(onAllow: { _ in }, onNotNow: {})
-        case .gallery:
-            DesignSystemGallery()
-        case .settings:
-            SettingsView(
-                sources: DemoSeed.settingsSources,
-                emailStatus: .unread(3),
-                lastChecked: Fixtures.fixtureNow,
-                onOpenEmail: {}
-            )
-        case .email:
-            EmailAccountView(model: demoEmailModel(.notConnected))
-        case .emailConnected:
-            EmailAccountView(model: demoEmailModel(.connected))
-        case .emailNeedsPassword:
-            EmailAccountView(model: demoEmailModel(.needsPassword))
+        var body: some View {
+            switch screen {
+            case .board, .empty, .loading:
+                BoardView(model: model, permission: permission, onOpenSettings: AppLinks.openSettings)
+                    .pulseSyncPolling(model.sync)
+                    .task { await permission.load() }
+            case .detail:
+                ItemDetailView(model: model.detailModel(for: Fixtures.withThreeQuickActions))
+            case .snooze:
+                // `Fixtures.fixtureNow` is a fixed instant, so the demo uses the real
+                // calendar: the labels then read the local clock, as the app does.
+                SnoozeMenu(now: Date()) { _ in }
+            case .closed:
+                ClosedItemsView(model: model.closedModel())
+            case .preamble:
+                PermissionPreambleView(onAllow: { _ in }, onNotNow: {})
+            case .gallery:
+                DesignSystemGallery()
+            case .settings:
+                SettingsView(
+                    sources: DemoSeed.settingsSources,
+                    emailStatus: .unread(3),
+                    lastChecked: Fixtures.fixtureNow,
+                    onOpenEmail: {}
+                )
+            case .email:
+                EmailAccountView(model: demoEmailModel(.notConnected))
+            case .emailConnected:
+                EmailAccountView(model: demoEmailModel(.connected))
+            case .emailNeedsPassword:
+                EmailAccountView(model: demoEmailModel(.needsPassword))
+            }
         }
     }
-}
 
-/// The three account states, wired to in-memory stores so a demo never touches the
-/// real Keychain or a real mailbox.
-enum EmailDemoState { case notConnected, connected, needsPassword }
+    /// The three account states, wired to in-memory stores so a demo never touches the
+    /// real Keychain or a real mailbox.
+    enum EmailDemoState { case notConnected, connected, needsPassword }
 
-@MainActor
-private func demoEmailModel(_ state: EmailDemoState) -> EmailAccountModel {
-    let account = EmailAccount.gmail(username: "steve@example.com")
-    switch state {
-    case .notConnected:
-        return EmailAccountModel(
-            accounts: StaticEmailAccountProvider(account: nil),
-            accountsWriter: nil,
-            secrets: InMemorySecretStore()
-        )
-    case .connected:
-        return EmailAccountModel(
-            accounts: StaticEmailAccountProvider(account: account),
-            accountsWriter: nil,
-            secrets: InMemorySecretStore(secrets: [account.keychainAccount: "demo"])
-        )
-    case .needsPassword:
-        return EmailAccountModel(
-            accounts: StaticEmailAccountProvider(account: account),
-            accountsWriter: nil,
-            secrets: InMemorySecretStore()
-        )
+    @MainActor
+    private func demoEmailModel(_ state: EmailDemoState) -> EmailAccountModel {
+        let account = EmailAccount.gmail(username: "steve@example.com")
+        switch state {
+        case .notConnected:
+            return EmailAccountModel(
+                accounts: StaticEmailAccountProvider(account: nil),
+                accountsWriter: nil,
+                secrets: InMemorySecretStore()
+            )
+        case .connected:
+            return EmailAccountModel(
+                accounts: StaticEmailAccountProvider(account: account),
+                accountsWriter: nil,
+                secrets: InMemorySecretStore(secrets: [account.keychainAccount: "demo"])
+            )
+        case .needsPassword:
+            return EmailAccountModel(
+                accounts: StaticEmailAccountProvider(account: account),
+                accountsWriter: nil,
+                secrets: InMemorySecretStore()
+            )
+        }
     }
-}
 
 #endif
 
@@ -189,37 +190,62 @@ extension DemoSeed {
 /// of Release, so it cannot ship.
 enum DemoSeed {
     #if DEBUG
-    enum Screen: String {
-        case board, detail, snooze, closed, preamble, gallery, empty, loading
-        /// §8.3 surfaces, added in the craft pass.
-        case settings, email, emailConnected, emailNeedsPassword
-    }
-
-    /// `-ThirdHandDemoScreen <name>` picks the screen; absent or unknown means the board.
-    static var screen: Screen {
-        let args = ProcessInfo.processInfo.arguments
-        guard let index = args.firstIndex(of: "-ThirdHandDemoScreen"), index + 1 < args.count else {
-            return .board
+        enum Screen: String {
+            case board, detail, snooze, closed, preamble, gallery, empty, loading
+            /// §8.3 surfaces, added in the craft pass.
+            case settings, email, emailConnected, emailNeedsPassword
         }
-        return Screen(rawValue: args[index + 1]) ?? .board
-    }
+
+        /// `-ThirdHandDemoScreen <name>` picks the screen; absent or unknown means the board.
+        static var screen: Screen {
+            let args = ProcessInfo.processInfo.arguments
+            guard let index = args.firstIndex(of: "-ThirdHandDemoScreen"), index + 1 < args.count else {
+                return .board
+            }
+            return Screen(rawValue: args[index + 1]) ?? .board
+        }
     #endif
 
     /// The source rows the demo Settings screen lists. Real values, so the screen is
     /// judged on realistic copy rather than placeholders.
     static var settingsSources: [SettingsView.SourceRow] {
         [
-            .init(id: "calendar", source: .calendar, title: "Calendar", systemImage: "calendar", state: "Connected", needsAttention: false),
-            .init(id: "reminders", source: .other, title: "Reminders", systemImage: "checklist", state: "Connected", needsAttention: false),
-            .init(id: "slack", source: .slack, title: "Shared links", systemImage: "link", state: "Off in iOS Settings", needsAttention: true),
+            .init(
+                id: "calendar",
+                source: .calendar,
+                title: "Calendar",
+                systemImage: "calendar",
+                state: "Connected",
+                needsAttention: false
+            ),
+            .init(
+                id: "reminders",
+                source: .other,
+                title: "Reminders",
+                systemImage: "checklist",
+                state: "Connected",
+                needsAttention: false
+            ),
+            .init(
+                id: "slack",
+                source: .slack,
+                title: "Shared links",
+                systemImage: "link",
+                state: "Off in iOS Settings",
+                needsAttention: true
+            )
         ]
     }
 
     static func store() -> ItemStore {
         #if DEBUG
-        let args = ProcessInfo.processInfo.arguments
-        if args.contains("-ThirdHandDemoBoard") { return FixtureStore.make() }
-        if args.contains("-ThirdHandDemoEmpty") { return ItemStore() }
+            let args = ProcessInfo.processInfo.arguments
+            if args.contains("-ThirdHandDemoBoard") {
+                return FixtureStore.make()
+            }
+            if args.contains("-ThirdHandDemoEmpty") {
+                return ItemStore()
+            }
         #endif
         return ItemStore()
     }
@@ -229,58 +255,59 @@ enum DemoSeed {
     /// denial as a source failure, which is the banner the board expects.
     static func capture(store: ItemStore) -> Capture {
         #if os(iOS)
-        #if DEBUG
-        // Screenshot runs (`-ThirdHandDemoBoard`) must not touch EventKit.
-        // `EventKitEventProvider.events` calls `requestFullAccessToEvents()` on
-        // every pass, so on a simulator that has not been granted access the
-        // system prompt covers the board on every capture -- which made every
-        // App Store screenshot unusable. The board draws from `FixtureStore` in
-        // this mode anyway, so capture has nothing to contribute.
-        if ProcessInfo.processInfo.arguments.contains("-ThirdHandDemoBoard")
-            || ProcessInfo.processInfo.arguments.contains("-ThirdHandDemoEmpty") {
-            let inert = EmptyCapture()
+            #if DEBUG
+                // Screenshot runs (`-ThirdHandDemoBoard`) must not touch EventKit.
+                // `EventKitEventProvider.events` calls `requestFullAccessToEvents()` on
+                // every pass, so on a simulator that has not been granted access the
+                // system prompt covers the board on every capture -- which made every
+                // App Store screenshot unusable. The board draws from `FixtureStore` in
+                // this mode anyway, so capture has nothing to contribute.
+                if ProcessInfo.processInfo.arguments.contains("-ThirdHandDemoBoard")
+                    || ProcessInfo.processInfo.arguments.contains("-ThirdHandDemoEmpty")
+                {
+                    let inert = EmptyCapture()
+                    return Capture(
+                        providing: inert,
+                        runFull: { false },
+                        runIncremental: { false }
+                    )
+                }
+            #endif
+            let engine = CaptureEngine(
+                sources: [
+                    EventKitSource(provider: EventKitEventProvider()),
+                    RemindersSource(provider: EventKitReminderProvider()),
+                    // M7.1: the links the user shared from Slack, Gmail or GitHub via
+                    // the Share Extension. No OAuth, no network -- what the user
+                    // shared is what the board gets. See `docs/DEFERRED-SOURCES.md`
+                    // for the API path that would replace it.
+                    SharedLinkSource(provider: FileSharedLinkProvider()),
+                    // IMAP email. Inert until the user saves a mailbox in Settings:
+                    // with no account it throws `denied(.gmail)`, which the board
+                    // shows as "connect a mailbox" rather than an empty success.
+                    // See docs/DEFERRED-SOURCES.md for why IMAP, not Gmail OAuth.
+                    EmailSource(
+                        transport: TLSIMAPTransport(),
+                        accounts: UserDefaultsEmailAccountProvider(),
+                        secrets: KeychainSecretStore()
+                    )
+                ],
+                store: store,
+                now: { Date() }
+            )
+            let adapter = EngineCapture(engine: engine)
             return Capture(
-                providing: inert,
+                providing: adapter,
+                runFull: { await adapter.runFull() },
+                runIncremental: { await adapter.runIncremental() }
+            )
+        #else
+            let empty = EmptyCapture()
+            return Capture(
+                providing: empty,
                 runFull: { false },
                 runIncremental: { false }
             )
-        }
-        #endif
-        let engine = CaptureEngine(
-            sources: [
-                EventKitSource(provider: EventKitEventProvider()),
-                RemindersSource(provider: EventKitReminderProvider()),
-                // M7.1: the links the user shared from Slack, Gmail or GitHub via
-                // the Share Extension. No OAuth, no network -- what the user
-                // shared is what the board gets. See `docs/DEFERRED-SOURCES.md`
-                // for the API path that would replace it.
-                SharedLinkSource(provider: FileSharedLinkProvider()),
-                // IMAP email. Inert until the user saves a mailbox in Settings:
-                // with no account it throws `denied(.gmail)`, which the board
-                // shows as "connect a mailbox" rather than an empty success.
-                // See docs/DEFERRED-SOURCES.md for why IMAP, not Gmail OAuth.
-                EmailSource(
-                    transport: TLSIMAPTransport(),
-                    accounts: UserDefaultsEmailAccountProvider(),
-                    secrets: KeychainSecretStore()
-                ),
-            ],
-            store: store,
-            now: { Date() }
-        )
-        let adapter = EngineCapture(engine: engine)
-        return Capture(
-            providing: adapter,
-            runFull: { await adapter.runFull() },
-            runIncremental: { await adapter.runIncremental() }
-        )
-        #else
-        let empty = EmptyCapture()
-        return Capture(
-            providing: empty,
-            runFull: { false },
-            runIncremental: { false }
-        )
         #endif
     }
 }
@@ -296,8 +323,8 @@ struct EmptyCapture: CaptureProviding {
 enum AppLinks {
     @MainActor static func openSettings() {
         #if canImport(UIKit)
-        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-        UIApplication.shared.open(url)
+            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(url)
         #endif
     }
 }

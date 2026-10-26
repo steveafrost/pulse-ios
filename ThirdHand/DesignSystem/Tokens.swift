@@ -56,6 +56,7 @@ public enum ThirdHandColor {
 }
 
 // MARK: - Spacing
+
 //
 // §4: only these eight values exist. Anything else is a bug, not a preference.
 public enum ThirdHandSpacing {
@@ -103,6 +104,7 @@ public enum ThirdHandRadius {
 }
 
 // MARK: - Typography
+
 //
 // §3: `.system` text styles only — no fixed point sizes anywhere, because a fixed
 // size breaks Dynamic Type. Weight is the only axis besides style.
@@ -137,11 +139,12 @@ public enum ThirdHandTypography {
 }
 
 // MARK: - Tracking
-//
-// Letterspacing is the cheap way to buy distinctiveness without a bundled face.
-// It is applied only where it cannot hurt legibility: a small-cap eyebrow over a
-// group, and the horizon count, which is a numeral rather than prose. Everything
-// read as a sentence keeps default tracking.
+
+///
+/// Letterspacing is the cheap way to buy distinctiveness without a bundled face.
+/// It is applied only where it cannot hurt legibility: a small-cap eyebrow over a
+/// group, and the horizon count, which is a numeral rather than prose. Everything
+/// read as a sentence keeps default tracking.
 public enum ThirdHandTracking {
     /// Section eyebrows and group labels — the "SOURCES" above a settings list.
     public static let eyebrow: CGFloat = 0.8
@@ -164,6 +167,7 @@ public enum ThirdHandMetrics {
     public static let metaLineHeight: CGFloat = 22
 
     // MARK: Signature moment (§7.5)
+
     /// Each row starts this long after the one above it.
     public static let loadInStagger: Double = 0.032
     /// How far a row rises as it settles. Small on purpose: this is a breath, not
@@ -188,9 +192,17 @@ public struct ThirdHandContrast: Sendable {
 
     /// `TextSecondary` is asset-defined at 70% in the light/dark appearances;
     /// at increased contrast it must read as the full-strength variant.
-    public var secondaryTextOpacity: Double { isIncreased ? 1.0 : 1.0 }
+    public var secondaryTextOpacity: Double {
+        isIncreased ? 1.0 : 1.0
+    }
+
     /// Chip fills: 12% normally, 22% at increased contrast.
-    public var chipFillOpacity: Double { isIncreased ? 0.22 : 0.12 }
+    public var chipFillOpacity: Double {
+        isIncreased ? 0.22 : 0.12
+    }
+
     /// Separator: 30% normally, 55% at increased contrast.
-    public var separatorOpacity: Double { isIncreased ? 0.55 : 1.0 }
+    public var separatorOpacity: Double {
+        isIncreased ? 0.55 : 1.0
+    }
 }

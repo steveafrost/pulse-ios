@@ -19,7 +19,7 @@ public enum MirrorUnavailable: Equatable {
 
     public var message: String {
         switch self {
-        case .noContainer(let detail), .noDirectory(let detail): detail
+        case let .noContainer(detail), let .noDirectory(detail): detail
         }
     }
 
@@ -48,15 +48,19 @@ public enum MirrorUnavailable: Equatable {
 enum SyncContainer {
     /// `(container, unavailable)` where `unavailable` is non-nil when the
     /// container is the local fallback and the Mac will not see its writes.
-    static func resolve(paths: ThirdHandPaths = ThirdHandPaths()) -> (container: any CloudContainer, unavailable: MirrorUnavailable?) {
+    static func resolve(paths: ThirdHandPaths = ThirdHandPaths())
+        -> (container: any CloudContainer, unavailable: MirrorUnavailable?)
+    {
         do {
-            return (try ICloudContainer(), nil)
+            return try (ICloudContainer(), nil)
         } catch {
-            let reason: MirrorUnavailable
-            if case .iCloudDirectoryUnavailable(let why) = error as? ThirdHandSyncError ?? .iCloudUnavailable {
-                reason = .noDirectory(why)
+            let reason: MirrorUnavailable = if case let .iCloudDirectoryUnavailable(why) =
+                error as? ThirdHandSyncError ??
+                .iCloudUnavailable
+            {
+                .noDirectory(why)
             } else {
-                reason = .noContainer((error as? ThirdHandSyncError)?.description ?? "\(error)")
+                .noContainer((error as? ThirdHandSyncError)?.description ?? "\(error)")
             }
             paths.ensureDirectory()
             return (FileCloudContainer(root: paths.appGroupRoot), reason)

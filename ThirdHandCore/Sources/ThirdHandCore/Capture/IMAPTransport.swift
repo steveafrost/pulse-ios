@@ -60,10 +60,10 @@ public enum IMAPError: Error, Sendable, Hashable, CustomStringConvertible {
 
     public var description: String {
         switch self {
-        case .connectionFailed(let reason): "could not reach the mail server: \(reason)"
-        case .authenticationFailed(let reason): "the mail server rejected the credentials: \(reason)"
-        case .commandFailed(let command, let status): "\(command) was refused: \(status)"
-        case .unexpectedResponse(let detail): "unexpected mail server response: \(detail)"
+        case let .connectionFailed(reason): "could not reach the mail server: \(reason)"
+        case let .authenticationFailed(reason): "the mail server rejected the credentials: \(reason)"
+        case let .commandFailed(command, status): "\(command) was refused: \(status)"
+        case let .unexpectedResponse(detail): "unexpected mail server response: \(detail)"
         case .connectionClosed: "the mail server closed the connection"
         case .invalidCredential: "the mailbox credential contains an illegal line break"
         }
@@ -90,7 +90,9 @@ public enum IMAPQuote {
         }
         var escaped = ""
         for character in raw {
-            if character == "\"" || character == "\\" { escaped.append("\\") }
+            if character == "\"" || character == "\\" {
+                escaped.append("\\")
+            }
             escaped.append(character)
         }
         return "\"\(escaped)\""
@@ -121,7 +123,9 @@ public struct IMAPResponse: Sendable, Equatable {
     /// a response that carries no literals.
     public var text: String {
         parts.compactMap { part in
-            if case .text(let text) = part { return text }
+            if case let .text(text) = part {
+                return text
+            }
             return nil
         }.joined(separator: " ")
     }
@@ -130,7 +134,9 @@ public struct IMAPResponse: Sendable, Equatable {
     /// exactly one.
     public var literals: [String] {
         parts.compactMap { part in
-            if case .literal(let literal) = part { return literal }
+            if case let .literal(literal) = part {
+                return literal
+            }
             return nil
         }
     }
@@ -155,7 +161,7 @@ public struct IMAPClient: Sendable {
     /// The headers requested. Kept to the ones classification reads, so a poll is a
     /// few kilobytes per message rather than a message body.
     public static let headerFields = [
-        "FROM", "TO", "CC", "SUBJECT", "DATE", "MESSAGE-ID", "REFERENCES", "IN-REPLY-TO",
+        "FROM", "TO", "CC", "SUBJECT", "DATE", "MESSAGE-ID", "REFERENCES", "IN-REPLY-TO"
     ]
 
     /// How many unseen messages one pass considers. A thousand-message backlog would
@@ -216,7 +222,8 @@ public struct IMAPClient: Sendable {
         // credential.
         let capabilities = try await conversation.capability()
         guard capabilities.contains(where: { $0.caseInsensitiveCompare("IMAP4REV1") == .orderedSame }) else {
-            throw IMAPError.unexpectedResponse("server does not offer IMAP4rev1 (said: \(capabilities.joined(separator: " ")))")
+            throw IMAPError
+                .unexpectedResponse("server does not offer IMAP4rev1 (said: \(capabilities.joined(separator: " ")))")
         }
 
         try await conversation.authenticate(username: credentials.account.username, password: credentials.password)
@@ -247,6 +254,18 @@ public struct IMAPClient: Sendable {
 /// Sendable` because Swift 6 requires a nominal type to cross the `await` boundaries
 /// in that function, and the instance is confined to one task by construction.
 final class IMAPConversation: @unchecked Sendable {
+    /// What a tagged verdict line yielded: everything the command saw before it, plus
+    /// the status word and the human text after it.
+    ///
+    /// A named type rather than a three-member tuple: the tuple grew past what a reader
+    /// can keep straight at a call site (`result.status` at one, `result.untagged` at
+    /// another) and the fields are read far more often than they are built.
+    struct Verdict {
+        var untagged: [IMAPResponse]
+        var status: String
+        var message: String
+    }
+
     private let session: any IMAPSession
     private var tagCounter = 0
 
@@ -285,9 +304,8 @@ final class IMAPConversation: @unchecked Sendable {
     /// `… {173}` -> 173. `nil` when the line does not end with a literal marker.
     /// Anchored at the end because `{n}` mid-line is a quoted-string character.
     static func trailingLiteralCount(_ line: String) -> Int? {
-        guard line.hasSuffix("}") else { return nil }
-        guard let open = line.lastIndex(of: "{") else { return nil }
-        let digits = line[line.index(after: open)..<line.index(before: line.endIndex)]
+        guard line.hasSuffix("}"), let open = line.lastIndex(of: "{") else { return nil }
+        let digits = line[line.index(after: open) ..< line.index(before: line.endIndex)]
         guard !digits.isEmpty, digits.allSatisfy(\.isASCII), digits.allSatisfy(\.isNumber) else { return nil }
         return Int(digits)
     }
@@ -297,7 +315,10 @@ final class IMAPConversation: @unchecked Sendable {
     /// Returns the untagged responses plus the verdict's status (`OK`/`NO`/`BAD`) and
     /// its text. Untagged lines that arrive before the verdict belong to the command;
     /// there is no pipelining in this client, so that is unambiguous.
-    private func command(_ name: String, _ arguments: String) async throws -> (untagged: [IMAPResponse], status: String, message: String) {
+    private func command(
+        _ name: String,
+        _ arguments: String
+    ) async throws -> Verdict {
         let tag = nextTag()
         try await session.send(arguments.isEmpty ? "\(tag) \(name)" : "\(tag) \(name) \(arguments)")
 
@@ -309,7 +330,7 @@ final class IMAPConversation: @unchecked Sendable {
                 let rest = text.dropFirst(tag.count + 1)
                 let status = rest.split(separator: " ", maxSplits: 1).first.map(String.init) ?? ""
                 let message = rest.split(separator: " ", maxSplits: 1).dropFirst().first.map(String.init) ?? ""
-                return (untagged, status.uppercased(), message)
+                return Verdict(untagged: untagged, status: status.uppercased(), message: message)
             }
             if text.hasPrefix("* ") {
                 untagged.append(response)
@@ -350,7 +371,8 @@ final class IMAPConversation: @unchecked Sendable {
         let quotedPassword = try IMAPQuote.string(password)
         let result = try await command("LOGIN", "\(quotedUser) \(quotedPassword)")
         guard result.status == "OK" else {
-            throw IMAPError.authenticationFailed("\(result.status) \(result.message)".trimmingCharacters(in: .whitespaces))
+            throw IMAPError
+                .authenticationFailed("\(result.status) \(result.message)".trimmingCharacters(in: .whitespaces))
         }
     }
 
@@ -384,8 +406,8 @@ final class IMAPConversation: @unchecked Sendable {
         )
 
         for response in untagged where response.text.contains("FETCH") {
-            guard let fetchedUID = Self.uid(in: response.text), fetchedUID == uid else { continue }
-            guard let headerText = response.literals.first else { continue }
+            guard let fetchedUID = Self.uid(in: response.text), fetchedUID == uid,
+                  let headerText = response.literals.first else { continue }
             return IMAPParser.message(uid: uid, headerBlock: headerText)
         }
         return nil
@@ -396,7 +418,9 @@ final class IMAPConversation: @unchecked Sendable {
         let tokens = text.split(whereSeparator: { $0 == " " || $0 == "(" || $0 == ")" })
         for (index, token) in tokens.enumerated() where token.caseInsensitiveCompare("UID") == .orderedSame {
             guard index + 1 < tokens.count else { continue }
-            if let value = UInt32(tokens[index + 1]) { return value }
+            if let value = UInt32(tokens[index + 1]) {
+                return value
+            }
         }
         return nil
     }
@@ -451,7 +475,7 @@ public enum IMAPParser {
                 currentValue = ""
                 continue
             }
-            currentName = rawLine[rawLine.startIndex..<colon]
+            currentName = rawLine[rawLine.startIndex ..< colon]
                 .trimmingCharacters(in: .whitespaces)
                 .lowercased()
             currentValue = String(rawLine[rawLine.index(after: colon)...])
@@ -498,11 +522,17 @@ public enum IMAPParser {
     /// and a `Re:`-only check would misread their threads.
     public static func isReplyHeader(subject: String, inReplyTo: String?, references: String?) -> Bool {
         let lowered = subject.trimmingCharacters(in: .whitespaces).lowercased()
-        if lowered.hasPrefix("re:") || lowered.hasPrefix("re[") || lowered.hasPrefix("aw:") || lowered.hasPrefix("sv:") {
+        if lowered.hasPrefix("re:") || lowered.hasPrefix("re[") || lowered.hasPrefix("aw:") || lowered
+            .hasPrefix("sv:")
+        {
             return true
         }
-        if let inReplyTo, !inReplyTo.isEmpty { return true }
-        if let references, !references.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
+        if let inReplyTo, !inReplyTo.isEmpty {
+            return true
+        }
+        if let references, !references.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return true
+        }
         return false
     }
 }

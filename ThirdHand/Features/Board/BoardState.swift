@@ -27,7 +27,9 @@ public enum BoardState: Sendable, Equatable {
         /// name none. The board uses it to send "Open Settings" to the right place: a
         /// paused mailbox is fixed by the mailbox form, everything else by iOS Settings.
         public var pausedSource: SourceIdentity {
-            if case .denied(let identity) = self { return identity }
+            if case let .denied(identity) = self {
+                return identity
+            }
             return .calendar
         }
     }
@@ -40,7 +42,9 @@ public enum BoardState: Sendable, Equatable {
     }
 
     public var failures: [SourceFailure] {
-        if case .degraded(let failures) = self { return failures }
+        if case let .degraded(failures) = self {
+            return failures
+        }
         return []
     }
 }

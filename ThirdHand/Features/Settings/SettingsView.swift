@@ -110,7 +110,10 @@ public struct SettingsView: View {
                     }
                 }
             }
-            .background(ThirdHandColor.surfaceCard, in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous))
+            .background(
+                ThirdHandColor.surfaceCard,
+                in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous)
+            )
 
             // A degraded source has to say what to *do*, not just that it is off.
             // The board can only report the pause; the fix lives in iOS Settings,
@@ -185,7 +188,10 @@ public struct SettingsView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .background(ThirdHandColor.surfaceCard, in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous))
+            .background(
+                ThirdHandColor.surfaceCard,
+                in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous)
+            )
             .accessibilityIdentifier("settings.email")
             .accessibilityLabel("Mailbox, \(emailLine)")
             .accessibilityHint("Opens the mailbox connection screen")
@@ -196,7 +202,7 @@ public struct SettingsView: View {
         switch emailStatus {
         case .notConnected: "Not connected"
         case .checking: "Checking…"
-        case .unread(let count): Plural.count(count, "unread message")
+        case let .unread(count): Plural.count(count, "unread message")
         case .failed: "Couldn't check"
         }
     }
@@ -230,7 +236,10 @@ public struct SettingsView: View {
             }
             .padding(ThirdHandSpacing.m)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(ThirdHandColor.surfaceCard, in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous))
+            .background(
+                ThirdHandColor.surfaceCard,
+                in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous)
+            )
         }
     }
 

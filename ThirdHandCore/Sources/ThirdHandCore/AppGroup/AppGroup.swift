@@ -48,39 +48,60 @@ public struct ThirdHandPaths: Sendable {
     }
 
     /// The Mac-mirror transport envelope (M4).
-    public var snapshotURL: URL { appGroupRoot.appendingPathComponent("snapshot.json") }
+    public var snapshotURL: URL {
+        appGroupRoot.appendingPathComponent("snapshot.json")
+    }
+
     /// Mirror -> iOS commands (M4).
-    public var commandsURL: URL { appGroupRoot.appendingPathComponent("commands.jsonl") }
+    public var commandsURL: URL {
+        appGroupRoot.appendingPathComponent("commands.jsonl")
+    }
+
     /// iOS -> mirror acks (M4).
-    public var commandsAckURL: URL { appGroupRoot.appendingPathComponent("commands.ack.jsonl") }
+    public var commandsAckURL: URL {
+        appGroupRoot.appendingPathComponent("commands.ack.jsonl")
+    }
+
     /// The widget's read-only board cache.
-    public var boardURL: URL { appGroupRoot.appendingPathComponent("board.json") }
+    public var boardURL: URL {
+        appGroupRoot.appendingPathComponent("board.json")
+    }
+
     /// How far into `commands.jsonl` this device has read.
     ///
     /// Device-local bookkeeping, so it sits in the group container root rather than
     /// in `Documents/ThirdHand/`: the data contract pins that directory to exactly the
     /// three transport files the Mac plugin enumerates.
-    public var commandCursorURL: URL { root.appendingPathComponent("commands.cursor") }
+    public var commandCursorURL: URL {
+        root.appendingPathComponent("commands.cursor")
+    }
+
     /// The Share Extension's inbox: one JSON object per line, one line per share
     /// (M7.1). Append-only, and read by `FileSharedLinkProvider`.
     ///
     /// In the group root rather than `Documents/ThirdHand/` for the same reason as the
     /// cursor: that directory is the Mac transport, and this file is the app group's
     /// own hand-off between two processes of this app.
-    public var sharedLinksURL: URL { root.appendingPathComponent("shared-links.jsonl") }
+    public var sharedLinksURL: URL {
+        root.appendingPathComponent("shared-links.jsonl")
+    }
 
     /// The bounded on-device sync log, for the debug sheet.
     ///
     /// In the group root for the same reason as the cursor: `Documents/ThirdHand/` is
     /// the shared transport, and this file is ours alone.
-    public var syncLogURL: URL { root.appendingPathComponent("sync.log") }
+    public var syncLogURL: URL {
+        root.appendingPathComponent("sync.log")
+    }
 
     /// On-device placement decisions from the system language model.
     ///
     /// Device-local, not transport: placement is a judgement made on this phone
     /// about this phone's board, so it must not ride the Mac mirror and overwrite
     /// the panel's own rules. In the group root for the same reason as the cursor.
-    public var placementsURL: URL { root.appendingPathComponent("placements.json") }
+    public var placementsURL: URL {
+        root.appendingPathComponent("placements.json")
+    }
 
     /// Creates the directory if it is missing. Safe to call repeatedly.
     @discardableResult

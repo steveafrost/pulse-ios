@@ -1,7 +1,7 @@
-@testable import ThirdHand
 import Foundation
-import ThirdHandCore
 import Testing
+@testable import ThirdHand
+import ThirdHandCore
 
 /// #17 / #20: the board's state derivation and filter rules, asserted without a view.
 @Suite("Board state")
@@ -119,6 +119,6 @@ struct ClosedItemsTests {
     func storeFilter() async {
         let store = FakeItemStore(items: Fixtures.FixtureSet.closed)
         let all = await store.allItems()
-        #expect(all.filter { $0.status.isClosed }.count == 3)
+        #expect(all.filter(\.status.isClosed).count == 3)
     }
 }

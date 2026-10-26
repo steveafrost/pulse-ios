@@ -15,7 +15,6 @@ import Testing
 /// that as a guarantee rather than inventing a change.
 @Suite("Pathological source data")
 struct PathologicalDataTests {
-
     private let now = Fixture.now
     private let calendar = Fixture.calendar
 
@@ -51,7 +50,7 @@ struct PathologicalDataTests {
 
     @Test("an all-day event never becomes an imminent countdown")
     func allDayNotImminent() {
-        let allDay = event("a", start: now.addingTimeInterval(600), end: now.addingTimeInterval(3_600), allDay: true)
+        let allDay = event("a", start: now.addingTimeInterval(600), end: now.addingTimeInterval(3600), allDay: true)
         let items = detect([allDay])
         #expect(items.allSatisfy { $0.kind != .deadline || $0.reason != "starts within the hour" })
         #expect(EventKitSource.imminentItems([allDay], now: now).isEmpty)
@@ -59,7 +58,7 @@ struct PathologicalDataTests {
 
     @Test("a zero-duration event does not crash and cannot conflict with itself")
     func zeroDuration() {
-        let instant = event("zero", start: now.addingTimeInterval(3_600), end: now.addingTimeInterval(3_600))
+        let instant = event("zero", start: now.addingTimeInterval(3600), end: now.addingTimeInterval(3600))
         #expect(instant.duration == 0)
         // Its own overlap with itself is zero, and `conflictItems` only pairs
         // distinct events -- either way, no self-conflict card.
@@ -70,11 +69,17 @@ struct PathologicalDataTests {
     }
 
     @Test("an event that ends after midnight keeps its own day and duration")
-    func spansMidnight() {
-        let start = calendar.date(from: DateComponents(year: 2026, month: 10, day: 23, hour: 23, minute: 30))!
-        let end = calendar.date(from: DateComponents(year: 2026, month: 10, day: 24, hour: 1, minute: 0))!
+    func spansMidnight() throws {
+        let start = try #require(calendar.date(from: DateComponents(
+            year: 2026,
+            month: 10,
+            day: 23,
+            hour: 23,
+            minute: 30
+        )))
+        let end = try #require(calendar.date(from: DateComponents(year: 2026, month: 10, day: 24, hour: 1, minute: 0)))
         let overnight = event("overnight", start: start, end: end, status: .accepted)
-        #expect(overnight.duration == 5_400)
+        #expect(overnight.duration == 5400)
         // The item's `due` is its start, never its end: the board sorts on when
         // the thing needs you, which is when it starts.
         let items = EventKitSource.detect(events: [overnight], now: start.addingTimeInterval(-600), calendar: calendar)
@@ -85,7 +90,7 @@ struct PathologicalDataTests {
     func negativeDuration() {
         // A timezone-shifted or malformed import can produce this. `duration` is
         // documented as never negative, and nothing downstream may divide by it.
-        let inverted = event("inverted", start: now, end: now.addingTimeInterval(-3_600))
+        let inverted = event("inverted", start: now, end: now.addingTimeInterval(-3600))
         #expect(inverted.duration == 0)
         #expect(detect([inverted]).allSatisfy { $0.title == "Event" })
     }
@@ -95,8 +100,18 @@ struct PathologicalDataTests {
         // EventKit materialises an overridden instance with a distinct identifier
         // and its own start/end. The detector must key on that identifier, not on
         // a series id it does not model, or two instances would collide.
-        let series = event("series-master", title: "Weekly", start: now.addingTimeInterval(600), end: now.addingTimeInterval(4_200))
-        let override = event("series-instance", title: "Weekly (moved)", start: now.addingTimeInterval(1_800), end: now.addingTimeInterval(5_400))
+        let series = event(
+            "series-master",
+            title: "Weekly",
+            start: now.addingTimeInterval(600),
+            end: now.addingTimeInterval(4200)
+        )
+        let override = event(
+            "series-instance",
+            title: "Weekly (moved)",
+            start: now.addingTimeInterval(1800),
+            end: now.addingTimeInterval(5400)
+        )
         let items = detect([series, override])
         let ids = Set(items.map(\.id))
         // Both instances are keyed on their own identifier ...
@@ -114,22 +129,22 @@ struct PathologicalDataTests {
     }
 
     @Test("an event with 200 attendees does not crash and lists distinct people")
-    func manyAttendees() {
-        let attendees = (0..<200).map { Attendee(name: "Person \($0)", identifier: "p\($0)@example.com") }
+    func manyAttendees() throws {
+        let attendees = (0 ..< 200).map { Attendee(name: "Person \($0)", identifier: "p\($0)@example.com") }
         // Needs an unanswered invite for the RSVP path to build a people list.
         let big = event(
-            "big", title: "All hands", start: now.addingTimeInterval(86_400),
-            end: now.addingTimeInterval(90_000), attendees: attendees, status: .invited
+            "big", title: "All hands", start: now.addingTimeInterval(86400),
+            end: now.addingTimeInterval(90000), attendees: attendees, status: .invited
         )
         let items = EventKitSource.detect(events: [big], now: now, calendar: calendar)
-        let rsvp = try! #require(items.first { $0.reason == "invitation awaiting your response" })
+        let rsvp = try #require(items.first { $0.reason == "invitation awaiting your response" })
         #expect(rsvp.people?.count == 200)
         #expect(Set(rsvp.people ?? []).count == 200, "names de-duplicated")
     }
 
     @Test("an emoji-only title survives verbatim")
     func emojiTitle() {
-        let emoji = event("emoji", title: "🧘🏽‍♀️🕯️", start: now.addingTimeInterval(600), end: now.addingTimeInterval(4_200))
+        let emoji = event("emoji", title: "🧘🏽‍♀️🕯️", start: now.addingTimeInterval(600), end: now.addingTimeInterval(4200))
         let items = detect([emoji])
         #expect(items.contains { $0.title == "🧘🏽‍♀️🕯️" })
     }
@@ -137,7 +152,7 @@ struct PathologicalDataTests {
     @Test("a 500-character title survives and round-trips through JSON")
     func longTitle() throws {
         let title = String(repeating: "A very long meeting title. ", count: 20) // > 500
-        let long = event("long", title: title, start: now.addingTimeInterval(600), end: now.addingTimeInterval(4_200))
+        let long = event("long", title: title, start: now.addingTimeInterval(600), end: now.addingTimeInterval(4200))
         let items = detect([long])
         let item = try #require(items.first { $0.id == "calendar:event:long" })
         #expect(item.title == title)
@@ -152,11 +167,17 @@ struct PathologicalDataTests {
     }
 
     @Test("a reminder overdue by months is still overdue, with a sane priority")
-    func reminderLongOverdue() {
-        let due = calendar.date(byAdding: .day, value: -120, to: now)!
-        let old = ReminderSnapshot(identifier: "r2", title: "Pay the thing", notes: nil, dueDate: due, isCompleted: false)
+    func reminderLongOverdue() throws {
+        let due = try #require(calendar.date(byAdding: .day, value: -120, to: now))
+        let old = ReminderSnapshot(
+            identifier: "r2",
+            title: "Pay the thing",
+            notes: nil,
+            dueDate: due,
+            isCompleted: false
+        )
         let items = RemindersSource.detect(reminders: [old], now: now, calendar: calendar)
-        let item = try! #require(items.first)
+        let item = try #require(items.first)
         #expect(item.reason == "overdue")
         #expect(item.priority == .high)
         #expect(item.due == due)
@@ -167,20 +188,44 @@ struct PathologicalDataTests {
     /// incomplete and dated, so both are captured; 23:59 tonight is "due today" and
     /// lands in Now, 00:01 tomorrow is "due later" and lands in Next.
     @Test("a reminder due 23:59 tonight is today; 00:01 tomorrow is not")
-    func reminderDayBoundary() {
-        let twoMinutesToMidnight = calendar.date(from: DateComponents(year: 2026, month: 10, day: 23, hour: 23, minute: 59))!
-        let justTomorrow = calendar.date(from: DateComponents(year: 2026, month: 10, day: 24, hour: 0, minute: 1))!
-        let tonight = ReminderSnapshot(identifier: "tonight", title: "Tonight", notes: nil, dueDate: twoMinutesToMidnight, isCompleted: false)
-        let tomorrow = ReminderSnapshot(identifier: "tomorrow", title: "Tomorrow", notes: nil, dueDate: justTomorrow, isCompleted: false)
+    func reminderDayBoundary() throws {
+        let twoMinutesToMidnight = try #require(calendar.date(from: DateComponents(
+            year: 2026,
+            month: 10,
+            day: 23,
+            hour: 23,
+            minute: 59
+        )))
+        let justTomorrow = try #require(calendar.date(from: DateComponents(
+            year: 2026,
+            month: 10,
+            day: 24,
+            hour: 0,
+            minute: 1
+        )))
+        let tonight = ReminderSnapshot(
+            identifier: "tonight",
+            title: "Tonight",
+            notes: nil,
+            dueDate: twoMinutesToMidnight,
+            isCompleted: false
+        )
+        let tomorrow = ReminderSnapshot(
+            identifier: "tomorrow",
+            title: "Tomorrow",
+            notes: nil,
+            dueDate: justTomorrow,
+            isCompleted: false
+        )
 
         let items = RemindersSource.detect(reminders: [tonight, tomorrow], now: now, calendar: calendar)
         let byID = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
 
-        let tonightItem = try! #require(byID["reminders:reminder:tonight"])
+        let tonightItem = try #require(byID["reminders:reminder:tonight"])
         #expect(tonightItem.reason == "due today")
         #expect(tonightItem.priority == .normal)
 
-        let tomorrowItem = try! #require(byID["reminders:reminder:tomorrow"])
+        let tomorrowItem = try #require(byID["reminders:reminder:tomorrow"])
         #expect(tomorrowItem.reason == "due later")
         #expect(tomorrowItem.due == justTomorrow)
 
@@ -201,7 +246,7 @@ struct PathologicalDataTests {
     func completedReminder() {
         let done = ReminderSnapshot(
             identifier: "r3", title: "Done", notes: nil,
-            dueDate: now.addingTimeInterval(-3_600), isCompleted: true
+            dueDate: now.addingTimeInterval(-3600), isCompleted: true
         )
         #expect(RemindersSource.detect(reminders: [done], now: now, calendar: calendar).isEmpty)
     }
@@ -211,16 +256,16 @@ struct PathologicalDataTests {
     @Test("a board of pathological events still encodes to a snapshot the mirror can read")
     func pathologicalBoardRoundTrips() async throws {
         var events: [CalendarEventSnapshot] = []
-        events.append(event("all-day", start: now, end: now.addingTimeInterval(86_400), allDay: true))
+        events.append(event("all-day", start: now, end: now.addingTimeInterval(86400), allDay: true))
         events.append(event("zero", start: now.addingTimeInterval(600), end: now.addingTimeInterval(600)))
-        events.append(event("emoji", title: "🧘🏽‍♀️", start: now.addingTimeInterval(600), end: now.addingTimeInterval(4_200)))
+        events.append(event("emoji", title: "🧘🏽‍♀️", start: now.addingTimeInterval(600), end: now.addingTimeInterval(4200)))
         events.append(event(
             "big-title", title: String(repeating: "x", count: 500),
-            start: now.addingTimeInterval(600), end: now.addingTimeInterval(4_200)
+            start: now.addingTimeInterval(600), end: now.addingTimeInterval(4200)
         ))
         events.append(event(
-            "many", start: now.addingTimeInterval(86_400), end: now.addingTimeInterval(90_000),
-            attendees: (0..<200).map { Attendee(name: "P\($0)") }, status: .invited
+            "many", start: now.addingTimeInterval(86400), end: now.addingTimeInterval(90000),
+            attendees: (0 ..< 200).map { Attendee(name: "P\($0)") }, status: .invited
         ))
 
         let items = detect(events)

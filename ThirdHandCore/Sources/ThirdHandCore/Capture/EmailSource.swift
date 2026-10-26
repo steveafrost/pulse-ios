@@ -229,11 +229,19 @@ public struct EmailSource: CaptureSource {
     /// place that needs a `DateFormatter` per render.
     static func phrase(for date: Date, now: Date) -> String {
         let seconds = now.timeIntervalSince(date)
-        if seconds < 0 { return "just now" }
-        if seconds < 24 * 3600 { return "today" }
+        if seconds < 0 {
+            return "just now"
+        }
+        if seconds < 24 * 3600 {
+            return "today"
+        }
         let days = Int(seconds / (24 * 3600))
-        if days == 1 { return "yesterday" }
-        if days < 14 { return "\(days) days ago" }
+        if days == 1 {
+            return "yesterday"
+        }
+        if days < 14 {
+            return "\(days) days ago"
+        }
         let weeks = days / 7
         return weeks < 9 ? "\(weeks) weeks ago" : "\(days) days ago"
     }

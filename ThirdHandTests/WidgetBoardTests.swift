@@ -1,7 +1,7 @@
-@testable import ThirdHand
 import Foundation
-import ThirdHandCore
 import Testing
+@testable import ThirdHand
+import ThirdHandCore
 
 /// #21: the widget projection and the app-group paths.
 @Suite("Widget board")
@@ -13,7 +13,7 @@ struct WidgetBoardTests {
         let board: [Horizon: [ThirdHandItem]] = [
             .now: [Fixtures.highPriorityRSVP, Fixtures.imminentMeeting, Fixtures.fyiLink],
             .next: [Fixtures.conflict],
-            .niceToKnow: [Fixtures.fyiLink],
+            .niceToKnow: [Fixtures.fyiLink]
         ]
         let widget = WidgetBoard(board: board, generatedAt: now, calendar: Fixtures.calendar())
         #expect(widget.nowCount == 2)
@@ -41,7 +41,7 @@ struct WidgetBoardTests {
         let board: [Horizon: [ThirdHandItem]] = [
             .niceToKnow: [Fixtures.fyiLink],
             .now: [Fixtures.highPriorityRSVP],
-            .later: [Fixtures.waitingItem],
+            .later: [Fixtures.waitingItem]
         ]
         let widget = WidgetBoard(board: board, generatedAt: Fixtures.fixtureNow, calendar: Fixtures.calendar())
         #expect(widget.items.map(\.horizon) == ["now", "later", "niceToKnow"])

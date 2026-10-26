@@ -4,7 +4,6 @@ import Testing
 
 @Suite("SnapshotWriter")
 struct SnapshotWriterTests {
-
     private let clock = Fixture.now
 
     private func writer(
@@ -34,6 +33,9 @@ struct SnapshotWriterTests {
         #expect(snapshot.items.count == 1)
 
         let data = try #require(try container.read(SnapshotWriter.fileName))
+        // The assertion is on the envelope's keys as written, so this reads the bytes
+        // rather than a decoded model.
+        // swiftlint:disable:next optional_data_string_conversion
         let text = String(decoding: data, as: UTF8.self)
         for key in ["schemaVersion", "generatedAt", "deviceName", "lastViewedAt", "items", "runs", "draft"] {
             #expect(text.contains("\"\(key)\""), "missing key \(key)")
@@ -97,13 +99,19 @@ struct SnapshotWriterTests {
         let container = try SyncFixture.makeContainer()
         defer { container.cleanup() }
 
-        let foreign = Data(#"{"schemaVersion":2,"generatedAt":"2026-10-23T18:04:11.000Z","deviceName":"Newer","items":[],"runs":[],"draft":null}"#.utf8)
-        try container.write(foreign, to: SnapshotWriter.fileName)
+        // A verbatim foreign snapshot, so the bytes cannot be reflowed; the literal is
+        // split only to stay inside the column limit.
+        let foreignJSON = #"{"schemaVersion":2,"generatedAt":"2026-10-23T18:04:11.000Z","deviceName":"Newer","#
+            + #""items":[],"runs":[],"draft":null}"#
+        try container.write(Data(foreignJSON.utf8), to: SnapshotWriter.fileName)
 
-        #expect(throws: ThirdHandSyncError.unsupportedSchemaVersion(2, supported: ThirdHandSnapshot.currentSchemaVersion)) {
+        #expect(throws: ThirdHandSyncError.unsupportedSchemaVersion(
+            2,
+            supported: ThirdHandSnapshot.currentSchemaVersion
+        )) {
             try writer(container).write(items: [SyncFixture.item(id: "calendar:event:1", updatedAt: clock)])
         }
-        #expect(try container.read(SnapshotWriter.fileName) == foreign)
+        #expect(try container.read(SnapshotWriter.fileName) == Data(foreignJSON.utf8))
     }
 
     @Test("a duplicate id is refused and the previous snapshot survives")
@@ -118,7 +126,7 @@ struct SnapshotWriterTests {
         #expect(throws: ThirdHandSyncError.duplicateItemID("calendar:event:1")) {
             try subject.write(items: [
                 SyncFixture.item(id: "calendar:event:1", updatedAt: clock),
-                SyncFixture.item(id: "calendar:event:1", updatedAt: clock),
+                SyncFixture.item(id: "calendar:event:1", updatedAt: clock)
             ])
         }
         #expect(try container.read(SnapshotWriter.fileName) == before)
@@ -134,7 +142,7 @@ struct SnapshotWriterTests {
         let items = [
             SyncFixture.item(id: "calendar:event:b", updatedAt: clock),
             SyncFixture.item(id: "calendar:event:a", updatedAt: clock),
-            SyncFixture.item(id: "calendar:event:c", updatedAt: clock),
+            SyncFixture.item(id: "calendar:event:c", updatedAt: clock)
         ]
         let subject = writer(container)
         try subject.write(items: items)
@@ -153,7 +161,7 @@ struct SnapshotWriterTests {
         let snapshot = try writer(container).write(items: [
             SyncFixture.item(id: "calendar:event:c", updatedAt: clock),
             SyncFixture.item(id: "calendar:event:a", updatedAt: clock),
-            SyncFixture.item(id: "calendar:event:b", updatedAt: clock),
+            SyncFixture.item(id: "calendar:event:b", updatedAt: clock)
         ])
         #expect(snapshot.items.map(\.id) == ["calendar:event:a", "calendar:event:b", "calendar:event:c"])
     }
@@ -183,20 +191,20 @@ struct SnapshotWriterTests {
         let container = try SyncFixture.makeContainer()
         defer { container.cleanup() }
 
-        let twoDays = clock.addingTimeInterval(-2 * 86_400)
-        let fourDays = clock.addingTimeInterval(-4 * 86_400)
+        let twoDays = clock.addingTimeInterval(-2 * 86400)
+        let fourDays = clock.addingTimeInterval(-4 * 86400)
 
         let snapshot = try writer(container).write(items: [
             SyncFixture.item(id: "calendar:event:recent", status: .done, updatedAt: twoDays, resolvedAt: twoDays),
             SyncFixture.item(id: "calendar:event:old", status: .done, updatedAt: fourDays, resolvedAt: fourDays),
             SyncFixture.item(id: "calendar:event:ancient-open", status: .open, updatedAt: fourDays),
-            SyncFixture.item(id: "calendar:event:ancient-waiting", status: .waiting, updatedAt: fourDays),
+            SyncFixture.item(id: "calendar:event:ancient-waiting", status: .waiting, updatedAt: fourDays)
         ])
 
         #expect(snapshot.items.map(\.id) == [
             "calendar:event:ancient-open",
             "calendar:event:ancient-waiting",
-            "calendar:event:recent",
+            "calendar:event:recent"
         ])
     }
 
@@ -209,9 +217,9 @@ struct SnapshotWriterTests {
             SyncFixture.item(
                 id: "calendar:event:dismissed-old",
                 status: .dismissed,
-                updatedAt: clock.addingTimeInterval(-4 * 86_400),
+                updatedAt: clock.addingTimeInterval(-4 * 86400),
                 resolvedAt: nil
-            ),
+            )
         ])
         #expect(snapshot.items.isEmpty)
     }
@@ -234,7 +242,7 @@ struct SnapshotWriterTests {
         let container = try SyncFixture.makeContainer()
         defer { container.cleanup() }
 
-        let runs = (0..<20).map { index in
+        let runs = (0 ..< 20).map { index in
             CaptureRun(run: "run\(index)", finishedAt: clock.addingTimeInterval(Double(index)), summary: "")
         }
         let snapshot = try writer(container).write(
@@ -254,7 +262,7 @@ struct SnapshotWriterTests {
         )
         #expect(appended.map(\.run) == ["new", "old"])
 
-        let full = (0..<SnapshotWriter.maxRuns).map {
+        let full = (0 ..< SnapshotWriter.maxRuns).map {
             CaptureRun(run: "r\($0)", finishedAt: clock, summary: "")
         }
         let capped = SnapshotWriter.appending(

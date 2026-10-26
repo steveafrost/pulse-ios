@@ -14,7 +14,9 @@ public struct ReminderSnapshot: Sendable, Hashable, Identifiable {
     public var dueDate: Date?
     public var isCompleted: Bool
 
-    public var id: String { identifier }
+    public var id: String {
+        identifier
+    }
 
     public init(
         identifier: String,

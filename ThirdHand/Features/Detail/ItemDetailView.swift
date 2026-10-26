@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// §8.2: content on an opaque card, glass only on the header capsule and the
 /// action bar. The header is the `glassEffectID` morph target (§6.4).
@@ -117,7 +117,9 @@ public struct ItemDetailView: View {
     private var metaSummary: String {
         var parts = [model.item.kind.title, model.item.sourceIdentity.title]
         let people = ThirdHandPeople.shortLine(model.item.people, limit: 1)
-        if !people.isEmpty { parts.append("with \(people)") }
+        if !people.isEmpty {
+            parts.append("with \(people)")
+        }
         return parts.joined(separator: " · ")
     }
 
@@ -140,7 +142,10 @@ public struct ItemDetailView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(ThirdHandSpacing.m)
-        .background(ThirdHandColor.surfaceCard, in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous))
+        .background(
+            ThirdHandColor.surfaceCard,
+            in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous)
+        )
         .opacity(model.item.status == .done ? 0.6 : 1)
     }
 

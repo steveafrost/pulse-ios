@@ -17,7 +17,8 @@ public struct ErrorBoardView: View {
         VStack(alignment: .leading, spacing: ThirdHandSpacing.s) {
             ForEach(failures) { failure in
                 HStack(alignment: .top, spacing: ThirdHandSpacing.s) {
-                    Image(systemName: failure.isPermissionProblem ? "calendar.badge.exclamationmark" : "exclamationmark.triangle")
+                    Image(systemName: failure
+                        .isPermissionProblem ? "calendar.badge.exclamationmark" : "exclamationmark.triangle")
                         .foregroundStyle(ThirdHandColor.statusError)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: ThirdHandSpacing.xxs) {

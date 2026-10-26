@@ -35,22 +35,28 @@ public final class ClosedItemsViewModel {
         self.clock = clock
         self.calendar = calendar
         self.pageSize = pageSize
-        self.visibleCount = pageSize
+        visibleCount = pageSize
     }
 
-    public var now: Date { clock() }
+    public var now: Date {
+        clock()
+    }
 
-    public var canLoadMore: Bool { visibleCount < allClosed.count }
+    public var canLoadMore: Bool {
+        visibleCount < allClosed.count
+    }
 
     /// #19: how many closed items the next "Load more" reveals.
-    public var remainingCount: Int { max(0, allClosed.count - min(visibleCount, allClosed.count)) }
+    public var remainingCount: Int {
+        max(0, allClosed.count - min(visibleCount, allClosed.count))
+    }
 
     public func load() async {
         isLoading = true
         defer { isLoading = false }
-        let cutoff = clock().addingTimeInterval(-3 * 86_400)
+        let cutoff = clock().addingTimeInterval(-3 * 86400)
         allClosed = await store.allItems()
-            .filter { $0.status.isClosed }
+            .filter(\.status.isClosed)
             .filter { ($0.resolvedAt ?? $0.updatedAt) >= cutoff }
             .sorted { ($0.resolvedAt ?? $0.updatedAt) > ($1.resolvedAt ?? $1.updatedAt) }
         rebuild()

@@ -25,7 +25,9 @@ struct ItemIdentityTests {
         let second = ItemIdentity.conflictHash(participants)
         #expect(first == second)
         #expect(first.count == 8)
-        #expect(first.allSatisfy { $0.isHexDigit })
+        // Outside the macro: `#expect` cannot forward a throwing `allSatisfy`.
+        let allHexDigits = first.allSatisfy(\.isHexDigit)
+        #expect(allHexDigits)
     }
 
     @Test("reordering participants does not change the hash")
@@ -52,8 +54,16 @@ struct ItemIdentityTests {
     @Test("the same pair on different days yields different ids")
     func dayIsPartOfTheId() {
         let participants = ["Ada", "Grace"]
-        let today = ItemIdentity.calendarConflict(day: Fixture.date("2026-10-23T09:00:00.000Z"), participants: participants, calendar: Fixture.calendar)
-        let tomorrow = ItemIdentity.calendarConflict(day: Fixture.date("2026-10-24T09:00:00.000Z"), participants: participants, calendar: Fixture.calendar)
+        let today = ItemIdentity.calendarConflict(
+            day: Fixture.date("2026-10-23T09:00:00.000Z"),
+            participants: participants,
+            calendar: Fixture.calendar
+        )
+        let tomorrow = ItemIdentity.calendarConflict(
+            day: Fixture.date("2026-10-24T09:00:00.000Z"),
+            participants: participants,
+            calendar: Fixture.calendar
+        )
         #expect(today != tomorrow)
     }
 

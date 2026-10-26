@@ -139,12 +139,12 @@ struct EmailClassificationTests {
     func neverFYI() {
         let subjects = [
             "", " ", "Re: x", "Fwd: x", "Weekly digest", "Meeting notes",
-            "FYI", "fyi: something", "No action needed", "Newsletter vol 4",
+            "FYI", "fyi: something", "No action needed", "Newsletter vol 4"
         ]
         let recipientSets: [[EmailAddress]] = [
             [EmailFixture.me],
             [EmailFixture.me, EmailFixture.colleague],
-            [],
+            []
         ]
         for subject in subjects {
             for recipients in recipientSets {
@@ -185,7 +185,7 @@ struct EmailClassificationTests {
             cc: [EmailAddress(address: "GRACE@example.org"), EmailAddress(address: "linus@example.org")]
         )
         #expect(message.recipients.map(\.address) == [
-            "steve@example.com", "grace@example.org", "linus@example.org",
+            "steve@example.com", "grace@example.org", "linus@example.org"
         ])
     }
 

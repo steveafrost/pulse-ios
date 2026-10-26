@@ -14,10 +14,12 @@ public struct SnoozeMenu: View {
         self.now = now
         self.calendar = calendar
         self.onSnooze = onSnooze
-        _picked = State(initialValue: now.addingTimeInterval(3_600))
+        _picked = State(initialValue: now.addingTimeInterval(3600))
     }
 
-    private var presets: SnoozePresets { SnoozePresets(now: now, calendar: calendar) }
+    private var presets: SnoozePresets {
+        SnoozePresets(now: now, calendar: calendar)
+    }
 
     public var body: some View {
         NavigationStack {

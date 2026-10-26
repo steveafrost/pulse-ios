@@ -1,8 +1,7 @@
 import Foundation
-import ThirdHandCore
 import Testing
-
 @testable import ThirdHand
+import ThirdHandCore
 
 /// §10 regression: these sentences are the ones that shipped wrong.
 ///
@@ -12,7 +11,6 @@ import Testing
 /// surface, so a failure points at the screen a tester would have seen.
 @Suite("Copy")
 struct CopyTests {
-
     // MARK: - Plural
 
     @Test("0 items is plural, not singular")
@@ -109,7 +107,7 @@ struct CopyTests {
             Fixtures.withThreeQuickActions,
             Fixtures.highPriorityRSVP,
             Fixtures.imminentMeeting,
-            Fixtures.conflict,
+            Fixtures.conflict
         ]
         for item in fixtures {
             for action in item.quickActions {

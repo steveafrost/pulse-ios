@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// The board's sync indicator: one small glyph in the navigation bar that opens a
 /// popover with the last capture time and any source that could not be read.
@@ -49,14 +49,22 @@ public struct SyncStatusButton: View {
     /// Three states, and they must be distinguishable without colour: a failure is
     /// an exclamation, a pass in flight is a spinner, a settled board is a tick.
     private var glyph: String {
-        if status.isFailed || !failures.isEmpty { return "exclamationmark.triangle" }
-        if status.isCapturing { return "arrow.trianglehead.2.clockwise.rotate.90" }
+        if status.isFailed || !failures.isEmpty {
+            return "exclamationmark.triangle"
+        }
+        if status.isCapturing {
+            return "arrow.trianglehead.2.clockwise.rotate.90"
+        }
         return "checkmark.circle"
     }
 
     private var tint: Color {
-        if status.isFailed || !failures.isEmpty { return ThirdHandColor.horizonNow }
-        if status.isCapturing { return ThirdHandColor.textSecondary }
+        if status.isFailed || !failures.isEmpty {
+            return ThirdHandColor.horizonNow
+        }
+        if status.isCapturing {
+            return ThirdHandColor.textSecondary
+        }
         return ThirdHandColor.statusDone
     }
 

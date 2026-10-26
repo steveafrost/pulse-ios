@@ -11,6 +11,9 @@ public struct ThirdHandCard<Content: View>: View {
     public var body: some View {
         content
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(ThirdHandColor.surfaceCard, in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous))
+            .background(
+                ThirdHandColor.surfaceCard,
+                in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous)
+            )
     }
 }

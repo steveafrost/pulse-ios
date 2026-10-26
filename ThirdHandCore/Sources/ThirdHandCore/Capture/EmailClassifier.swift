@@ -25,7 +25,7 @@ public enum EmailClassifier {
     public static let deadlinePhrases: [String] = [
         "deadline", "due by", "due on", "due tomorrow", "due today", "due friday",
         "due monday", "end of day", "eod", "cob", "close of business", "by end of",
-        "expires", "last chance", "final reminder", "action required", "overdue",
+        "expires", "last chance", "final reminder", "action required", "overdue"
     ]
 
     /// Decision words: the sender wants a choice, an approval or a sign-off, not an
@@ -34,7 +34,7 @@ public enum EmailClassifier {
     public static let decisionPhrases: [String] = [
         "can you approve", "please approve", "need your approval", "your approval",
         "sign off", "sign-off", "signoff", "should we", "do we want", "which option",
-        "vote on", "decide", "decision needed", "go/no-go", "go no-go", "approve the",
+        "vote on", "decide", "decision needed", "go/no-go", "go no-go", "approve the"
     ]
 
     /// Classification of one message, as the `(Kind, Priority)` pair the store wants.

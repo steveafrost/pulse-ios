@@ -67,7 +67,7 @@ public struct DetectedItem: Sendable, Hashable {
     /// Whether `id` looks like `"<lowercase source prefix>:<something>"`.
     public static func isValidIdentifier(_ id: String) -> Bool {
         guard let colon = id.firstIndex(of: ":") else { return false }
-        let prefix = id[id.startIndex..<colon]
+        let prefix = id[id.startIndex ..< colon]
         return !prefix.isEmpty
             && prefix.allSatisfy { $0.isASCII && $0.isLowercase }
             && id.index(after: colon) < id.endIndex

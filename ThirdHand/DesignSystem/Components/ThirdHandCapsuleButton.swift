@@ -34,9 +34,9 @@ public struct ThirdHandCapsuleButton: View {
                     .font(ThirdHandTypography.chip)
                     .lineLimit(1)
                 if let badge {
-                    /// §1: "one numeric emphasis per screen — the Now badge". The
-                    /// badge is that one emphasis, so it stays filled red; the
-                    /// chip around it does not (see `.pulseGlass` below).
+                    // §1: "one numeric emphasis per screen — the Now badge". The
+                    // badge is that one emphasis, so it stays filled red; the
+                    // chip around it does not (see `.pulseGlass` below).
                     Text(badge)
                         .font(ThirdHandTypography.badgeCount)
                         .foregroundStyle(ThirdHandColor.textOnAccent)
@@ -54,8 +54,8 @@ public struct ThirdHandCapsuleButton: View {
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        /// Selection is a state, not an alarm: `.selected`, never `.tintedUrgent`.
-        /// The red on the board belongs to Now.
+        // Selection is a state, not an alarm: `.selected`, never `.tintedUrgent`.
+        // The red on the board belongs to Now.
         .pulseGlass(isSelected ? .selected : .regular, in: .capsule)
         // The badge is hidden from VoiceOver on its own, so the count has to
         // ride along here or a chip reads "All" while showing "3".

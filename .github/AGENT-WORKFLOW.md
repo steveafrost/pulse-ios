@@ -98,7 +98,7 @@ xcodebuild -scheme ThirdHand \
   CODE_SIGNING_ALLOWED=NO build
 ```
 
-Lint (optional locally, non-blocking in CI until the tree is clean):
+Lint (required, locally and in CI):
 
 ```sh
 bash Scripts/lint.sh          # check
@@ -171,10 +171,10 @@ pass locally.
 
 ## 8. Close
 
-Merge only after CI is green. Both `core` and `app` jobs must pass; `lint` is
-non-blocking today and becomes required once the tree is clean (see the comment
-in `.github/workflows/ci.yml`). The `Closes #<N>` reference closes the issue on
-merge — do not close it by hand before that.
+Merge only after CI is green. All three jobs — `core`, `app` and `lint` — must
+pass. `lint` became blocking once `bash Scripts/lint.sh` exited 0 on the tree; a
+new violation now fails the PR rather than warning on it. The `Closes #<N>`
+reference closes the issue on merge — do not close it by hand before that.
 
 If you merged by direct commit, comment the verification output on the issue and
 close it explicitly:

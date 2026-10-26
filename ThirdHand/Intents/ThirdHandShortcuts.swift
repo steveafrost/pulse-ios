@@ -15,7 +15,7 @@ struct ThirdHandShortcuts: AppShortcutsProvider {
             intent: WhatNeedsMeIntent(),
             phrases: [
                 "What needs me in \(.applicationName)",
-                "Ask \(.applicationName) what needs me",
+                "Ask \(.applicationName) what needs me"
             ],
             shortTitle: "What needs me",
             systemImageName: "exclamationmark.circle"
@@ -24,7 +24,7 @@ struct ThirdHandShortcuts: AppShortcutsProvider {
             intent: SnoozeTopItemIntent(),
             phrases: [
                 "Snooze the top item in \(.applicationName)",
-                "Snooze what needs me in \(.applicationName)",
+                "Snooze what needs me in \(.applicationName)"
             ],
             shortTitle: "Snooze top item",
             systemImageName: "clock.arrow.circlepath"

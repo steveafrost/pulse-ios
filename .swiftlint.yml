@@ -6,11 +6,7 @@
 # `bash Scripts/lint.sh`.
 
 included:
-  # NOTE: this entry names a directory that does not exist (`ThirdHand` is the
-  # real path), so the app's own sources have never been linted. Left as it was:
-  # correcting it surfaces ~60 pre-existing violations and belongs in its own
-  # change, not in the rename commit.
-  - Third Hand
+  - ThirdHand
   - ThirdHandWidgets
   - ThirdHandTests
   - ThirdHandCore/Sources

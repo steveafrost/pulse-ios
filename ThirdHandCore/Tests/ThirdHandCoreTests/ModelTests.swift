@@ -4,7 +4,6 @@ import Testing
 
 @Suite("Wire models")
 struct ModelTests {
-
     // MARK: - Round trips
 
     @Test("a fully-populated item survives encode -> decode unchanged")
@@ -35,7 +34,7 @@ struct ModelTests {
         #expect(ThirdHandJSON.dates.string(from: stamp) == "2026-10-23T18:04:11.123Z")
 
         let item = Fixture.fullItem()
-        let json = try #require(String(data: try ThirdHandJSON.encode(item), encoding: .utf8))
+        let json = try #require(try String(data: ThirdHandJSON.encode(item), encoding: .utf8))
         #expect(json.contains("\"due\":\"2026-10-23T18:04:11.123Z\""))
         // No offset form and no missing fraction: the plugin parses this directly.
         #expect(!json.contains("+00:00"))
@@ -91,7 +90,7 @@ struct ModelTests {
         // contract's example shows the key present.
         var empty = snapshot
         empty.draft = nil
-        let emptyJSON = try #require(String(data: try ThirdHandJSON.encode(empty), encoding: .utf8))
+        let emptyJSON = try #require(try String(data: ThirdHandJSON.encode(empty), encoding: .utf8))
         #expect(emptyJSON.contains("\"draft\":null"))
         #expect(try ThirdHandJSON.decode(ThirdHandSnapshot.self, from: Data(emptyJSON.utf8)).draft == nil)
     }
@@ -113,7 +112,7 @@ struct ModelTests {
         let item = try ThirdHandJSON.decode(ThirdHandItem.self, from: Data(json.utf8))
         #expect(item.history.isEmpty)
         #expect(item.quickActions.isEmpty)
-        #expect(item.detail == "")
+        #expect(item.detail.isEmpty)
         #expect(item.people.isEmpty)
         #expect(item.status == .open)
         #expect(item.priority == .normal)
@@ -187,7 +186,7 @@ struct ModelTests {
 
     @Test("four quick actions are rejected")
     func tooManyQuickActions() throws {
-        let actions = (0..<4).map { QuickAction(label: "a\($0)", text: "t") }
+        let actions = (0 ..< 4).map { QuickAction(label: "a\($0)", text: "t") }
         #expect(throws: ThirdHandStoreError.tooManyQuickActions) { try actions.validateQuickActions() }
     }
 
@@ -251,7 +250,7 @@ struct ModelTests {
     // MARK: - Snapshot pruning + versioning
 
     @Test("closed items older than three days are pruned, open ones are not")
-    func pruningClosedItems() throws {
+    func pruningClosedItems() {
         let old = Fixture.date("2026-10-19T00:00:00.000Z")
         var done = Fixture.fullItem(id: "calendar:event:OLD")
         done.status = .done

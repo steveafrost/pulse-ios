@@ -20,7 +20,7 @@ public struct SyncLog: Sendable {
 
     public init(url: URL, now: @escaping @Sendable () -> Date = { Date() }) {
         self.url = url
-        self.clock = now
+        clock = now
     }
 
     /// The app-group log.
@@ -40,6 +40,10 @@ public struct SyncLog: Sendable {
 
     public func readLines() -> [String] {
         guard let data = try? Data(contentsOf: url) else { return [] }
+        // Lossy on purpose: this log is written by us and read by the debug sheet. A
+        // truncated final line after a crash is the one line most worth seeing, and a
+        // failable initializer would discard the whole file because of it.
+        // swiftlint:disable:next optional_data_string_conversion
         return String(decoding: data, as: UTF8.self)
             .split(separator: "\n", omittingEmptySubsequences: true)
             .map(String.init)

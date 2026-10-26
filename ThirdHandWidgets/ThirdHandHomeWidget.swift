@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 import WidgetKit
 
 /// The Home Screen widget (issue #29): the Now count, and on medium the top three
@@ -179,8 +179,8 @@ struct ThirdHandHomeWidgetView: View {
         }
         if let due = item.due {
             parts.append(WidgetCopy.dueHint(due, now: entry.date) == "overdue"
-                        ? "overdue"
-                        : "due " + WidgetCopy.dueHint(due, now: entry.date))
+                ? "overdue"
+                : "due " + WidgetCopy.dueHint(due, now: entry.date))
         }
         return parts.joined(separator: ", ")
     }
@@ -205,19 +205,19 @@ struct ThirdHandHomeWidget: Widget {
 // MARK: - Previews
 
 #if DEBUG
-#Preview("Small", as: .systemSmall) {
-    ThirdHandHomeWidget()
-} timeline: {
-    ThirdHandEntry(date: .now, snapshot: .sample, isPlaceholder: false)
-    ThirdHandEntry(date: .now, snapshot: WidgetSnapshot(), isPlaceholder: false)
-    ThirdHandEntry.placeholder()
-}
+    #Preview("Small", as: .systemSmall) {
+        ThirdHandHomeWidget()
+    } timeline: {
+        ThirdHandEntry(date: .now, snapshot: .sample, isPlaceholder: false)
+        ThirdHandEntry(date: .now, snapshot: WidgetSnapshot(), isPlaceholder: false)
+        ThirdHandEntry.placeholder()
+    }
 
-#Preview("Medium", as: .systemMedium) {
-    ThirdHandHomeWidget()
-} timeline: {
-    ThirdHandEntry(date: .now, snapshot: .sample, isPlaceholder: false)
-    ThirdHandEntry(date: .now, snapshot: WidgetSnapshot(), isPlaceholder: false)
-    ThirdHandEntry.placeholder()
-}
+    #Preview("Medium", as: .systemMedium) {
+        ThirdHandHomeWidget()
+    } timeline: {
+        ThirdHandEntry(date: .now, snapshot: .sample, isPlaceholder: false)
+        ThirdHandEntry(date: .now, snapshot: WidgetSnapshot(), isPlaceholder: false)
+        ThirdHandEntry.placeholder()
+    }
 #endif

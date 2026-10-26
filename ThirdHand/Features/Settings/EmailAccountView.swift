@@ -29,7 +29,7 @@ public struct EmailAccountView: View {
     @State private var isConfirmingDisconnect = false
 
     public init(model: EmailAccountModel) {
-        self._model = Bindable(model)
+        _model = Bindable(model)
     }
 
     public var body: some View {
@@ -39,9 +39,9 @@ public struct EmailAccountView: View {
                     switch model.phase {
                     case .notConnected:
                         form
-                    case .connected(let account):
+                    case let .connected(account):
                         connected(account)
-                    case .needsPassword(let account):
+                    case let .needsPassword(account):
                         needsPassword(account)
                     }
                 }
@@ -66,7 +66,10 @@ public struct EmailAccountView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("Pulse will forget the address and delete the password from the Keychain. Unread mail will stop appearing on your board.")
+                Text(
+                    "Pulse will forget the address and delete the password from the Keychain. "
+                        + "Unread mail will stop appearing on your board."
+                )
             }
         }
     }
@@ -89,17 +92,23 @@ public struct EmailAccountView: View {
                     // user's own mail server on every check. Say what actually happens
                     // here, because this paragraph sits directly above the field where
                     // the user is about to type it.
-                    Text("Pulse reads unread messages that need you and puts them on the board. It reads only the inbox, and only your password ever leaves the phone - sent to your own mail server, over an encrypted connection, to sign in.")
-                        .font(ThirdHandTypography.emptyBody)
-                        .foregroundStyle(ThirdHandColor.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    Text(
+                        "Pulse reads unread messages that need you and puts them on the board. "
+                            + "It reads only the inbox, and only your password ever leaves the phone - "
+                            + "sent to your own mail server, over an encrypted connection, to sign in."
+                    )
+                    .font(ThirdHandTypography.emptyBody)
+                    .foregroundStyle(ThirdHandColor.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 }
             }
 
             VStack(alignment: .leading, spacing: ThirdHandSpacing.m) {
                 field(
                     label: "Email address",
-                    error: model.draftAddress.isEmpty || model.isAddressValid ? nil : "That doesn't look like an email address."
+                    error: model.draftAddress.isEmpty || model.isAddressValid
+                        ? nil
+                        : "That doesn't look like an email address."
                 ) {
                     TextField("you@example.com", text: $model.draftAddress)
                         .textContentType(.username)
@@ -189,7 +198,10 @@ public struct EmailAccountView: View {
             }
             .padding(ThirdHandSpacing.m)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(ThirdHandColor.surfaceCard, in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous))
+            .background(
+                ThirdHandColor.surfaceCard,
+                in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous)
+            )
 
             VStack(alignment: .leading, spacing: ThirdHandSpacing.s) {
                 Button("Replace password") {
@@ -219,10 +231,13 @@ public struct EmailAccountView: View {
                 tint: ThirdHandColor.statusError
             )
 
-            Text("This mailbox is set up, but the password is no longer on this device — which happens after restoring from a backup. Enter it again to start checking mail.")
-                .font(ThirdHandTypography.emptyBody)
-                .foregroundStyle(ThirdHandColor.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+            Text(
+                "This mailbox is set up, but the password is no longer on this device — "
+                    + "which happens after restoring from a backup. Enter it again to start checking mail."
+            )
+            .font(ThirdHandTypography.emptyBody)
+            .foregroundStyle(ThirdHandColor.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: ThirdHandSpacing.m) {
                 field(label: "App-specific password", error: nil) {
@@ -279,7 +294,8 @@ public struct EmailAccountView: View {
                     // single page to land on (see `appPasswordURL`); where it does
                     // not, the prose is the whole answer rather than half of one.
                     if let url = model.draftProvider.appPasswordURL,
-                       let name = model.draftProvider.appPasswordURLHost {
+                       let name = model.draftProvider.appPasswordURLHost
+                    {
                         Link(destination: url) {
                             Label("Open \(name) settings", systemImage: "arrow.up.right.square")
                                 .font(ThirdHandTypography.meta)
@@ -335,11 +351,10 @@ public struct EmailAccountView: View {
 
     /// A labelled field with its error beneath it, so the message is adjacent to the
     /// control rather than in a banner the eye has to travel to.
-    @ViewBuilder
-    private func field<Content: View>(
+    private func field(
         label: String,
         error: String?,
-        @ViewBuilder content: () -> Content
+        @ViewBuilder content: () -> some View
     ) -> some View {
         VStack(alignment: .leading, spacing: ThirdHandSpacing.xxs) {
             Text(label)
@@ -353,7 +368,10 @@ public struct EmailAccountView: View {
                 .padding(.horizontal, ThirdHandSpacing.s)
                 .padding(.vertical, ThirdHandSpacing.s)
                 .frame(minHeight: ThirdHandSpacing.minimumHitTarget)
-                .background(ThirdHandColor.surfaceCard, in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous))
+                .background(
+                    ThirdHandColor.surfaceCard,
+                    in: RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous)
+                )
                 .overlay {
                     RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous)
                         .strokeBorder(

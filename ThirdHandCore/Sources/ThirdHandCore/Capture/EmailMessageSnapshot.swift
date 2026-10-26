@@ -46,7 +46,9 @@ public struct EmailMessageSnapshot: Sendable, Hashable, Identifiable {
     /// `EmailClassifier.classifyMessage`.
     public var isReply: Bool
 
-    public var id: UInt32 { uid }
+    public var id: UInt32 {
+        uid
+    }
 
     public init(
         uid: UInt32,
@@ -79,11 +81,15 @@ public struct EmailMessageSnapshot: Sendable, Hashable, Identifiable {
 
     /// The first sender, which is the one a card shows and the one `people` leads
     /// with.
-    public var primarySender: EmailAddress? { from.first }
+    public var primarySender: EmailAddress? {
+        from.first
+    }
 
     /// When the message claims to have been sent, falling back to the server's
     /// receipt instant. `nil` only when neither is known.
-    public var effectiveDate: Date? { sentAt ?? receivedAt }
+    public var effectiveDate: Date? {
+        sentAt ?? receivedAt
+    }
 
     /// Whether `address` appears as a recipient of this message.
     ///
@@ -123,7 +129,7 @@ public enum MIMEText {
         var lastWasEncodedWord = false
 
         while let start = rest.range(of: "=?") {
-            let prefix = rest[rest.startIndex..<start.lowerBound]
+            let prefix = rest[rest.startIndex ..< start.lowerBound]
             appendLiteral(prefix, to: &output)
             let candidate = rest[start.lowerBound...]
             guard let word = decodeWord(candidate) else {
@@ -158,19 +164,18 @@ public enum MIMEText {
         // `=?` charset `?` encoding `?` payload `?=`
         let parts = text.dropFirst(2)
         guard let charsetEnd = parts.firstIndex(of: "?") else { return nil }
-        let charset = String(parts[parts.startIndex..<charsetEnd])
+        let charset = String(parts[parts.startIndex ..< charsetEnd])
         let afterCharset = parts[parts.index(after: charsetEnd)...]
         guard let encodingEnd = afterCharset.firstIndex(of: "?") else { return nil }
-        let encoding = String(afterCharset[afterCharset.startIndex..<encodingEnd]).uppercased()
+        let encoding = String(afterCharset[afterCharset.startIndex ..< encodingEnd]).uppercased()
         let afterEncoding = afterCharset[afterCharset.index(after: encodingEnd)...]
         guard let terminator = afterEncoding.range(of: "?=") else { return nil }
-        let payload = String(afterEncoding[afterEncoding.startIndex..<terminator.lowerBound])
+        let payload = String(afterEncoding[afterEncoding.startIndex ..< terminator.lowerBound])
         guard encoding == "B" || encoding == "Q" else { return nil }
 
-        let bytes: Data?
-        switch encoding {
-        case "B": bytes = Data(base64Encoded: payload, options: [.ignoreUnknownCharacters])
-        default: bytes = quotedPrintableBytes(payload, underscoreIsSpace: true)
+        let bytes: Data? = switch encoding {
+        case "B": Data(base64Encoded: payload, options: [.ignoreUnknownCharacters])
+        default: quotedPrintableBytes(payload, underscoreIsSpace: true)
         }
         guard let bytes, !bytes.isEmpty else { return nil }
         return DecodedWord(decoded: decode(bytes, charset: charset), endIndex: terminator.upperBound)
@@ -186,7 +191,8 @@ public enum MIMEText {
             let byte = iterator[index]
             if byte == UInt8(ascii: "=") {
                 if index + 2 < iterator.count,
-                   let value = hexByte(iterator[index + 1], iterator[index + 2]) {
+                   let value = hexByte(iterator[index + 1], iterator[index + 2])
+                {
                     bytes.append(value)
                     index += 3
                     continue
@@ -228,9 +234,9 @@ public enum MIMEText {
 
     static func hexValue(_ byte: UInt8) -> UInt8? {
         switch byte {
-        case UInt8(ascii: "0")...UInt8(ascii: "9"): byte - UInt8(ascii: "0")
-        case UInt8(ascii: "A")...UInt8(ascii: "F"): byte - UInt8(ascii: "A") + 10
-        case UInt8(ascii: "a")...UInt8(ascii: "f"): byte - UInt8(ascii: "a") + 10
+        case UInt8(ascii: "0") ... UInt8(ascii: "9"): byte - UInt8(ascii: "0")
+        case UInt8(ascii: "A") ... UInt8(ascii: "F"): byte - UInt8(ascii: "A") + 10
+        case UInt8(ascii: "a") ... UInt8(ascii: "f"): byte - UInt8(ascii: "a") + 10
         default: nil
         }
     }
@@ -246,10 +252,16 @@ public enum MIMEText {
         if name == "iso-8859-1" || name == "latin1" || name == "latin-1" || name == "windows-1252" {
             return decodeLatin1(data)
         }
-        if let string = String(data: data, encoding: .utf8) { return string }
+        if let string = String(data: data, encoding: .utf8) {
+            return string
+        }
         let cfEncoding = CFStringConvertIANACharSetNameToEncoding(name as CFString)
         if cfEncoding != kCFStringEncodingInvalidId,
-           let string = String(data: data, encoding: String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(cfEncoding))) {
+           let string = String(
+               data: data,
+               encoding: String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(cfEncoding))
+           )
+        {
             return string
         }
         return decodeLatin1(data)
@@ -276,7 +288,9 @@ public enum MIMEText {
 
     private static func trimmingTrailingWhitespace(_ text: String) -> String {
         var copy = text
-        while let last = copy.last, last.isWhitespace { copy.removeLast() }
+        while let last = copy.last, last.isWhitespace {
+            copy.removeLast()
+        }
         return copy
     }
 }
@@ -296,14 +310,14 @@ public enum MailDateParser {
         "EEE, d MMM yyyy HH:mm Z",
         "d MMM yyyy HH:mm:ss Z",
         "EEE, d MMM yy HH:mm:ss Z",
-        "EEE, d MMM yyyy HH:mm:ss zzz",
+        "EEE, d MMM yyyy HH:mm:ss zzz"
     ]
 
     /// A fresh formatter each call would be wasteful in a loop over hundreds of
     /// messages; a `static let` of a class-based `DateFormatter` is not `Sendable`, so
     /// the formatter is created per parse and the *lock* is avoided by making the whole
     /// parser a pure function of its input with a cached thread-local formatter array.
-    private static let threadLocal: ThreadLocal = ThreadLocal()
+    private static let threadLocal: ThreadLocal = .init()
 
     final class ThreadLocal: @unchecked Sendable {
         private let lock = NSLock()
@@ -330,7 +344,9 @@ public enum MailDateParser {
         let trimmed = MIMEText.normalizeWhitespace(raw)
         guard !trimmed.isEmpty else { return nil }
         for formatter in threadLocal.resolved() {
-            if let date = formatter.date(from: trimmed) { return date }
+            if let date = formatter.date(from: trimmed) {
+                return date
+            }
         }
         return ISO8601DateFormatter().date(from: trimmed)
     }

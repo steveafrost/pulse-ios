@@ -1,7 +1,7 @@
 import Foundation
 import Testing
-import ThirdHandCore
 @testable import ThirdHand
+import ThirdHandCore
 
 /// The Email account screen's logic, tested without SwiftUI.
 ///
@@ -18,13 +18,16 @@ struct EmailAccountModelTests {
     /// received the password without the model ever exposing it.
     final class RecordingWriter: EmailAccountSaving, @unchecked Sendable {
         var written: [EmailAccount?] = []
-        func save(_ account: EmailAccount?) throws { written.append(account) }
+        func save(_ account: EmailAccount?) throws {
+            written.append(account)
+        }
     }
 
     private func makeModel(
         account: EmailAccount? = nil,
         secrets: InMemorySecretStore = InMemorySecretStore(),
         writer: RecordingWriter = RecordingWriter()
+        // swiftlint:disable:next large_tuple
     ) -> (EmailAccountModel, RecordingWriter, InMemorySecretStore) {
         let model = EmailAccountModel(
             accounts: StaticEmailAccountProvider(account: account),
@@ -255,7 +258,7 @@ struct EmailAccountModelTests {
         // The secret is in the store, under the account's own key — not in the model.
         let stored = try secrets.secret(for: EmailAccount.gmail(username: "s@example.com").keychainAccount)
         #expect(stored == "app-specific")
-        #expect(writer.written.compactMap { $0 }.count == 1)
+        #expect(writer.written.compactMap(\.self).count == 1)
     }
 
     @Test("the saved account carries no password field to leak")
@@ -277,7 +280,7 @@ struct EmailAccountModelTests {
         model.disconnect()
         #expect(model.phase == .notConnected)
         #expect(try secrets.secret(for: account.keychainAccount) == nil)
-        #expect(writer.written.last! == nil)
+        #expect(writer.written.last == nil)
     }
 
     // MARK: Status copy
@@ -317,7 +320,7 @@ private extension EmailAccountModel.Status {
         switch self {
         case .notConnected: true
         case .checking: true
-        case .unread(let count): count >= 0
+        case let .unread(count): count >= 0
         case .failed: true
         }
     }

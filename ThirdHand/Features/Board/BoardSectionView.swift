@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// One horizon: a header, up to `collapseLimit` rows, then "Show N more".
 /// §4.1: fixed order, zero-item sections omitted by the caller, expansion is
@@ -74,7 +74,9 @@ public struct BoardSectionView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var hiddenBeyondLimit: Int { max(0, items.count - horizon.collapseLimit) }
+    private var hiddenBeyondLimit: Int {
+        max(0, items.count - horizon.collapseLimit)
+    }
 
     /// §4.1: "Show 4 more in Now". The row noun never appears here because the
     /// horizon is named, so the only pluralisation risk is the number itself --

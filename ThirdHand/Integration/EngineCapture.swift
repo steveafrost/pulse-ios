@@ -17,7 +17,7 @@ public struct EngineCapture: CaptureProviding {
 
     public init(engine: CaptureEngine, now: @escaping @Sendable () -> Date = { Date() }) {
         self.engine = engine
-        self.clock = now
+        clock = now
     }
 
     public func capture(now: Date) async -> CaptureOutcome {

@@ -20,7 +20,9 @@ import ThirdHandCore
 /// the app drains it on next activation or background refresh. So the state cannot be
 /// corrupted, and the write is the same one the app makes.
 struct SnoozeTopItemIntent: AppIntent {
-    static var title: LocalizedStringResource { "Snooze the top item" }
+    static var title: LocalizedStringResource {
+        "Snooze the top item"
+    }
 
     static var description: IntentDescription {
         IntentDescription(
@@ -40,7 +42,9 @@ struct SnoozeTopItemIntent: AppIntent {
         Summary("Snooze the top item until \(\.$duration)")
     }
 
-    static var openAppWhenRun: Bool { false }
+    static var openAppWhenRun: Bool {
+        false
+    }
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
