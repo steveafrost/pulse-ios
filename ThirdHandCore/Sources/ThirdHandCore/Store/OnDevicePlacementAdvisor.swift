@@ -5,12 +5,15 @@ import FoundationModels
 
 /// On-device placement, using the system language model (Apple Intelligence).
 ///
-/// **Why this is gated at iOS 26 and does nothing on 18.** `FoundationModels`
-/// requires iOS 26.0; the app's deployment target is iOS 18.0, so this whole type
-/// is behind `@available`. On a device that cannot run it, the advisor is simply
+/// **Why this is gated at iOS 26.** `FoundationModels` requires iOS 26.0, which is
+/// also the app's deployment target, so the type only exists from 26 up. It still
+/// does nothing on hardware that cannot run it: `SystemLanguageModel` reports
+/// `.deviceNotEligible` on anything below A17 Pro, and there the advisor is simply
 /// absent and `PlacementPolicy` falls back to the deterministic rules -- the board
 /// is placed by dates and priority, exactly as before. Nothing is degraded silently:
 /// `availabilityNote` says which case the user is in, and the debug screen shows it.
+/// The iOS 26 floor is not a guarantee the model runs; eligibility is hardware, not
+/// OS version.
 ///
 /// **Why the prompt looks like this.** The model is given one narrow question per
 /// batch and told to answer with an index, a bucket and a short reason. It is

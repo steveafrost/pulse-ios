@@ -84,6 +84,7 @@
 		D9E2A311731447433E3D0B81 /* ThirdHandBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9D591666E750E829C5BF9A9 /* ThirdHandBadge.swift */; };
 		DAB48DFAD356AE8C2EE3E872 /* SyncContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A39898D4DB31F7CA04A7320B /* SyncContainerTests.swift */; };
 		DD25CB8893694C378E1C623E /* ThirdHandAccessoryWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38AB37CF651453C969A075C4 /* ThirdHandAccessoryWidget.swift */; };
+		DDB5E10F13D80373EE3ED6FB /* DevicePlacementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC32A7E23573CFB25186F55 /* DevicePlacementTests.swift */; };
 		E182BE6DB15BDCF53B084BFD /* ThirdHandCapsuleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D720868649D8CCF4BD6B9BE /* ThirdHandCapsuleButton.swift */; };
 		E92936433FBBB51E5EAD1811 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3F03D52656699607C3DDA42A /* PrivacyInfo.xcprivacy */; };
 		F274BAF7FDC38AA1D5BFF0E2 /* ThirdHandTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E3DC165EC25F0AC9B3635D /* ThirdHandTimelineProvider.swift */; };
@@ -187,6 +188,7 @@
 		816BD95530BC29FD6A716B16 /* SyncLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncLog.swift; sourceTree = "<group>"; };
 		844D1C26FF2A1E33059D67DF /* SyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncCoordinator.swift; sourceTree = "<group>"; };
 		84D21CA68A8E12E4B7362E70 /* EmailAccountModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailAccountModel.swift; sourceTree = "<group>"; };
+		8AC32A7E23573CFB25186F55 /* DevicePlacementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePlacementTests.swift; sourceTree = "<group>"; };
 		8D720868649D8CCF4BD6B9BE /* ThirdHandCapsuleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThirdHandCapsuleButton.swift; sourceTree = "<group>"; };
 		9297B11077205D0C2A851461 /* EmailAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailAccountView.swift; sourceTree = "<group>"; };
 		97270093E7D94B2C9788938D /* Fixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fixtures.swift; sourceTree = "<group>"; };
@@ -358,6 +360,7 @@
 				EAF3C9C90348EADE417E3275 /* BoardStateTests.swift */,
 				5C08A314DB665DEF21DF48CE /* CopyTests.swift */,
 				6B71E367ED799175BCF17144 /* DeepLinkTests.swift */,
+				8AC32A7E23573CFB25186F55 /* DevicePlacementTests.swift */,
 				2CB628DE9F7B52E28379A4EF /* EmailAccountModelTests.swift */,
 				B3AC2582FB463442D3799D21 /* SnoozePresetsTests.swift */,
 				DF3F6DD3E97E7F45516F0EE7 /* SnoozeWritePathTests.swift */,
@@ -711,6 +714,7 @@
 				61664AEE9F7358F7572FDB40 /* BoardStateTests.swift in Sources */,
 				69ACD8D72000DC1831C00415 /* CopyTests.swift in Sources */,
 				74A61502E1727C3E3C674DBC /* DeepLinkTests.swift in Sources */,
+				DDB5E10F13D80373EE3ED6FB /* DevicePlacementTests.swift in Sources */,
 				5DF02C6B31955BD23D776B7C /* EmailAccountModelTests.swift in Sources */,
 				8D6485C61697FA32D98002F8 /* SnoozePresetsTests.swift in Sources */,
 				D40973831D0817110875EE98 /* SnoozeWritePathTests.swift in Sources */,

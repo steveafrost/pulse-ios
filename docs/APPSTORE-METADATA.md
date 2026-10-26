@@ -61,7 +61,7 @@ why it leads with the value proposition rather than a release note.
 
 ## 3. Description
 
-3 775 characters (limit 4 000). Product copy only: no placeholder text, no
+3 956 characters (limit 4 000). Product copy only: no placeholder text, no
 competitor claims, no pricing.
 
 ```text
@@ -125,9 +125,9 @@ WHO IT IS FOR
 
 People who already keep a calendar and a reminders list, and who want one honest view of what those two things are asking of them today - without another system to maintain.
 
-On devices that support Apple Intelligence, Pulse can also place items using the on-device model, which runs locally and sends nothing anywhere. It never closes, hides or deletes an item - it only moves it between sections, with a one-line reason shown on the card.
+On devices that support Apple Intelligence - newer iPhones and iPads, not every device running iOS 26 - Pulse can also place items with the on-device model. It runs locally and sends nothing anywhere, and it never closes, hides or deletes an item: it only moves it between sections, with a one-line reason on the card. That is a bonus, not a requirement: without it the board is placed by date and priority exactly the same.
 
-Pulse is a productivity app for iOS and requires iOS 26 or later. It needs access to Calendar and Reminders to be useful; you can grant either, both, or neither, and turn them off again in Settings at any time.
+Pulse is a productivity app for iOS and requires iOS 26 or later, on an iPhone or iPad. It needs access to Calendar and Reminders to be useful; you can grant either, both, or neither, and turn them off again in Settings at any time.
 
 ---
 
@@ -500,7 +500,7 @@ Verified by reading the API back, not by trusting a CLI exit code.
 | Submission state | `WAITING_FOR_REVIEW`, submission `a8afc031-3aa0-4980-966d-c71e51b5f9a6` |
 | Copyright | `2026 Steve Frost` |
 | Release type | `AFTER_APPROVAL` (manual release once approved) |
-| Description | set, 3 775 chars |
+| Description | set, 3956 chars |
 | Keywords | set, 86 chars |
 | Promotional text | set, 153 chars |
 | Support URL | `https://github.com/steveafrost/thirdhand-ios/blob/main/docs/SUPPORT.md` |
