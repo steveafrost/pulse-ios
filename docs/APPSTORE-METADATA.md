@@ -490,7 +490,8 @@ Verified by reading the API back, not by trusting a CLI exit code.
 | Field | State |
 | --- | --- |
 | Version string | `0.1.0` |
-| Attached build | **6** (`f510bc13-0e15-4b34-b2ce-147cace190ed`), VALID |
+| Attached build | **7** (`31fc207c-4503-4cdf-9bb1-df042eb2ba22`), VALID |
+| Submission state | `WAITING_FOR_REVIEW`, submitted 2026-10-25 |
 | Copyright | `2026 Steve Frost` |
 | Release type | `AFTER_APPROVAL` (manual release once approved) |
 | Description | set, 3 157 chars |
@@ -547,3 +548,40 @@ call.
 - [ ] Review notes pasted (§10)
 - [ ] `versions check-readiness` returns no blocking issues:
       `asc versions check-readiness --version-id <VERSION_ID>`
+
+**`check-readiness` is not sufficient on its own.** It verifies that a Support
+URL is present, not that it resolves: it returned `isReadyToSubmit: true` while
+`steveafrost.com/thirdhand/support` and every variant of that path returned 404.
+Load the URL in a browser before trusting the check.
+
+## 12. Submitted — 2026-10-25
+
+Version `0.1.0` (build 7) was submitted and is `WAITING_FOR_REVIEW` in review
+submission `b973cc21-cd9d-49ad-8730-ce876b22b82d`.
+
+Two things about that submission are worth keeping:
+
+**App Privacy has no API.** `/v1/appDataUsages` returns 404 for every path shape
+tried, and `asc` has no privacy subcommand, so the questionnaire is portal-only.
+Until it is published, attaching the version to a review submission fails with
+`STATE_ERROR.APP_DATA_USAGES_REQUIRED` — which is exactly how this was found.
+
+**Publishing it is not immediately visible.** The first attach attempt after
+publishing still returned that error; the same call succeeded on the next try
+minutes later. A single failure right after publishing means "not yet", not
+"wrong", so retry before redoing the questionnaire.
+
+Attaching the version is a plain API call, not a CLI one — `asc review-submissions
+items` only lists. The call that worked:
+
+```
+POST /v1/reviewSubmissionItems
+{"data":{"type":"reviewSubmissionItems","relationships":{
+  "reviewSubmission":{"data":{"type":"reviewSubmissions",
+    "id":"b973cc21-cd9d-49ad-8730-ce876b22b82d"}},
+  "appStoreVersion":{"data":{"type":"appStoreVersions",
+    "id":"d7610d06-4bff-4ac6-a684-d51803c1775e"}}}}}
+```
+
+Then `asc versions submit --version-id d7610d06-…` moves the submission to
+`WAITING_FOR_REVIEW`.
