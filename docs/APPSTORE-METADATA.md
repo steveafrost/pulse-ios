@@ -60,7 +60,7 @@ why it leads with the value proposition rather than a release note.
 
 ## 3. Description
 
-2 542 characters (limit 4 000). Product copy only: no placeholder text, no
+3 157 characters (limit 4 000). Product copy only: no placeholder text, no
 competitor claims, no pricing.
 
 ```text
@@ -493,11 +493,11 @@ Verified by reading the API back, not by trusting a CLI exit code.
 | Attached build | **6** (`f510bc13-0e15-4b34-b2ce-147cace190ed`), VALID |
 | Copyright | `2026 Steve Frost` |
 | Release type | `AFTER_APPROVAL` (manual release once approved) |
-| Description | set, 3 182 chars |
+| Description | set, 3 157 chars |
 | Keywords | set, 86 chars |
 | Promotional text | set, 153 chars |
-| Support URL | `https://steveafrost.com/thirdhand/support` |
-| Marketing URL | `https://steveafrost.com/thirdhand` |
+| Support URL | `https://github.com/steveafrost/thirdhand-ios/blob/main/docs/SUPPORT.md` |
+| Marketing URL | `https://github.com/steveafrost/thirdhand-ios/blob/main/README.md` |
 | App name | `Pulse — What Needs You` |
 | Subtitle | `Your day, ordered by urgency` |
 | Privacy policy URL | GitHub `docs/PRIVACY.md` |
