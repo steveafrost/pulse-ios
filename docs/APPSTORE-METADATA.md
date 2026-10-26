@@ -2,9 +2,10 @@
 
 Everything App Store Connect asks for on the version page, ready to paste.
 Verified against `asc` v0.18.2 and against the archive described in §10 of
-`RELEASE.md`. The version record and `MARKETING_VERSION` are both `0.1.0`;
-build 3 is the one uploaded to TestFlight (build 1 was rejected on iPad
-orientations, 90474; build 2 shipped without the mailbox or the redesigned board).
+`RELEASE.md`. The version record and `MARKETING_VERSION` are both `0.1.1`, and
+build 9 is the one attached to the submission in §12 (build 1 was rejected on
+iPad orientations, 90474; build 2 shipped without the mailbox or the redesigned
+board).
 
 The screenshots in `docs/screenshots/` were recaptured against build 3. The
 earlier set predated the design pass by five hours and no longer matched the
@@ -60,7 +61,7 @@ why it leads with the value proposition rather than a release note.
 
 ## 3. Description
 
-3 157 characters (limit 4 000). Product copy only: no placeholder text, no
+3 775 characters (limit 4 000). Product copy only: no placeholder text, no
 competitor claims, no pricing.
 
 ```text
@@ -72,10 +73,12 @@ FOUR HORIZONS, ONE GLANCE
 
 Everything lands in one of four sections, decided by urgency rather than by a project you forgot to update:
 
-- Now - high priority, or due today
-- Next - due in the next three days
+- Now - due today, or already overdue
+- Next - due in the next few days
 - Later - everything further out
 - Nice to Know - worth a look, not worth acting on yet
+
+A due date always wins over priority: something due next month is not "urgent" just because it is marked high. And overdue is not a permanent promotion - leave something past its date for more than a fortnight and it steps back to Next, so it stops outranking work that is genuinely due today while staying one tap away.
 
 The board is quiet by design: one number on screen, the Now count. Urgency is shown by position, not by colour alone.
 
@@ -122,8 +125,9 @@ WHO IT IS FOR
 
 People who already keep a calendar and a reminders list, and who want one honest view of what those two things are asking of them today - without another system to maintain.
 
-Pulse is a productivity app for iOS. It needs access to Calendar and Reminders to be useful; you can grant either, both, or neither, and turn them off again in Settings at any time.
-```
+On devices that support Apple Intelligence, Pulse can also place items using the on-device model, which runs locally and sends nothing anywhere. It never closes, hides or deletes an item - it only moves it between sections, with a one-line reason shown on the card.
+
+Pulse is a productivity app for iOS and requires iOS 26 or later. It needs access to Calendar and Reminders to be useful; you can grant either, both, or neither, and turn them off again in Settings at any time.
 
 ---
 
@@ -489,12 +493,12 @@ Verified by reading the API back, not by trusting a CLI exit code.
 
 | Field | State |
 | --- | --- |
-| Version string | `0.1.0` |
-| Attached build | **7** (`31fc207c-4503-4cdf-9bb1-df042eb2ba22`), VALID |
-| Submission state | `WAITING_FOR_REVIEW`, submitted 2026-10-25 |
+| Version string | `0.1.1` |
+| Attached build | **9** (`451314ed-2a77-4c19-892c-2d147d872e5a`), VALID, `minOsVersion` 26.0 |
+| Submission state | `WAITING_FOR_REVIEW`, submission `a8afc031-3aa0-4980-966d-c71e51b5f9a6` |
 | Copyright | `2026 Steve Frost` |
 | Release type | `AFTER_APPROVAL` (manual release once approved) |
-| Description | set, 3 157 chars |
+| Description | set, 3 775 chars |
 | Keywords | set, 86 chars |
 | Promotional text | set, 153 chars |
 | Support URL | `https://github.com/steveafrost/thirdhand-ios/blob/main/docs/SUPPORT.md` |
@@ -554,10 +558,26 @@ URL is present, not that it resolves: it returned `isReadyToSubmit: true` while
 `steveafrost.com/thirdhand/support` and every variant of that path returned 404.
 Load the URL in a browser before trusting the check.
 
-## 12. Submitted — 2026-10-25
+## 12. Submitted
 
-Version `0.1.0` (build 7) was submitted and is `WAITING_FOR_REVIEW` in review
-submission `b973cc21-cd9d-49ad-8730-ce876b22b82d`.
+Version `0.1.1` (build 9) is `WAITING_FOR_REVIEW` in review submission
+`a8afc031-3aa0-4980-966d-c71e51b5f9a6`.
+
+**The 0.1.0 submission was withdrawn, not shipped.** Build 7 predated the
+horizon fix, so approving it would have shipped the defect that prompted the
+work: a reminder rescheduled two months out still filed under Now. Submission
+`b973cc21` was cancelled (version went `DEVELOPER_REJECTED`), and the same
+version record was reused rather than recreated — App Store Connect refuses a
+new version while a first version exists, even a rejected one
+(`409 ENTITY_ERROR.RELATIONSHIP.INVALID`). Reusing it kept every localization,
+screenshot set and review detail intact.
+
+Build 9 raises the minimum OS to 26.0, which is permanent for the listing:
+devices on iOS 18–25 can no longer install Pulse. That was a deliberate
+decision, taken to make `FoundationModels` addressable. Note it does not
+guarantee the model runs — an eligible device still reports unavailable when
+Apple Intelligence is off or the model has not finished downloading, which is
+why the deterministic horizon rules remain the floor.
 
 Two things about that submission are worth keeping:
 
