@@ -15,6 +15,10 @@ public enum BoardCopy {
         "\(Plural.items(count)) shown"
     }
 
+    /// The search field's placeholder. "the board" rather than "items": the user
+    /// searches what they are looking at, not a data type.
+    public static let searchPrompt = "Search the board"
+
     /// §4.1: "Show 4 more in Now". The horizon is named, so no row noun appears.
     public static func showMore(_ hidden: Int, in horizon: Horizon) -> String {
         "Show \(hidden) more in \(horizon.title)"
@@ -49,6 +53,26 @@ public enum CaptureCopy {
         case .idle(let date):
             guard let date else { return "Not checked yet" }
             return "\(Plural.items(status.itemCount)) · \(ThirdHandDateFormat.relative(date, now: now))"
+        }
+    }
+
+    /// The sync popover's headline line. Lives here rather than in the view so the
+    /// sentences can be asserted: it is the only place the board now says how old
+    /// its data is, and "2d ago" vs "Not checked yet" is the difference between a
+    /// stale board and an empty one.
+    ///
+    /// Every branch names what happened, never what the code did (§8.1): no
+    /// "snapshot", "mirror", "publish" or "sync".
+    public static func syncDetail(_ status: CaptureStatusModel, now: Date) -> String {
+        switch status.phase {
+        case .capturing:
+            return "Checking now…"
+        case .failed(let date):
+            guard let date else { return "Couldn't check the board" }
+            return "Couldn't check · last worked \(ThirdHandDateFormat.relative(date, now: now))"
+        case .idle(let date):
+            guard let date else { return "Not checked yet" }
+            return "Checked \(ThirdHandDateFormat.relative(date, now: now)) · \(Plural.items(status.itemCount))"
         }
     }
 

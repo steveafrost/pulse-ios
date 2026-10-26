@@ -24,6 +24,7 @@
 		3292D0C1BDD46EAD25D5EC2D /* ItemDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 989C05FFEFE2BD1A0A9E846F /* ItemDetailView.swift */; };
 		33D3CAF173FA8C4D0AAD2DF1 /* BoardState.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0E20B766991C16B631E5E4 /* BoardState.swift */; };
 		37F9E852F91AD94BC7BCD625 /* EmptyBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5E88C252B023045297E205 /* EmptyBoardView.swift */; };
+		41B9265DA3054FFBF86EB33D /* SyncStatusButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6E93C6868E49F6434073C0 /* SyncStatusButton.swift */; };
 		45459A090C73C6A3E690C8B9 /* SnoozeTopItemIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76E487C46C31ABB4B366B27 /* SnoozeTopItemIntent.swift */; };
 		475EA8BF207909879294CE44 /* ImminentMeetingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768CFF11838B4F6CF6C7A69A /* ImminentMeetingController.swift */; };
 		48AF3459B26EA6957AC79A1D /* SnoozePresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7272BAE3B04BBB92B9C125F7 /* SnoozePresets.swift */; };
@@ -56,7 +57,6 @@
 		943151BCF9029887D002FC38 /* BoardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02797FB9D89A0C1C012211D /* BoardViewModel.swift */; };
 		9861E9CB929F4A66F2D4AEF0 /* Copy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D0DC31405BFA65E6D3E3772 /* Copy.swift */; };
 		99E9B6E5A364121218230CF3 /* ThirdHandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A402604CA484303532F9EA /* ThirdHandTests.swift */; };
-		9C0F0859EB493E760DA7AD5B /* BoardFilterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E832ACEEE0570DCD920F378D /* BoardFilterBar.swift */; };
 		9C8E019CB73D079E8ED17794 /* SnoozeMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D72A4093F56EBD6282E0BA /* SnoozeMenu.swift */; };
 		A411ADF553EF24921136B895 /* ClosedItemsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD1C582EF36212F79C7C7C17 /* ClosedItemsView.swift */; };
 		A6D6D26FC17DB211A0AEC22D /* ItemPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727ACA109A709A3A52A7A903 /* ItemPresentation.swift */; };
@@ -89,7 +89,6 @@
 		E92936433FBBB51E5EAD1811 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3F03D52656699607C3DDA42A /* PrivacyInfo.xcprivacy */; };
 		F274BAF7FDC38AA1D5BFF0E2 /* ThirdHandTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E3DC165EC25F0AC9B3635D /* ThirdHandTimelineProvider.swift */; };
 		F3AB27598F7E57D02BE2206C /* ThirdHandCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A47396C579169799751C46F /* ThirdHandCard.swift */; };
-		F5997C73DE0FB361F214959E /* CaptureStatusCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699078076EDD7D87AE7FB39D /* CaptureStatusCapsule.swift */; };
 		F68703FE4DE5953988DBEAED /* PreviewScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D5A003F24C1E9F0E146107 /* PreviewScenarios.swift */; };
 		F837149E18ECE11911F2C484 /* WidgetTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06F5252516EA5CE33FDF33CB /* WidgetTheme.swift */; };
 		F955201D6B202A21118F4116 /* ClosedItemsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ED1CE0C4B50F24245148FCB /* ClosedItemsViewModel.swift */; };
@@ -160,6 +159,7 @@
 		32EB39C0145439299116C5F9 /* ThirdHand.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ThirdHand.entitlements; sourceTree = "<group>"; };
 		36B4E02ED3A08EC251E1550B /* PasteboardShim.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardShim.swift; sourceTree = "<group>"; };
 		38AB37CF651453C969A075C4 /* ThirdHandAccessoryWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThirdHandAccessoryWidget.swift; sourceTree = "<group>"; };
+		3B6E93C6868E49F6434073C0 /* SyncStatusButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusButton.swift; sourceTree = "<group>"; };
 		3BDDD1EF26DDD9A2E2100181 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3F03D52656699607C3DDA42A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		43A402604CA484303532F9EA /* ThirdHandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThirdHandTests.swift; sourceTree = "<group>"; };
@@ -176,7 +176,6 @@
 		66DAFC654A5039401FFE0FBF /* ThirdHandShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThirdHandShortcuts.swift; sourceTree = "<group>"; };
 		671AD33A1E8EB137ABFDB27F /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
 		691A537559B28789CF0BDB92 /* ThirdHandShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ThirdHandShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		699078076EDD7D87AE7FB39D /* CaptureStatusCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureStatusCapsule.swift; sourceTree = "<group>"; };
 		6B0C880B951345395B549FD0 /* ThirdHandFAB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThirdHandFAB.swift; sourceTree = "<group>"; };
 		6B71E367ED799175BCF17144 /* DeepLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkTests.swift; sourceTree = "<group>"; };
 		6ED1CE0C4B50F24245148FCB /* ClosedItemsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClosedItemsViewModel.swift; sourceTree = "<group>"; };
@@ -216,7 +215,6 @@
 		E02797FB9D89A0C1C012211D /* BoardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardViewModel.swift; sourceTree = "<group>"; };
 		E6B6588811288E62330A2AB5 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		E740788D7F6476E6AB7AB9D3 /* QuickActionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionRow.swift; sourceTree = "<group>"; };
-		E832ACEEE0570DCD920F378D /* BoardFilterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardFilterBar.swift; sourceTree = "<group>"; };
 		EAF3C9C90348EADE417E3275 /* BoardStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardStateTests.swift; sourceTree = "<group>"; };
 		EF0E20B766991C16B631E5E4 /* BoardState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardState.swift; sourceTree = "<group>"; };
 		F5BAE467C9E59DFFA2B9B799 /* BoardFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardFilter.swift; sourceTree = "<group>"; };
@@ -324,13 +322,12 @@
 			isa = PBXGroup;
 			children = (
 				F5BAE467C9E59DFFA2B9B799 /* BoardFilter.swift */,
-				E832ACEEE0570DCD920F378D /* BoardFilterBar.swift */,
 				B923E1CC3491983547C1F054 /* BoardItemRow.swift */,
 				0EDD5F86031C72CDD11B0341 /* BoardSectionView.swift */,
 				EF0E20B766991C16B631E5E4 /* BoardState.swift */,
 				61AB5B6185F97567A6DB85A4 /* BoardView.swift */,
 				E02797FB9D89A0C1C012211D /* BoardViewModel.swift */,
-				699078076EDD7D87AE7FB39D /* CaptureStatusCapsule.swift */,
+				3B6E93C6868E49F6434073C0 /* SyncStatusButton.swift */,
 			);
 			path = Board;
 			sourceTree = "<group>";
@@ -733,7 +730,6 @@
 				02883BABDC406B125D1A0115 /* ActivePolling.swift in Sources */,
 				B0EB1CC397BA65C7E23FF3EE /* BackgroundRefresh.swift in Sources */,
 				279A7542CB7960712CE14DBA /* BoardFilter.swift in Sources */,
-				9C0F0859EB493E760DA7AD5B /* BoardFilterBar.swift in Sources */,
 				8E4869416F712292844B4BB2 /* BoardItemRow.swift in Sources */,
 				6512FCC3A9FFA5F412EA6584 /* BoardPersisting.swift in Sources */,
 				62C4C274F51538E4ADA6C890 /* BoardSectionView.swift in Sources */,
@@ -741,7 +737,6 @@
 				1710758E66152748A37ABA29 /* BoardView.swift in Sources */,
 				943151BCF9029887D002FC38 /* BoardViewModel.swift in Sources */,
 				92934F5BF31B69878FDCEABD /* CaptureProviding.swift in Sources */,
-				F5997C73DE0FB361F214959E /* CaptureStatusCapsule.swift in Sources */,
 				A411ADF553EF24921136B895 /* ClosedItemsView.swift in Sources */,
 				F955201D6B202A21118F4116 /* ClosedItemsViewModel.swift in Sources */,
 				9861E9CB929F4A66F2D4AEF0 /* Copy.swift in Sources */,
@@ -780,6 +775,7 @@
 				5DF74595D7B06FB44C5F5535 /* SyncContainer.swift in Sources */,
 				CB2F5AFC717DFAAD73723675 /* SyncCoordinator.swift in Sources */,
 				A813D0EC745A0D7357E540F9 /* SyncLog.swift in Sources */,
+				41B9265DA3054FFBF86EB33D /* SyncStatusButton.swift in Sources */,
 				B817B6D98A219F85D96CB2C1 /* ThirdHandApp.swift in Sources */,
 				D9E2A311731447433E3D0B81 /* ThirdHandBadge.swift in Sources */,
 				E182BE6DB15BDCF53B084BFD /* ThirdHandCapsuleButton.swift in Sources */,

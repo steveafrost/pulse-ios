@@ -115,11 +115,6 @@ public struct DesignSystemGallery: View {
             Button("Primary action") {}
                 .buttonStyle(.pulseProminent())
 
-            CaptureStatusCapsule(
-                status: CaptureStatusModel(phase: .idle(Fixtures.ago(120)), itemCount: 12),
-                now: Fixtures.fixtureNow,
-                onRetry: {}
-            )
 
         }
     }

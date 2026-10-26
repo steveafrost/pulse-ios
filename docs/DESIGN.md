@@ -155,9 +155,9 @@ SF Pro **Rounded** remains only on the Now badge.
 | Item detail | `.subheadline` | `.regular` | 2 lines |
 | Meta line | `.footnote` | `.regular` | source · due · people · time |
 | Chip | `.caption2` | `.medium` | never wraps |
-| Badge count | `.caption` Rounded | `.bold` | filter bar Now count |
+| Badge count | `.caption` Rounded | `.bold` | section count, sync popover |
 | Button label | `.body` | `.semibold` | FAB, sheet primary |
-| Capture capsule | `.footnote` | `.medium` | "12 items · 2m ago" |
+| Sync popover | `.subheadline` | `.regular` | "Checked 2m ago · 12 items" |
 | Empty heading | `.title2` **Serif** | `.semibold` | "You're all clear" |
 | Key/value label | `.subheadline` | `.semibold` | Settings rows, account facts |
 
@@ -203,8 +203,13 @@ content width 720pt via `.frame(maxWidth: 720)` on iPad.
 │                                             │ ← 32pt to next section
 │ → Next 4       Due tomorrow or undated      │
 └─────────────────────────────────────────────┘
-  [glass filter bar pinned under nav]  [glass capsule + FAB]
+  [search drawer]              [sync glyph][history glyph]
 ```
+
+The board carries **no chrome strip**. The filter bar, the capture capsule and the
+FAB were all removed; the only things above the first section are the navigation
+bar's own search drawer and two glyphs. Sync state is a glyph that opens a
+popover; history is a glyph that opens a sheet.
 
 Fixed order: Now, Next, Later, Nice to Know. A zero-item section is **omitted
 entirely** — headers never render empty. Before a "Show all" control appears a

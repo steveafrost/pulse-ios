@@ -61,7 +61,18 @@ struct BoardStateTests {
         #expect(BoardFilter(query: "RSVP").matches(item))
         #expect(BoardFilter(query: "priya").matches(item))
         #expect(BoardFilter(query: "zzz").matches(item) == false)
-        #expect(BoardFilter(source: .calendar).matches(item))
+    }
+
+    @Test("A source filter narrows nothing — the chips are gone")
+    func sourceFilterDoesNotNarrow() {
+        // BoardFilter still carries `source` so a board persisted by an older build
+        // can be decoded, but it must never filter again: the chips that set it are
+        // removed, so honouring it would strand the user on a one-source board with
+        // no control left to undo. This test is the guard on that decision.
+        let item = Fixtures.highPriorityRSVP
+        let other = SourceIdentity.allCases.first { $0 != item.sourceIdentity } ?? .other
+        #expect(BoardFilter(source: other).matches(item))
+        #expect(BoardFilter(source: other).isActive == false)
     }
 
     @Test("Nice to Know never counts toward the Now badge")

@@ -102,7 +102,9 @@ public final class BoardViewModel {
         self.markSeenOnLoad = markSeenOnLoad
         self.sync = sync
         self.placement = placement
-        self.filter = Self.restoreFilter(shared)
+        /// No filter is restored: see `persistFilter`. The board always opens
+        /// unfiltered and unsearched, so it shows everything the user has.
+        self.filter = .all
     }
 
     // MARK: Reads
@@ -127,15 +129,9 @@ public final class BoardViewModel {
     /// button's inputs. The FAB is gone (completion is per row, by design), so the
     /// three went with it rather than lingering as an API nothing calls.
 
-    /// Sources present on the board, in §8.1 order, with counts for the chips.
-    public var availableSources: [(identity: SourceIdentity, count: Int)] {
-        let items = Horizon.allCases.flatMap { board[$0] ?? [] }
-        let grouped = Dictionary(grouping: items, by: \.sourceIdentity)
-        return SourceIdentity.filterOrder.compactMap { identity in
-            guard let matches = grouped[identity], !matches.isEmpty else { return nil }
-            return (identity, matches.count)
-        }
-    }
+    /// `availableSources` fed the removed source chips. Which sources exist and
+    /// whether they are connected is a Settings fact now, so nothing on the board
+    /// needs a per-source count.
 
     /// §9.4: a zero-item section is never rendered — unless the board is fully empty.
     public var visibleHorizons: [Horizon] {
@@ -418,14 +414,14 @@ public final class BoardViewModel {
         #endif
     }
 
-    private func persistFilter() {
-        shared.set(filter.source?.rawValue, for: .boardFilter)
-    }
-
-    private static func restoreFilter(_ shared: SharedStore) -> BoardFilter {
-        guard let raw = shared.string(.boardFilter) else { return .all }
-        return BoardFilter(source: SourceIdentity(rawValue: raw))
-    }
+    /// Only the query is worth persisting now that the source chips are gone, and
+    /// a query is transient enough that persisting it would reopen the board
+    /// filtered from a search the user has forgotten about. So nothing is saved.
+    ///
+    /// `SharedStore.Key.boardFilter` still holds a source raw value written by an
+    /// older build. It is deliberately not read: honouring it would restore a
+    /// one-source board the user has no control left to undo.
+    private func persistFilter() {}
 
     /// The reasons on-device placement has given, for the items that still carry one.
     ///

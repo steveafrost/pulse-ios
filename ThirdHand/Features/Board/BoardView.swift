@@ -64,33 +64,33 @@ public struct BoardView: View {
                 ThirdHandColor.surfaceCanvas.ignoresSafeArea()
                 content
             }
-            .safeAreaInset(edge: .top) {
-                VStack(spacing: ThirdHandSpacing.xs) {
-                    /// §8.1: the capture capsule sits with the filter bar, not over
-                    /// the rows — floating it on top of the last card covers the
-                    /// "show more" control.
-                    HStack {
-                        CaptureStatusCapsule(status: model.captureStatus, now: model.nowDate) {
-                            Task { await model.refresh() }
-                        }
-                        Spacer(minLength: 0)
-                    }
-                    .padding(.horizontal, ThirdHandSpacing.screenMargin)
-
-                    BoardFilterBar(
-                        sources: model.availableSources,
-                        totalCount: model.totalCount,
-                        nowCount: model.nowCount,
-                        filter: model.filter,
-                        onChange: model.setFilter,
-                        onReset: model.resetFilters
-                    )
-                }
-                .padding(.bottom, ThirdHandSpacing.xs)
-                .background(.bar)
-            }
+            /// The top inset that used to hold the capture capsule and the source
+            /// chips is gone. Both moved for the same reason: the board is the
+            /// product, and a permanent chrome strip above it pushed row one further
+            /// down on every launch. Connections are a Settings fact, and the sync
+            /// readout is now one glyph in the navigation bar (`SyncStatusButton`)
+            /// that opens on demand instead of spending a row of height always.
             .navigationTitle("Pulse")
             .navigationBarTitleDisplayMode(.inline)
+            /// Search is native, replacing the "Search" chip the removed filter bar
+            /// carried. `.automatic` rather than `.always` on purpose: `.always`
+            /// pins a search field under the title and rebuilds the permanent
+            /// chrome row this change exists to remove. Here it is reachable by
+            /// pulling the board down, and costs no height until used.
+            .searchable(
+                text: Binding(
+                    get: { model.filter.query },
+                    set: { model.setFilter(BoardFilter(query: $0)) }
+                ),
+                /// `.navigationBarDrawer`, not `.toolbar`. On iOS 26 `.toolbar`
+                /// promotes search to a floating bar pinned to the *bottom* of the
+                /// screen, where it sits on top of the last card — confirmed on a
+                /// simulator. The drawer keeps it in the navigation bar's own
+                /// drawer: one compact row, in the space the removed capsule and
+                /// chip rows used to occupy.
+                placement: .navigationBarDrawer(displayMode: .automatic),
+                prompt: BoardCopy.searchPrompt
+            )
             .toolbar {
                 if mailbox != nil {
                     ToolbarItem(placement: .topBarLeading) {
@@ -102,6 +102,17 @@ public struct BoardView: View {
                         .accessibilityLabel("Settings")
                         .accessibilityIdentifier("board.settings")
                     }
+                }
+                /// Sync state sits next to History, both on the right. It is a
+                /// status glyph, not a button that captures: tapping opens the
+                /// detail popover, and pull-to-refresh on the board is what
+                /// actually runs a pass.
+                ToolbarItem(placement: .topBarTrailing) {
+                    SyncStatusButton(
+                        status: model.captureStatus,
+                        failures: model.state.failures,
+                        now: model.nowDate
+                    )
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -300,6 +311,11 @@ public struct BoardView: View {
             .frame(maxWidth: ThirdHandSpacing.maxContentWidth)
             .frame(maxWidth: .infinity)
         }
+        /// This is the board's refresh gesture, and it is load-bearing: the capture
+        /// capsule that used to sit at the top and force a pass is gone, and the
+        /// sync status pill that replaced it does not capture on tap. A board you
+        /// cannot ask to update by pulling on it is a snapshot.
+        .refreshable { await model.refresh() }
         .animation(motion.listGap, value: model.visibleHorizons)
     }
 

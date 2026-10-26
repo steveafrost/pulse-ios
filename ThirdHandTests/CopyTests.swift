@@ -148,6 +148,38 @@ struct CopyTests {
         #expect(model.text(now: Date()).contains("Try again"))
     }
 
+    @Test("the sync popover says how old the board is, and admits when it doesn't know")
+    func syncDetailStates() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+        let never = CaptureStatusModel(phase: .idle(nil), itemCount: 0)
+        #expect(CaptureCopy.syncDetail(never, now: now) == "Not checked yet")
+
+        let fresh = CaptureStatusModel(phase: .idle(now), itemCount: 12)
+        let freshLine = CaptureCopy.syncDetail(fresh, now: now)
+        #expect(freshLine.hasPrefix("Checked "))
+        #expect(freshLine.contains("12 items"))
+
+        let running = CaptureStatusModel(phase: .capturing, itemCount: 0)
+        #expect(CaptureCopy.syncDetail(running, now: now) == "Checking now…")
+
+        // A failure must not read as a shrug, and must not claim the board is current.
+        let failed = CaptureStatusModel(phase: .failed(now), itemCount: 0)
+        let failedLine = CaptureCopy.syncDetail(failed, now: now)
+        #expect(failedLine.hasPrefix("Couldn't check"))
+        #expect(!failedLine.hasPrefix("Checked"))
+    }
+
+    @Test("the sync popover never leaks transport vocabulary either")
+    func syncDetailAvoidsImplementationWords() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let model = CaptureStatusModel(phase: .idle(now), itemCount: 3, syncText: "Mac · 2m ago")
+        let line = CaptureCopy.syncDetail(model, now: now)
+        for banned in ["snapshot", "mirror", "publish", "sync", "manifest"] {
+            #expect(!line.lowercased().contains(banned), "leaked \(banned): \(line)")
+        }
+    }
+
     @Test("the capture VoiceOver sentence does not leak transport vocabulary")
     func captureAccessibilityAvoidsImplementationWords() {
         let now = Date(timeIntervalSince1970: 1_800_000_000)
