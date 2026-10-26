@@ -65,24 +65,24 @@ import Foundation
         public var availabilityNote: String {
             switch model.availability {
             case .available:
-                return "on-device model available"
+                "on-device model available"
             case let .unavailable(reason):
-                return Self.describe(reason)
+                Self.describe(reason)
             @unknown default:
-                return "on-device model unavailable"
+                "on-device model unavailable"
             }
         }
 
         static func describe(_ reason: SystemLanguageModel.Availability.UnavailableReason) -> String {
             switch reason {
             case .deviceNotEligible:
-                return "this device does not support Apple Intelligence"
+                "this device does not support Apple Intelligence"
             case .appleIntelligenceNotEnabled:
-                return "Apple Intelligence is turned off in Settings"
+                "Apple Intelligence is turned off in Settings"
             case .modelNotReady:
-                return "the on-device model is still downloading"
+                "the on-device model is still downloading"
             @unknown default:
-                return "on-device model unavailable"
+                "on-device model unavailable"
             }
         }
 

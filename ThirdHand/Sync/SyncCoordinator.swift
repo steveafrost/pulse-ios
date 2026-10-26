@@ -333,9 +333,9 @@ enum DeviceName {
     /// exactly what the contract's `deviceName` shows in the Mac mirror.
     static var current: String {
         #if canImport(UIKit)
-            return UIDevice.current.name
+            UIDevice.current.name
         #else
-            return ProcessInfo.processInfo.hostName
+            ProcessInfo.processInfo.hostName
         #endif
     }
 }
