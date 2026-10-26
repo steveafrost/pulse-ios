@@ -162,6 +162,10 @@ struct PathologicalDataTests {
         #expect(item.due == due)
     }
 
+    /// The day boundary still matters, but it now decides the `reason` and the
+    /// horizon instead of whether the reminder is reported at all. Both are
+    /// incomplete and dated, so both are captured; 23:59 tonight is "due today" and
+    /// lands in Now, 00:01 tomorrow is "due later" and lands in Next.
     @Test("a reminder due 23:59 tonight is today; 00:01 tomorrow is not")
     func reminderDayBoundary() {
         let twoMinutesToMidnight = calendar.date(from: DateComponents(year: 2026, month: 10, day: 23, hour: 23, minute: 59))!
@@ -169,9 +173,28 @@ struct PathologicalDataTests {
         let tonight = ReminderSnapshot(identifier: "tonight", title: "Tonight", notes: nil, dueDate: twoMinutesToMidnight, isCompleted: false)
         let tomorrow = ReminderSnapshot(identifier: "tomorrow", title: "Tomorrow", notes: nil, dueDate: justTomorrow, isCompleted: false)
 
-        let ids = RemindersSource.detect(reminders: [tonight, tomorrow], now: now, calendar: calendar).map(\.id)
-        #expect(ids.contains { $0.contains("tonight") })
-        #expect(ids.contains { $0.contains("tomorrow") } == false)
+        let items = RemindersSource.detect(reminders: [tonight, tomorrow], now: now, calendar: calendar)
+        let byID = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
+
+        let tonightItem = try! #require(byID["reminders:reminder:tonight"])
+        #expect(tonightItem.reason == "due today")
+        #expect(tonightItem.priority == .normal)
+
+        let tomorrowItem = try! #require(byID["reminders:reminder:tomorrow"])
+        #expect(tomorrowItem.reason == "due later")
+        #expect(tomorrowItem.due == justTomorrow)
+
+        func horizon(_ detected: DetectedItem) -> Horizon? {
+            let stored = ThirdHandItem(
+                id: detected.id, source: .other, kind: detected.kind ?? .deadline,
+                title: detected.title ?? "", due: detected.due,
+                priority: detected.priority ?? .normal, status: .open,
+                firstSeenAt: now, lastSeenAt: now, updatedAt: now, lastChangedBy: "test"
+            )
+            return HorizonDerivation.horizon(of: stored, at: now, calendar: calendar)
+        }
+        #expect(horizon(tonightItem) == .now)
+        #expect(horizon(tomorrowItem) == .next)
     }
 
     @Test("a completed reminder is never captured")

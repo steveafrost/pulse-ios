@@ -27,9 +27,20 @@ extension Horizon: Codable {}
 ///
 /// Rules (from the plugin's panel and `docs/DATA-CONTRACT.md`):
 ///   * `fyi` is informational -> `.niceToKnow`, always, regardless of due date.
-///   * `.now` when priority is `high`, or `due` is today or in the past.
+///   * `.now` when `due` is today or in the past, or when priority is `high` and
+///     the item carries no `due` at all.
 ///   * `.next` when `due` is within the next three days.
 ///   * otherwise `.later`.
+///
+/// **A due date always outranks priority.** This used to read "`.now` when
+/// priority is `high`", full stop, which put a high-priority item dated two months
+/// out in Now -- "needs you today" was claiming a reminder the user had explicitly
+/// scheduled for later. It also contradicted the design note on
+/// `ItemPresentation.railTint` ("high priority further out -> `HorizonNext`") and
+/// the Next hint ("Due in the next three days"). Priority now only orders rows
+/// *within* a bucket (see `ThirdHandItemSort`) and promotes an undated item to Now;
+/// it can never move a dated item forward past its own date. Far-future items land
+/// in `.later` rather than `.next` so the Next hint stays true.
 ///
 /// Closed items have no horizon: `horizon(of:at:)` returns `nil` for
 /// `done`/`dismissed`/`resolved`, and `horizonIgnoringClosed(...)` gives the
@@ -74,8 +85,11 @@ public enum HorizonDerivation {
 
     private static func bucket(for item: ThirdHandItem, at instant: Date, calendar: Calendar) -> Horizon {
         if item.kind == .fyi { return .niceToKnow }
-        if item.priority == .high { return .now }
-        guard let due = item.due else { return .later }
+
+        // An undated high-priority item has nothing to contradict it, so priority
+        // is the only signal there is: it goes to Now. A *dated* item is placed by
+        // its date, and priority only breaks ties inside the bucket (sorting).
+        guard let due = item.due else { return item.priority == .high ? .now : .later }
 
         let dueDay = calendar.startOfDay(for: due)
         let today = calendar.startOfDay(for: instant)

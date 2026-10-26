@@ -4,8 +4,6 @@ import Testing
 
 @Suite("RemindersSource")
 struct RemindersSourceTests {
-    private static let endOfToday = RemindersSource.endOfDay(containing: Fixture.now, calendar: Fixture.calendar)
-
     private func reminder(
         _ identifier: String,
         title: String = "Reminder",
@@ -50,14 +48,49 @@ struct RemindersSourceTests {
         #expect(item.reason == "due today")
     }
 
-    @Test("a reminder due tomorrow is excluded")
-    func dueTomorrow() {
-        let tomorrow = Self.endOfToday.timeIntervalSince(Fixture.now) + 60
-        #expect(RemindersSource.detect(
-            reminders: [reminder("R3", dueIn: tomorrow)],
+    /// A future reminder is reported, not dropped. Dropping it was the bug: the
+    /// store then kept whatever stale date it already had, so a reminder the user
+    /// pushed two months out stayed in Now forever. The horizon places it.
+    @Test("a reminder due tomorrow is reported, and the horizon files it under next")
+    func dueTomorrow() throws {
+        let tomorrow = Fixture.now.addingTimeInterval(26 * 3600)
+        let item = try #require(RemindersSource.detect(
+            reminders: [reminder("R3", dueIn: 26 * 3600)],
             now: Fixture.now,
             calendar: Fixture.calendar
-        ).isEmpty)
+        ).first)
+        #expect(item.priority == .normal)
+        #expect(item.reason == "due later")
+
+        let stored = ThirdHandItem(
+            id: item.id, source: .other, kind: item.kind ?? .deadline, title: item.title ?? "",
+            due: item.due, priority: item.priority ?? .normal, status: .open,
+            firstSeenAt: Fixture.now, lastSeenAt: Fixture.now, updatedAt: Fixture.now,
+            lastChangedBy: "test"
+        )
+        #expect(HorizonDerivation.horizon(of: stored, at: Fixture.now, calendar: Fixture.calendar) == .next)
+        #expect(item.due == tomorrow)
+    }
+
+    /// The regression itself: a far-future reminder must reach the store so the
+    /// store can learn its new date, and it must land in Later rather than Now.
+    @Test("a reminder two months out is reported and lands in later")
+    func farFuture() throws {
+        let twoMonths: TimeInterval = 61 * 24 * 3600
+        let item = try #require(RemindersSource.detect(
+            reminders: [reminder("R3b", dueIn: twoMonths)],
+            now: Fixture.now,
+            calendar: Fixture.calendar
+        ).first)
+        #expect(item.priority == .normal)
+
+        let stored = ThirdHandItem(
+            id: item.id, source: .other, kind: item.kind ?? .deadline, title: item.title ?? "",
+            due: item.due, priority: item.priority ?? .normal, status: .open,
+            firstSeenAt: Fixture.now, lastSeenAt: Fixture.now, updatedAt: Fixture.now,
+            lastChangedBy: "test"
+        )
+        #expect(HorizonDerivation.horizon(of: stored, at: Fixture.now, calendar: Fixture.calendar) == .later)
     }
 
     @Test("a completed reminder is excluded even when overdue")

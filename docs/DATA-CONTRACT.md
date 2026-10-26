@@ -139,7 +139,7 @@ actions are terminal, and only user actions set `done`/`dismissed`.
 | Meeting accepted=false, start within 7d | `rsvp` | high if <24h else normal | people = organizer + attendees |
 | Two accepted events overlap > 5 min, today or tomorrow | `conflict` | high | one item per pair per day |
 | Event start within 60 min, not all-day | `deadline` | high | title = event title |
-| Reminder overdue or due today, incomplete | `deadline` | high if overdue | |
+| Reminder incomplete and dated (any date) | `deadline` | high if overdue | horizon decides the bucket; undated reminders are excluded |
 | Event/reminder with a link in notes and no action needed | `fyi` | low | collapsed under Nice to Know |
 | Imported mail awaiting a reply | `reply` | normal | share-sheet import path |
 

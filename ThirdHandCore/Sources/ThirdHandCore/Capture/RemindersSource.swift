@@ -1,9 +1,22 @@
 import Foundation
 
-/// The Reminders detector: overdue or due-today, incomplete.
+/// The Reminders detector: every incomplete reminder that carries a due date.
 ///
 /// Same split as `EventKitSource`: no rules here, only fetching plus delegation
 /// to pure static functions.
+///
+/// **Why every due date, not just overdue/today.** This detector used to emit
+/// only reminders due at or before the end of today. That made a rescheduled
+/// reminder impossible to track: once the user pushed it two months out the source
+/// stopped reporting it, so the stored item kept its old (overdue, high-priority)
+/// `due` and sat in **Now** claiming it needed them today, forever. A full pass did
+/// eventually resolve it, which is the opposite of "it moved".
+///
+/// The source has to keep reporting a reminder for the store to learn its new date,
+/// so the rule is now simply "incomplete and dated": the horizon decides where it
+/// lands (today/overdue -> Now, within three days -> Next, further out -> Later).
+/// Undated reminders stay excluded -- they are not schedulable and would sit in
+/// Later indefinitely as permanent noise.
 public struct RemindersSource: CaptureSource {
     /// `Source` has no `reminders` case; the contract's source set is
     /// `slack|gmail|calendar|github|docs|other`, so Reminders lives in `.other`
@@ -25,17 +38,21 @@ public struct RemindersSource: CaptureSource {
 
     /// Every reminder-derived item, sorted by id.
     ///
-    /// The inclusion rule is "due at or before the end of today", i.e. overdue or
-    /// due today; `window` is not consulted because Reminders has no window query
-    /// and a reminder due in three weeks is not this milestone's business.
+    /// The inclusion rule is "incomplete and carries a due date", with no forward
+    /// bound: the horizon places the item. `window` is not consulted because
+    /// Reminders has no window query of its own.
+    ///
+    /// There is deliberately no forward cutoff. A bound would reintroduce the bug
+    /// this rule exists to fix at the boundary -- a reminder just past the cutoff
+    /// would silently stop being reported, the store would keep the stale date, and
+    /// it would strand wherever it used to be. "No bound" has no cliff.
     public static func detect(
         reminders: [ReminderSnapshot],
         now: Date,
         calendar: Calendar = .current
     ) -> [DetectedItem] {
-        let endOfToday = endOfDay(containing: now, calendar: calendar)
-        return reminders.compactMap { reminder in
-            guard !reminder.isCompleted, let due = reminder.dueDate, due <= endOfToday else { return nil }
+        reminders.compactMap { reminder in
+            guard !reminder.isCompleted, let due = reminder.dueDate else { return nil }
             guard let (kind, priority) = Classifier.classifyReminder(
                 due: due,
                 now: now,
@@ -52,19 +69,20 @@ public struct RemindersSource: CaptureSource {
                 due: due,
                 priority: priority,
                 quickActions: linkActions(in: reminder.notes),
-                reason: due < now ? "overdue" : "due today"
+                reason: Self.reason(due: due, now: now, calendar: calendar)
             )
         }
         .sorted { $0.id < $1.id }
     }
 
-    /// The last instant of the day containing `date`. A reminder due at 23:59
-    /// tonight is "due today"; one due at 00:01 tomorrow is not.
-    public static func endOfDay(containing date: Date, calendar: Calendar = .current) -> Date {
-        let start = calendar.startOfDay(for: date)
-        let nextDay = calendar.date(byAdding: .day, value: 1, to: start)
-            ?? start.addingTimeInterval(CaptureWindow.secondsPerDay)
-        return nextDay.addingTimeInterval(-0.001)
+    /// The `reason` recorded in history. Kept provider-neutral and factual: it
+    /// states the relationship between the due date and today, and nothing else.
+    static func reason(due: Date, now: Date, calendar: Calendar = .current) -> String {
+        if due < now { return "overdue" }
+        let dueDay = calendar.startOfDay(for: due)
+        let today = calendar.startOfDay(for: now)
+        if dueDay <= today { return "due today" }
+        return "due later"
     }
 
     /// One `Open link` action when the notes carry an `https://` URL. An

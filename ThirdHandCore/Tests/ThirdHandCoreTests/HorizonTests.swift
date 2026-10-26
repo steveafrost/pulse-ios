@@ -37,10 +37,22 @@ struct HorizonTests {
 
     // MARK: - The four buckets
 
-    @Test("high priority lands in now regardless of due date")
-    func highPriorityIsNow() {
+    @Test("an undated high priority item lands in now")
+    func undatedHighPriorityIsNow() {
         #expect(horizon(item(priority: .high)) == .now)
-        #expect(horizon(item(priority: .high, due: Fixture.date("2027-01-01T00:00:00.000Z"))) == .now)
+    }
+
+    /// A due date outranks priority. This is a regression test: the rule used to be
+    /// "high priority -> now" with no date check, so a high-priority reminder dated
+    /// two months out sat in Now claiming it needed the user today.
+    @Test("a due date outranks priority")
+    func dueDateOutranksPriority() {
+        // Two months out: Later, however high the priority.
+        #expect(horizon(item(priority: .high, due: Fixture.date("2026-12-25T09:00:00.000Z"))) == .later)
+        // Inside the three-day window but past today: Next, not Now.
+        #expect(horizon(item(priority: .high, due: Fixture.date("2026-10-25T09:00:00.000Z"))) == .next)
+        // Due today is still Now -- the date agrees with the priority.
+        #expect(horizon(item(priority: .high, due: Fixture.date("2026-10-23T09:00:00.000Z"))) == .now)
     }
 
     @Test("due today or in the past lands in now")
