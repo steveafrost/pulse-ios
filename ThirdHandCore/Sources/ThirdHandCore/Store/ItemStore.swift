@@ -36,7 +36,9 @@ public actor ItemStore {
     /// Later duplicates replace earlier ones; order of first appearance is kept.
     public init(items: [ThirdHandItem], lastViewedAt: Date? = nil, runs: [CaptureRun] = []) {
         for item in items {
-            if storage[item.id] == nil { order.append(item.id) }
+            if storage[item.id] == nil {
+                order.append(item.id)
+            }
             storage[item.id] = item
         }
         self.lastViewedAt = lastViewedAt
@@ -86,7 +88,9 @@ public actor ItemStore {
             return copy
         }
         items = items.filter { statuses.contains($0.status) }
-        if let sources { items = items.filter { sources.contains($0.source) } }
+        if let sources {
+            items = items.filter { sources.contains($0.source) }
+        }
         return ThirdHandItemSort.sorted(items)
     }
 
@@ -98,14 +102,20 @@ public actor ItemStore {
             guard let horizon = HorizonDerivation.horizon(of: item, at: instant, calendar: calendar) else { continue }
             buckets[horizon, default: []].append(item)
         }
-        for key in buckets.keys { buckets[key] = ThirdHandItemSort.sorted(buckets[key] ?? []) }
+        for key in buckets.keys {
+            buckets[key] = ThirdHandItemSort.sorted(buckets[key] ?? [])
+        }
         return buckets
     }
 
-    public func lastViewed() -> Date? { lastViewedAt }
+    public func lastViewed() -> Date? {
+        lastViewedAt
+    }
 
     /// The recent capture runs, newest first.
-    public func recentRuns() -> [CaptureRun] { runs }
+    public func recentRuns() -> [CaptureRun] {
+        runs
+    }
 
     /// Records a finished capture pass for the snapshot's `runs` array. Newest
     /// first, capped at `maxRuns` so the envelope cannot grow without bound.
@@ -115,7 +125,9 @@ public actor ItemStore {
         return runs
     }
 
-    public func count() -> Int { storage.count }
+    public func count() -> Int {
+        storage.count
+    }
 
     // MARK: - markSeen
 
@@ -142,12 +154,18 @@ public actor ItemStore {
         guard !run.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw ThirdHandStoreError.missingRun
         }
-        for input in detected { try Self.validate(input) }
+        for input in detected {
+            try Self.validate(input)
+        }
 
         var result = UpsertResult()
 
         for input in detected {
-            if storage[input.id] == nil {
+            // `nil` means this id is new; anything else is reconciled in place. Reading
+            // it once into `current` is what keeps the reconcile path free of force
+            // unwraps -- a store that could lose an entry between the two lookups would
+            // be a bug, and this shape cannot express one.
+            guard var current = storage[input.id] else {
                 let item = try Self.makeItem(from: input, run: run, at: instant)
                 storage[item.id] = item
                 order.append(item.id)
@@ -155,14 +173,13 @@ public actor ItemStore {
                 continue
             }
 
-            var current = storage[input.id]!
             // Every pass that still sees the item bumps `lastSeenAt`, even when
             // nothing else changed.
             current.lastSeenAt = instant
 
             let userLocked = current.isUserLocked(at: instant)
 
-            if userLocked && !input.reopen {
+            if userLocked, !input.reopen {
                 // Sticky: only the descriptive fields move. Status, timestamps and
                 // the audit trail are the user's.
                 Self.applyDescriptive(input, to: &current)
@@ -215,7 +232,12 @@ public actor ItemStore {
                 current.lastChangedBy = run
                 Self.pushHistory(
                     on: &current,
-                    entry: HistoryEntry(at: instant, by: run, change: changes.joined(separator: ","), reason: input.reason)
+                    entry: HistoryEntry(
+                        at: instant,
+                        by: run,
+                        change: changes.joined(separator: ","),
+                        reason: input.reason
+                    )
                 )
                 storage[current.id] = current
                 // A `resolved` or `reopened` item is reported once, in its own
@@ -239,8 +261,8 @@ public actor ItemStore {
     public func normalizeExpiredSnoozes(at instant: Date) -> [ThirdHandItem.ID] {
         var changed: [ThirdHandItem.ID] = []
         for id in order {
-            guard var item = storage[id], item.status == .snoozed else { continue }
-            guard item.effectiveStatus(at: instant) == .open else { continue }
+            guard var item = storage[id], item.status == .snoozed,
+                  item.effectiveStatus(at: instant) == .open else { continue }
             item.status = .open
             item.snoozedUntil = nil
             item.updatedAt = instant
@@ -283,7 +305,9 @@ public actor ItemStore {
             current.status = .open
         }
 
-        if verb != .snooze { current.snoozedUntil = nil }
+        if verb != .snooze {
+            current.snoozedUntil = nil
+        }
 
         if verb == .reopen {
             // Reopening un-closes: there is no resolution moment any more.
@@ -291,7 +315,7 @@ public actor ItemStore {
         }
         if current.status.isUserTerminal {
             current.resolvedAt = instant
-            current.resolution = Self.nonEmpty(reason) ?? current.resolution ?? nil
+            current.resolution = Self.nonEmpty(reason) ?? current.resolution
         }
 
         current.updatedAt = instant
@@ -403,16 +427,28 @@ public actor ItemStore {
     /// Fields reconciled on a non-sticky item, in the order store.mjs lists them
     /// (`MUTABLE`), so a history label reads the same as the Node one.
     static let mutableFields = [
-        "title", "detail", "url", "due", "priority", "kind", "source", "people", "status", "quickActions",
+        "title", "detail", "url", "due", "priority", "kind", "source", "people", "status", "quickActions"
     ]
 
     private static func applyDescriptive(_ input: DetectedItem, to item: inout ThirdHandItem) {
-        if let title = input.title { item.title = title }
-        if let detail = input.detail { item.detail = detail }
-        if let url = input.url { item.url = url }
-        if let due = input.due { item.due = due }
-        if let people = input.people { item.people = people }
-        if let quickActions = input.quickActions { item.quickActions = quickActions }
+        if let title = input.title {
+            item.title = title
+        }
+        if let detail = input.detail {
+            item.detail = detail
+        }
+        if let url = input.url {
+            item.url = url
+        }
+        if let due = input.due {
+            item.due = due
+        }
+        if let people = input.people {
+            item.people = people
+        }
+        if let quickActions = input.quickActions {
+            item.quickActions = quickActions
+        }
     }
 
     /// Reconciles one mutable field, appending its name to `changes` when the
@@ -422,7 +458,12 @@ public actor ItemStore {
     /// `JSON.stringify(cur[k]) !== JSON.stringify(next)`, which for these field
     /// types is structural equality, so `==` is the faithful equivalent and it
     /// cannot be confused by a delimiter inside a person's name.
-    private static func reconcile(_ field: String, input: DetectedItem, item: inout ThirdHandItem, changes: inout [String]) {
+    private static func reconcile(
+        _ field: String,
+        input: DetectedItem,
+        item: inout ThirdHandItem,
+        changes: inout [String]
+    ) {
         func set<T: Equatable>(_ next: T?, _ current: T, _ apply: (T) -> Void) {
             guard let next, next != current else { return }
             changes.append(field)

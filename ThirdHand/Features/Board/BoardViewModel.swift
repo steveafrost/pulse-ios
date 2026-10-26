@@ -2,7 +2,7 @@ import Foundation
 import Observation
 import ThirdHandCore
 #if canImport(WidgetKit)
-import WidgetKit
+    import WidgetKit
 #endif
 
 /// The board's state owner (#17). `@MainActor @Observable`, so views read
@@ -37,9 +37,9 @@ public final class BoardViewModel {
     public var onCaptureOutcome: (@MainActor (CaptureOutcome) -> Void)?
 
     #if canImport(ActivityKit) && os(iOS)
-    /// The Live Activity owner (#31), when this build has one. Optional so previews
-    /// and tests run without ActivityKit and without the app group.
-    var liveActivity: ImminentMeetingController?
+        /// The Live Activity owner (#31), when this build has one. Optional so previews
+        /// and tests run without ActivityKit and without the app group.
+        var liveActivity: ImminentMeetingController?
     #endif
 
     /// Injectable clock. A preview pins it; the app passes `Date.init`.
@@ -71,14 +71,20 @@ public final class BoardViewModel {
     public private(set) var errorMessage: String?
 
     public var filter: BoardFilter = .all {
-        didSet { if filter != oldValue { persistFilter() } }
+        didSet {
+            if filter != oldValue {
+                persistFilter()
+            }
+        }
     }
 
     /// §4.1: expanded sections are per-session, never persisted.
     public private(set) var expandedHorizons: Set<Horizon> = []
 
     /// The instant the board is rendered against.
-    public var nowDate: Date { clock() }
+    public var nowDate: Date {
+        clock()
+    }
 
     public init(
         store: any ItemStoring,
@@ -102,7 +108,7 @@ public final class BoardViewModel {
         self.markSeenOnLoad = markSeenOnLoad
         self.sync = sync
         self.placement = placement
-        self.filter = Self.restoreFilter(shared)
+        filter = Self.restoreFilter(shared)
     }
 
     // MARK: Reads
@@ -116,16 +122,18 @@ public final class BoardViewModel {
         Horizon.allCases.flatMap { items(in: $0) }
     }
 
-    public var totalCount: Int { filteredItems.count }
+    public var totalCount: Int {
+        filteredItems.count
+    }
 
     /// The Now count shown on the "All" chip. `.fyi` never contributes (§1).
     public var nowCount: Int {
         (board[.now] ?? []).filter { $0.kind != .fyi }.count
     }
 
-    /// §8.1's `topNowItem` / `fabTitle` / `fabCaption` were the floating action
-    /// button's inputs. The FAB is gone (completion is per row, by design), so the
-    /// three went with it rather than lingering as an API nothing calls.
+    // §8.1's `topNowItem` / `fabTitle` / `fabCaption` were the floating action
+    // button's inputs. The FAB is gone (completion is per row, by design), so the
+    // three went with it rather than lingering as an API nothing calls.
 
     /// Sources present on the board, in §8.1 order, with counts for the chips.
     public var availableSources: [(identity: SourceIdentity, count: Int)] {
@@ -152,7 +160,9 @@ public final class BoardViewModel {
         max(0, items(in: horizon).count - horizon.collapseLimit)
     }
 
-    public func isExpanded(_ horizon: Horizon) -> Bool { expandedHorizons.contains(horizon) }
+    public func isExpanded(_ horizon: Horizon) -> Bool {
+        expandedHorizons.contains(horizon)
+    }
 
     public func toggleExpansion(_ horizon: Horizon) {
         if expandedHorizons.contains(horizon) {
@@ -277,10 +287,10 @@ public final class BoardViewModel {
         // and "publishing a snapshot" describe files; the user is sending their
         // board to the Mac they set up.
         case .syncing: return "Sending to your Mac\u{2026}"
-        case .failed(let message): return message
+        case let .failed(message): return message
         // Never the "Mac · 2m ago" line here: that sentence is a claim the Mac
         // has the data, and in this state it does not.
-        case .notConnected(let reason): return reason
+        case let .notConnected(reason): return reason
         case .idle:
             guard let published = sync.lastPublishedAt else { return nil }
             return "Mac \u{00B7} \(ThirdHandDateFormat.relative(published, now: nowDate))"
@@ -409,12 +419,12 @@ public final class BoardViewModel {
     private func persist() {
         try? persistence.save(board: board, generatedAt: nowDate)
         #if canImport(WidgetKit)
-        WidgetCenter.shared.reloadAllTimelines()
+            WidgetCenter.shared.reloadAllTimelines()
         #endif
         #if canImport(ActivityKit) && os(iOS)
-        // #31: a capture pass or a mutation can make the next meeting imminent, or
-        // end the one that was running.
-        Task { @MainActor in await liveActivity?.sync() }
+            // #31: a capture pass or a mutation can make the next meeting imminent, or
+            // end the one that was running.
+            Task { @MainActor in await liveActivity?.sync() }
         #endif
     }
 

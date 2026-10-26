@@ -21,7 +21,6 @@ public struct CommandReader: Sendable {
     /// The contract's compaction hint threshold. iOS reports it; the plugin acts.
     public static let compactionThreshold = 5 * 1024 * 1024
 
-
     public let container: any CloudContainer
     public let store: ItemStore
     private let clock: @Sendable () -> Date
@@ -43,8 +42,8 @@ public struct CommandReader: Sendable {
     ) {
         self.container = container
         self.store = store
-        self.cursorStore = cursor
-        self.clock = now
+        cursorStore = cursor
+        clock = now
     }
 
     // MARK: Consume
@@ -59,7 +58,7 @@ public struct CommandReader: Sendable {
         guard let commandData = try container.read(Self.commandsFileName) else {
             return report
         }
-        report.needsCompaction = (try container.fileSize(Self.commandsFileName) ?? 0) > Self.compactionThreshold
+        report.needsCompaction = try (container.fileSize(Self.commandsFileName) ?? 0) > Self.compactionThreshold
 
         let acked = try ackedIDs()
 
@@ -74,7 +73,7 @@ public struct CommandReader: Sendable {
         // skipped forever, since the cursor would sit past the end of the file.
         let cursor = readCursor(in: commandData)
         let unread = commandData.count > cursor
-            ? commandData.subdata(in: cursor..<commandData.count)
+            ? commandData.subdata(in: cursor ..< commandData.count)
             : Data()
         let lines = Self.completeLines(in: unread)
         // Bytes taken by a trailing line with no newline yet. Counted from the
@@ -83,7 +82,7 @@ public struct CommandReader: Sendable {
         // would make the watermark drift one byte past the file.
         let partialTail = Self.partialTrailingBytes(in: unread)
 
-        for (index, line) in lines.enumerated() {
+        for line in lines {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty else { continue }
 
@@ -103,10 +102,10 @@ public struct CommandReader: Sendable {
 
             let outcome = await apply(command)
             switch outcome {
-            case .applied(let itemID):
+            case let .applied(itemID):
                 report.applied.append(command.id)
                 report.changedItemIDs.append(itemID)
-            case .dropped(let drop):
+            case let .dropped(drop):
                 report.dropped.append(drop)
             }
 
@@ -179,11 +178,11 @@ public struct CommandReader: Sendable {
     /// FNV-1a. Small, dependency-free and stable across launches -- unlike
     /// `Hasher`, whose seed is deliberately randomized per process and would make
     /// every stored fingerprint fail on the next launch.
-    static func fingerprint<Bytes: Sequence>(_ bytes: Bytes) -> UInt64 where Bytes.Element == UInt8 {
-        var hash: UInt64 = 0xcbf2_9ce4_8422_2325
+    static func fingerprint(_ bytes: some Sequence<UInt8>) -> UInt64 {
+        var hash: UInt64 = 0xCBF2_9CE4_8422_2325
         for byte in bytes {
             hash ^= UInt64(byte)
-            hash = hash &* 0x0000_0100_0000_01b3
+            hash = hash &* 0x0000_0100_0000_01B3
         }
         return hash
     }
@@ -309,10 +308,14 @@ public struct CommandReader: Sendable {
         guard !data.isEmpty else { return [] }
         // A buffer that does not end in a newline has a partial last line.
         let endsWithNewline = data.last == UInt8(ascii: "\n")
+        // Lossy on purpose: this is the command log, and a torn or hand-edited line
+        // with one bad byte must still be readable enough to be skipped. A failable
+        // initializer would return `nil` and hide every complete command behind it.
+        // swiftlint:disable:next optional_data_string_conversion
         var text = String(decoding: data, as: UTF8.self)
         if !endsWithNewline {
             if let lastNewline = text.lastIndex(of: "\n") {
-                text = String(text[text.startIndex..<lastNewline])
+                text = String(text[text.startIndex ..< lastNewline])
             } else {
                 // A single unterminated line: nothing complete to read yet.
                 return []

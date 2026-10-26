@@ -8,7 +8,7 @@ struct FakeSourceTests {
     func cannedItems() async throws {
         let items = [
             Fixture.detected("calendar:event:A", title: "A"),
-            Fixture.detected("reminders:reminder:B", title: "B"),
+            Fixture.detected("reminders:reminder:B", title: "B")
         ]
         let source = FakeSource(sourceID: .calendar, items: items)
         let window = DateInterval(start: Fixture.now, duration: 3600)
@@ -35,7 +35,7 @@ struct FakeSourceTests {
     @Test("CaptureWindow.next(days: 7) is exactly seven days")
     func nextWindowIsSevenDays() {
         let window = CaptureWindow.next(days: 7, now: Fixture.now)
-        #expect(window.duration == 7 * 86_400)
+        #expect(window.duration == 7 * 86400)
         #expect(window.start == Fixture.now)
         #expect(window.end == Fixture.now.addingTimeInterval(604_800))
     }
@@ -44,14 +44,14 @@ struct FakeSourceTests {
     func dayWindow() {
         let window = CaptureWindow.day(now: Fixture.now, calendar: Fixture.calendar)
         #expect(Fixture.calendar.isDate(window.start, inSameDayAs: Fixture.now))
-        #expect(window.duration == 86_400)
+        #expect(window.duration == 86400)
     }
 
     @Test("CaptureWindow.rolling is symmetric around now")
     func rollingWindow() {
         let window = CaptureWindow.rolling(hours: 3, now: Fixture.now)
         #expect(window.duration == 6 * 3600)
-        #expect(window.start == Fixture.now.addingTimeInterval(-10_800))
+        #expect(window.start == Fixture.now.addingTimeInterval(-10800))
     }
 
     @Test("CaptureError names its source")

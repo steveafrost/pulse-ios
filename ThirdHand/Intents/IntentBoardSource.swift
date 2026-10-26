@@ -41,6 +41,11 @@ struct IntentBoardSource: Sendable {
         self.calendar = calendar
     }
 
-    var snapshot: WidgetSnapshot { reader.snapshot() }
-    var now: Date { clock() }
+    var snapshot: WidgetSnapshot {
+        reader.snapshot()
+    }
+
+    var now: Date {
+        clock()
+    }
 }

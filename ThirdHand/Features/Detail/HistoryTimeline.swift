@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// §18: history newest first, relative timestamps, `by` as a compact badge,
 /// capped at 20 with "Show older".
@@ -55,7 +55,10 @@ public struct HistoryTimeline: View {
                         .foregroundStyle(ThirdHandColor.textSecondary)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(ThirdHandColor.separator.opacity(0.3), in: RoundedRectangle(cornerRadius: ThirdHandRadius.chip))
+                        .background(
+                            ThirdHandColor.separator.opacity(0.3),
+                            in: RoundedRectangle(cornerRadius: ThirdHandRadius.chip)
+                        )
                 }
                 Text(summary(entry))
                     .font(ThirdHandTypography.meta)
@@ -73,15 +76,26 @@ public struct HistoryTimeline: View {
 
     private func summary(_ entry: HistoryEntry) -> String {
         var parts: [String] = []
-        if let reason = entry.reason, !reason.isEmpty { parts.append(reason) }
-        if let until = entry.until { parts.append(ThirdHandDateFormat.snoozeUntil(until)) }
+        if let reason = entry.reason, !reason.isEmpty {
+            parts.append(reason)
+        }
+        if let until = entry.until {
+            parts.append(ThirdHandDateFormat.snoozeUntil(until))
+        }
         return parts.joined(separator: " · ")
     }
 
     private func spoken(_ entry: HistoryEntry) -> String {
-        var parts = ["\(HistoryCopy.change(entry.change)), by \(HistoryCopy.actorSpoken(entry.by)), \(ThirdHandDateFormat.relative(entry.at, now: now))"]
-        if let reason = entry.reason, !reason.isEmpty { parts.append(reason) }
-        if let until = entry.until { parts.append("until \(ThirdHandDateFormat.snoozeUntil(until))") }
+        var parts =
+            [
+                "\(HistoryCopy.change(entry.change)), by \(HistoryCopy.actorSpoken(entry.by)), \(ThirdHandDateFormat.relative(entry.at, now: now))"
+            ]
+        if let reason = entry.reason, !reason.isEmpty {
+            parts.append(reason)
+        }
+        if let until = entry.until {
+            parts.append("until \(ThirdHandDateFormat.snoozeUntil(until))")
+        }
         return parts.joined(separator: ", ")
     }
 }
@@ -107,7 +121,9 @@ public enum HistoryCopy {
         case "snooze-expired": return "Snooze ended"
         default:
             // A capture delta is a comma-joined field list ("title,detail").
-            if raw.contains(",") { return "Updated " + raw.split(separator: ",").joined(separator: ", ") }
+            if raw.contains(",") {
+                return "Updated " + raw.split(separator: ",").joined(separator: ", ")
+            }
             return raw.replacingOccurrences(of: "-", with: " ").capitalizedFirst
         }
     }
@@ -115,10 +131,10 @@ public enum HistoryCopy {
     /// "You", "Pulse", "Your Mac" — the three writers a person can name.
     public static func actor(_ raw: String) -> String {
         switch raw {
-        case "user": return "You"
-        case "capture": return "Pulse"
-        case "mirror": return "Your Mac"
-        default: return raw.replacingOccurrences(of: "-", with: " ").capitalizedFirst
+        case "user": "You"
+        case "capture": "Pulse"
+        case "mirror": "Your Mac"
+        default: raw.replacingOccurrences(of: "-", with: " ").capitalizedFirst
         }
     }
 

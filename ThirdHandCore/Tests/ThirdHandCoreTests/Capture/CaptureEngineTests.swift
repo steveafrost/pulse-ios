@@ -21,11 +21,11 @@ struct CaptureEngineTests {
     }
 
     @Test("a throwing source does not prevent the other sources from contributing")
-    func oneSourceFails() async throws {
+    func oneSourceFails() async {
         let store = ItemStore()
         let good = FakeSource(sourceID: .calendar, items: [
             Fixture.detected("calendar:event:A", title: "A"),
-            Fixture.detected("calendar:event:B", title: "B"),
+            Fixture.detected("calendar:event:B", title: "B")
         ])
         let bad = FakeSource(sourceID: .other, error: .underlying("boom"))
         let engine = makeEngine(sources: [good, bad], store: store)
@@ -60,7 +60,7 @@ struct CaptureEngineTests {
         let store = ItemStore()
         let source = FakeSource(sourceID: .calendar, items: [
             Fixture.detected("calendar:event:A", title: "A"),
-            Fixture.detected("reminders:reminder:B", title: "B"),
+            Fixture.detected("reminders:reminder:B", title: "B")
         ])
         let engine = makeEngine(sources: [source], store: store)
 
@@ -77,10 +77,10 @@ struct CaptureEngineTests {
     func deduplication() async {
         let store = ItemStore()
         let first = FakeSource(sourceID: .calendar, items: [
-            Fixture.detected("calendar:event:A", title: "first", priority: .low),
+            Fixture.detected("calendar:event:A", title: "first", priority: .low)
         ])
         let second = FakeSource(sourceID: .calendar, items: [
-            Fixture.detected("calendar:event:A", title: "second", priority: .high),
+            Fixture.detected("calendar:event:A", title: "second", priority: .high)
         ])
         let engine = makeEngine(sources: [first, second], store: store)
 
@@ -94,10 +94,10 @@ struct CaptureEngineTests {
     }
 
     @Test("a full pass resolves an item it no longer sees; an incremental pass leaves it alone")
-    func resolveMissing() async throws {
+    func resolveMissing() async {
         let store = ItemStore()
         let source = FakeSource(sourceID: .calendar, items: [
-            Fixture.detected("calendar:event:A", title: "A"),
+            Fixture.detected("calendar:event:A", title: "A")
         ])
         let engine = makeEngine(sources: [source], store: store)
         _ = await engine.run(mode: .full)
@@ -172,11 +172,11 @@ struct CaptureEngineTests {
     func modeWindows() {
         let full = CaptureMode.full.window(now: Fixture.now, calendar: Fixture.calendar)
         #expect(Fixture.calendar.isDate(full.start, inSameDayAs: Fixture.now))
-        #expect(full.duration == 8 * 86_400)
+        #expect(full.duration == 8 * 86400)
 
         let incremental = CaptureMode.incremental.window(now: Fixture.now, calendar: Fixture.calendar)
-        #expect(incremental.start == Fixture.now.addingTimeInterval(-86_400))
-        #expect(incremental.end == Fixture.now.addingTimeInterval(2 * 86_400))
+        #expect(incremental.start == Fixture.now.addingTimeInterval(-86400))
+        #expect(incremental.end == Fixture.now.addingTimeInterval(2 * 86400))
 
         #expect(CaptureMode.full.resolvesMissingItems)
         #expect(!CaptureMode.incremental.resolvesMissingItems)
@@ -213,51 +213,11 @@ struct CaptureEngineTests {
     /// A fixed `now`, a fake calendar and fake reminders, run through a real
     /// `ItemStore`, then a second pass where the invite has been answered.
     @Test("a full pass over a fake calendar and reminders produces the contract's item set")
-    func endToEnd() async throws {
+    func endToEnd() async {
         let store = ItemStore()
-
-        let invite = EventFixture.event(
-            "INVITE-1",
-            title: "Design review",
-            startsIn: 3 * 3600,
-            organizer: "Ada Lovelace",
-            attendees: [
-                Attendee(name: "Grace Hopper", identifier: "grace@example.com"),
-                Attendee(name: EventFixture.me, identifier: "steve@example.com"),
-            ],
-            status: .invited
-        )
-        // Two hours out: overlapping (30 min) but not imminent, so they exist
-        // only as the conflict card.
-        let standup = EventFixture.event("CAL-1", title: "Standup", startsIn: 7200, lasts: 3600)
-        let design = EventFixture.event("CAL-2", title: "Design sync", startsIn: 7200 + 1800, lasts: 3600)
-        // 20 minutes out and 10 minutes long, so it is imminent without
-        // overlapping the standup/design-sync pair.
-        let soon = EventFixture.event("CAL-3", title: "Retro", startsIn: 20 * 60, lasts: 10 * 60)
-        let reading = EventFixture.event(
-            "CAL-4",
-            title: "Reading group",
-            startsIn: 3 * 86_400,
-            notes: "https://example.com/reading"
-        )
-
-        let calendarSource = EventKitSource(
-            provider: FakeEventProvider(events: [invite, standup, design, soon, reading]),
-            currentUserName: EventFixture.me,
-            calendar: Fixture.calendar
-        )
-        let remindersSource = RemindersSource(
-            provider: FakeReminderProvider(reminders: [
-                ReminderSnapshot(identifier: "REM-1", title: "Pay invoice",
-                                 dueDate: Fixture.now.addingTimeInterval(-3600)),
-                ReminderSnapshot(identifier: "REM-2", title: "File expenses",
-                                 dueDate: Fixture.now.addingTimeInterval(3600)),
-            ]),
-            calendar: Fixture.calendar
-        )
-
+        let cast = EndToEndFixture.cast()
         let engine = CaptureEngine(
-            sources: [calendarSource, remindersSource],
+            sources: [cast.calendar, cast.reminders],
             store: store,
             now: { Fixture.now },
             calendar: Fixture.calendar
@@ -300,7 +260,9 @@ struct CaptureEngineTests {
         let secondEngine = CaptureEngine(
             sources: [
                 EventKitSource(
-                    provider: FakeEventProvider(events: [accepted, standup, design, soon, reading]),
+                    provider: FakeEventProvider(
+                        events: [accepted, cast.standup, cast.design, cast.soon, cast.reading]
+                    ),
                     currentUserName: EventFixture.me,
                     calendar: Fixture.calendar
                 )
@@ -328,10 +290,10 @@ struct CaptureEngineTests {
     func allThreeSources() async {
         let store = ItemStore()
         let calendarSource = EventKitSource(provider: FakeEventProvider(events: [
-            EventFixture.event("CAL-1", title: "Retro", startsIn: 20 * 60, lasts: 10 * 60),
+            EventFixture.event("CAL-1", title: "Retro", startsIn: 20 * 60, lasts: 10 * 60)
         ]))
         let remindersSource = RemindersSource(provider: FakeReminderProvider(reminders: [
-            ReminderSnapshot(identifier: "REM-1", title: "Pay invoice", dueDate: Fixture.now.addingTimeInterval(-3600)),
+            ReminderSnapshot(identifier: "REM-1", title: "Pay invoice", dueDate: Fixture.now.addingTimeInterval(-3600))
         ]))
         let sharedSource = SharedLinkSource(provider: FakeSharedLinkProvider(links: [
             SharedLinkSnapshot(
@@ -341,7 +303,7 @@ struct CaptureEngineTests {
             ),
             SharedLinkSnapshot(url: "https://github.com/acme/api/pull/42", sharedAt: Fixture.now),
             SharedLinkSnapshot(url: "https://mail.google.com/mail/u/0/#inbox/abc", sharedAt: Fixture.now),
-            SharedLinkSnapshot(url: "https://example.com/some/page", sharedAt: Fixture.now),
+            SharedLinkSnapshot(url: "https://example.com/some/page", sharedAt: Fixture.now)
         ]))
 
         let engine = makeEngine(
@@ -427,5 +389,77 @@ struct CaptureEngineTests {
         #expect(report.startedAt == fake)
         #expect(report.finishedAt == fake)
         #expect(report.captureRun().finishedAt == fake)
+    }
+}
+
+/// The fixed cast `endToEnd` runs over: one invite, an overlapping pair, one imminent
+/// deadline and one reading item, plus the two reminders. Held here rather than inline so
+/// the test itself reads as the assertions it is making.
+enum EndToEndFixture {
+    /// The sources to run, plus the events the second pass has to re-feed so that the
+    /// reschedule is the only thing that changed.
+    struct Cast {
+        let calendar: EventKitSource
+        let reminders: RemindersSource
+        let standup: CalendarEventSnapshot
+        let design: CalendarEventSnapshot
+        let soon: CalendarEventSnapshot
+        let reading: CalendarEventSnapshot
+    }
+
+    static func cast() -> Cast {
+        let invite = EventFixture.event(
+            "INVITE-1",
+            title: "Design review",
+            startsIn: 3 * 3600,
+            organizer: "Ada Lovelace",
+            attendees: [
+                Attendee(name: "Grace Hopper", identifier: "grace@example.com"),
+                Attendee(name: EventFixture.me, identifier: "steve@example.com")
+            ],
+            status: .invited
+        )
+        // Two hours out: overlapping (30 min) but not imminent, so they exist
+        // only as the conflict card.
+        let standup = EventFixture.event("CAL-1", title: "Standup", startsIn: 7200, lasts: 3600)
+        let design = EventFixture.event("CAL-2", title: "Design sync", startsIn: 7200 + 1800, lasts: 3600)
+        // 20 minutes out and 10 minutes long, so it is imminent without
+        // overlapping the standup/design-sync pair.
+        let soon = EventFixture.event("CAL-3", title: "Retro", startsIn: 20 * 60, lasts: 10 * 60)
+        let reading = EventFixture.event(
+            "CAL-4",
+            title: "Reading group",
+            startsIn: 3 * 86400,
+            notes: "https://example.com/reading"
+        )
+
+        let calendarSource = EventKitSource(
+            provider: FakeEventProvider(events: [invite, standup, design, soon, reading]),
+            currentUserName: EventFixture.me,
+            calendar: Fixture.calendar
+        )
+        let remindersSource = RemindersSource(
+            provider: FakeReminderProvider(reminders: [
+                ReminderSnapshot(
+                    identifier: "REM-1",
+                    title: "Pay invoice",
+                    dueDate: Fixture.now.addingTimeInterval(-3600)
+                ),
+                ReminderSnapshot(
+                    identifier: "REM-2",
+                    title: "File expenses",
+                    dueDate: Fixture.now.addingTimeInterval(3600)
+                )
+            ]),
+            calendar: Fixture.calendar
+        )
+        return Cast(
+            calendar: calendarSource,
+            reminders: remindersSource,
+            standup: standup,
+            design: design,
+            soon: soon,
+            reading: reading
+        )
     }
 }

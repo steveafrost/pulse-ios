@@ -31,7 +31,7 @@ public struct SnapshotWriter: Sendable {
     ) {
         self.container = container
         self.deviceName = deviceName
-        self.clock = now
+        clock = now
     }
 
     // MARK: Write
@@ -95,8 +95,10 @@ public struct SnapshotWriter: Sendable {
     /// recovery. A file that decodes with a higher version is different -- it is
     /// valid data this build would truncate, so we leave it alone.
     public func assertWritableSchema() throws {
-        guard let data = try container.read(Self.fileName) else { return }
-        guard let existing = try? ThirdHandJSON.decode(ThirdHandSnapshot.self, from: data) else { return }
+        guard let data = try container.read(Self.fileName), let existing = try? ThirdHandJSON.decode(
+            ThirdHandSnapshot.self,
+            from: data
+        ) else { return }
         guard existing.isWritable() else {
             throw ThirdHandSyncError.unsupportedSchemaVersion(
                 existing.schemaVersion,

@@ -16,7 +16,9 @@ public enum Plural {
 
     /// The noun alone: "item" for 1, "items" otherwise.
     public static func noun(_ count: Int, _ singular: String, _ plural: String? = nil) -> String {
-        if count == 1 { return singular }
+        if count == 1 {
+            return singular
+        }
         return plural ?? singular + "s"
     }
 

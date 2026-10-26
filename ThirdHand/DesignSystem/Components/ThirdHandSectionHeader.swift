@@ -29,11 +29,11 @@ public struct ThirdHandSectionHeader: View {
                     .tracking(-0.2)
                 Text("\(count)")
                     .font(ThirdHandTypography.sectionHeader)
-                    /// §1: "one numeric emphasis per screen — the Now badge".
-                    /// Every count used to take its horizon tint, so the board had
-                    /// four coloured numerals competing with the rows. Only Now
-                    /// keeps the tint now; the rest are tertiary, which still reads
-                    /// as a count without asserting urgency.
+                    // §1: "one numeric emphasis per screen — the Now badge".
+                    // Every count used to take its horizon tint, so the board had
+                    // four coloured numerals competing with the rows. Only Now
+                    // keeps the tint now; the rest are tertiary, which still reads
+                    // as a count without asserting urgency.
                     .foregroundStyle(horizon == .now ? horizon.tint : ThirdHandColor.textTertiary)
                     .tracking(ThirdHandTracking.count)
                     .contentTransition(.numericText())
@@ -47,9 +47,9 @@ public struct ThirdHandSectionHeader: View {
                     .accessibilityHidden(true)
             }
         }
-        /// No horizontal padding of its own and no `.bar` strip: the section view
-        /// supplies the inset, and an opaque bar across the canvas reads as a
-        /// stray grey band above the first card.
+        // No horizontal padding of its own and no `.bar` strip: the section view
+        // supplies the inset, and an opaque bar across the canvas reads as a
+        // stray grey band above the first card.
         .padding(.vertical, ThirdHandSpacing.xs)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)

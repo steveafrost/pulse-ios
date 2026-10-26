@@ -4,7 +4,6 @@ import Testing
 
 @Suite("Horizon")
 struct HorizonTests {
-
     /// A fixed "now": 2026-10-23 (a Friday) at 12:00 UTC.
     private let now = Fixture.date("2026-10-23T12:00:00.000Z")
 
@@ -57,9 +56,9 @@ struct HorizonTests {
 
     @Test("due today or recently overdue lands in now")
     func dueTodayOrRecentlyOverdueIsNow() {
-        #expect(horizon(item(due: Fixture.date("2026-10-23T09:00:00.000Z"))) == .now)   // earlier today
-        #expect(horizon(item(due: Fixture.date("2026-10-23T23:59:00.000Z"))) == .now)   // later today
-        #expect(horizon(item(due: Fixture.date("2026-10-20T09:00:00.000Z"))) == .now)   // 3 days overdue
+        #expect(horizon(item(due: Fixture.date("2026-10-23T09:00:00.000Z"))) == .now) // earlier today
+        #expect(horizon(item(due: Fixture.date("2026-10-23T23:59:00.000Z"))) == .now) // later today
+        #expect(horizon(item(due: Fixture.date("2026-10-20T09:00:00.000Z"))) == .now) // 3 days overdue
     }
 
     /// Overdue is urgent for a while, then it is stale. This is a regression test:
@@ -86,8 +85,8 @@ struct HorizonTests {
 
     @Test("due within three days lands in next")
     func dueSoonIsNext() {
-        #expect(horizon(item(due: Fixture.date("2026-10-24T09:00:00.000Z"))) == .next)  // tomorrow
-        #expect(horizon(item(due: Fixture.date("2026-10-26T09:00:00.000Z"))) == .next)  // +3 days
+        #expect(horizon(item(due: Fixture.date("2026-10-24T09:00:00.000Z"))) == .next) // tomorrow
+        #expect(horizon(item(due: Fixture.date("2026-10-26T09:00:00.000Z"))) == .next) // +3 days
     }
 
     @Test("due beyond three days lands in later")
@@ -116,7 +115,11 @@ struct HorizonTests {
             #expect(horizon(item(status: status)) == nil)
             #expect(horizon(item(priority: .high, status: status)) == nil)
             // The "would-be" bucket is still available for animation.
-            #expect(HorizonDerivation.horizonIgnoringClosed(of: item(priority: .high, status: status), at: now, calendar: Fixture.calendar) == .now)
+            #expect(HorizonDerivation.horizonIgnoringClosed(
+                of: item(priority: .high, status: status),
+                at: now,
+                calendar: Fixture.calendar
+            ) == .now)
         }
     }
 
@@ -157,7 +160,7 @@ struct HorizonTests {
                 Fixture.detected("calendar:event:now", title: "Now", priority: .high),
                 Fixture.detected("calendar:event:next", title: "Next", due: Fixture.date("2026-10-25T09:00:00.000Z")),
                 Fixture.detected("calendar:event:later", title: "Later", due: Fixture.date("2026-11-20T09:00:00.000Z")),
-                Fixture.detected("calendar:event:fyi", title: "FYI", kind: .fyi, priority: .low),
+                Fixture.detected("calendar:event:fyi", title: "FYI", kind: .fyi, priority: .low)
             ],
             run: "run",
             now: Fixture.now
@@ -187,7 +190,7 @@ struct HorizonTests {
             item(id: "a", priority: .high, due: Fixture.date("2026-10-26T09:00:00.000Z"), firstSeenAt: base),
             item(id: "b", priority: .high, due: Fixture.date("2026-10-24T09:00:00.000Z"), firstSeenAt: base),
             item(id: "e", priority: .normal, due: nil, firstSeenAt: base),
-            item(id: "f", priority: .normal, due: Fixture.date("2026-10-24T09:00:00.000Z"), firstSeenAt: base),
+            item(id: "f", priority: .normal, due: Fixture.date("2026-10-24T09:00:00.000Z"), firstSeenAt: base)
         ]
 
         // high first; within high, earlier due first; normal sorts its dated item
@@ -200,7 +203,7 @@ struct HorizonTests {
         let earlier = Fixture.date("2026-10-01T00:00:00.000Z")
         let items = [
             item(id: "second", priority: .high, due: nil, firstSeenAt: now),
-            item(id: "first", priority: .high, due: nil, firstSeenAt: earlier),
+            item(id: "first", priority: .high, due: nil, firstSeenAt: earlier)
         ]
         #expect(ThirdHandItemSort.sorted(items).map(\.id) == ["first", "second"])
 

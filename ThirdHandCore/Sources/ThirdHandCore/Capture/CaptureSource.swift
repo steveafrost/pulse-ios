@@ -40,23 +40,25 @@ public enum CaptureError: Error, Sendable, Hashable, CustomStringConvertible {
     /// The source this error belongs to, when the case names one.
     public var source: Source? {
         switch self {
-        case .unavailable(let source), .denied(let source): source
+        case let .unavailable(source), let .denied(source): source
         case .timeout, .underlying: nil
         }
     }
 
     public var description: String {
         switch self {
-        case .unavailable(let source): "\(source.rawValue) is unavailable on this platform"
-        case .denied(let source): "access to \(source.rawValue) was denied"
+        case let .unavailable(source): "\(source.rawValue) is unavailable on this platform"
+        case let .denied(source): "access to \(source.rawValue) was denied"
         case .timeout: "capture source timed out"
-        case .underlying(let message): message
+        case let .underlying(message): message
         }
     }
 }
 
 extension CaptureError: LocalizedError {
-    public var errorDescription: String? { description }
+    public var errorDescription: String? {
+        description
+    }
 }
 
 /// Builds the `DateInterval` a capture pass scans, relative to an injected `now`.
@@ -65,8 +67,8 @@ extension CaptureError: LocalizedError {
 /// and every one of them is computed from the caller's instant so a pass is
 /// reproducible.
 public enum CaptureWindow {
-    public static let secondsPerDay: TimeInterval = 86_400
-    public static let secondsPerHour: TimeInterval = 3_600
+    public static let secondsPerDay: TimeInterval = 86400
+    public static let secondsPerHour: TimeInterval = 3600
 
     /// The calendar day containing `now`, in `calendar`.
     public static func day(now: Date, calendar: Calendar = .current) -> DateInterval {

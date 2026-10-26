@@ -1,6 +1,5 @@
 import Foundation
 import Testing
-
 @testable import ThirdHandCore
 
 /// Tests that speak to a real IMAPS server.
@@ -26,7 +25,6 @@ import Testing
     .enabled(if: LiveIMAP.isEnabled)
 )
 struct TLSIMAPTransportLiveTests {
-
     @Test("the TLS handshake completes and the server greeting is IMAP")
     func handshakeAndGreeting() async throws {
         let transport = TLSIMAPTransport(timeouts: .init(connect: 30, command: 30))
@@ -57,7 +55,9 @@ struct TLSIMAPTransportLiveTests {
                     sawCompletion = true
                     break
                 }
-                if response.count > 100 { break }
+                if response.count > 100 {
+                    break
+                }
             }
 
             #expect(sawCompletion, "the server never closed the CAPABILITY response")

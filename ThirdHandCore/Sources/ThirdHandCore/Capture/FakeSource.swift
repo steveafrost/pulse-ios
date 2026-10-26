@@ -40,10 +40,14 @@ public final class FakeSource: CaptureSource, @unchecked Sendable {
     }
 
     /// How many times `detect` was entered.
-    public var detectCallCount: Int { withLock { calls } }
+    public var detectCallCount: Int {
+        withLock { calls }
+    }
 
     /// The instants `detect` was called with.
-    public var detectInstants: [Date] { withLock { seenInstants } }
+    public var detectInstants: [Date] {
+        withLock { seenInstants }
+    }
 
     /// `NSLock.lock()` is unavailable from an async context, so every use goes
     /// through this synchronous scope.
@@ -83,7 +87,9 @@ public struct FakeSharedLinkProvider: SharedLinkProviding {
     }
 
     public func sharedLinks() throws -> [SharedLinkSnapshot] {
-        if let error { throw error }
+        if let error {
+            throw error
+        }
         return links
     }
 }
@@ -102,7 +108,9 @@ public struct FakeEventProvider: EventProviding {
     }
 
     public func events(in window: DateInterval) async throws -> [CalendarEventSnapshot] {
-        if let error { throw error }
+        if let error {
+            throw error
+        }
         return events
     }
 }
@@ -118,7 +126,9 @@ public struct FakeReminderProvider: ReminderProviding {
     }
 
     public func incompleteReminders() async throws -> [ReminderSnapshot] {
-        if let error { throw error }
+        if let error {
+            throw error
+        }
         return reminders
     }
 }

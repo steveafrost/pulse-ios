@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// §8.1: one horizontally scrolling row of glass chips — "All 11", then one per
 /// source present in the Calendar / Reminders / Email / Slack / Docs order — plus

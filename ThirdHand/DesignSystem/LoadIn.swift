@@ -42,9 +42,9 @@ public struct LoadIn: ViewModifier {
     }
 }
 
-extension View {
+public extension View {
     /// Settle this view in at `index` in a staggered group (§7.5).
-    public func loadIn(index: Int) -> some View {
+    func loadIn(index: Int) -> some View {
         modifier(LoadIn(index: index))
     }
 }

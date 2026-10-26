@@ -1,11 +1,10 @@
 import Foundation
-import ThirdHandCore
 import Testing
 @testable import ThirdHand
+import ThirdHandCore
 
 @Suite("SyncLog")
 struct SyncLogTests {
-
     private func makeLog() -> SyncLog {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("pulse-synclog-\(UUID().uuidString)", isDirectory: true)
@@ -18,7 +17,7 @@ struct SyncLogTests {
         let log = makeLog()
         defer { log.clear() }
 
-        for index in 0..<300 {
+        for index in 0 ..< 300 {
             log.append("event \(index)")
         }
         let lines = log.readLines()
@@ -57,7 +56,9 @@ struct SyncLogTests {
     func recentTail() {
         let log = makeLog()
         defer { log.clear() }
-        for index in 0..<50 { log.append("event \(index)") }
+        for index in 0 ..< 50 {
+            log.append("event \(index)")
+        }
         #expect(log.recent(5).count == 5)
         #expect(log.recent(5).last?.hasSuffix("event 49") == true)
     }

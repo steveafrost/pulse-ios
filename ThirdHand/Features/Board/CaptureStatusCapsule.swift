@@ -53,13 +53,19 @@ public struct CaptureStatusCapsule: View {
         if status.isFailed {
             return "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90"
         }
-        if status.isCapturing { return "arrow.trianglehead.2.clockwise.rotate.90" }
+        if status.isCapturing {
+            return "arrow.trianglehead.2.clockwise.rotate.90"
+        }
         return "checkmark.circle"
     }
 
     private var tint: Color {
-        if status.isFailed { return ThirdHandColor.statusError }
-        if status.isCapturing { return ThirdHandColor.horizonNow }
+        if status.isFailed {
+            return ThirdHandColor.statusError
+        }
+        if status.isCapturing {
+            return ThirdHandColor.horizonNow
+        }
         return ThirdHandColor.statusDone
     }
 

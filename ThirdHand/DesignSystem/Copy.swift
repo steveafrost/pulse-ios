@@ -46,7 +46,7 @@ public enum CaptureCopy {
             return "Looking for what needs you…"
         case .failed:
             return "Couldn't refresh · Try again"
-        case .idle(let date):
+        case let .idle(date):
             guard let date else { return "Not checked yet" }
             return "\(Plural.items(status.itemCount)) · \(ThirdHandDateFormat.relative(date, now: now))"
         }
@@ -58,7 +58,7 @@ public enum CaptureCopy {
             return "Couldn't refresh. Double-tap to try again."
         case .capturing:
             return "Looking for what needs you"
-        case .idle(let date):
+        case let .idle(date):
             guard let date else { return "Not checked yet" }
             let base = "\(Plural.items(status.itemCount)), updated \(ThirdHandDateFormat.relative(date, now: now))"
             guard let sync = status.syncText else { return base }

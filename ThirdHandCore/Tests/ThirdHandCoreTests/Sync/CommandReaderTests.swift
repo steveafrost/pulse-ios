@@ -4,7 +4,6 @@ import Testing
 
 @Suite("CommandReader")
 struct CommandReaderTests {
-
     /// A store holding one open item whose `updatedAt` is `Fixture.now`, the
     /// boundary the stale rule is measured against.
     private func makeStore(id: String = "calendar:event:1", updatedAt: Date? = nil) async throws -> ItemStore {
@@ -57,9 +56,14 @@ struct CommandReaderTests {
         let third = UUID().uuidString
         try SyncFixture.appendCommands([
             SyncFixture.commandLine(id: acked, at: Fixture.now.addingTimeInterval(10), itemId: "calendar:event:1"),
-            SyncFixture.commandLine(id: second, at: Fixture.now.addingTimeInterval(20), op: "snooze", itemId: "calendar:event:1",
-                                    until: ThirdHandJSON.dates.string(from: Fixture.now.addingTimeInterval(3_600))),
-            SyncFixture.commandLine(id: third, at: Fixture.now.addingTimeInterval(30), itemId: "calendar:event:1"),
+            SyncFixture.commandLine(
+                id: second,
+                at: Fixture.now.addingTimeInterval(20),
+                op: "snooze",
+                itemId: "calendar:event:1",
+                until: ThirdHandJSON.dates.string(from: Fixture.now.addingTimeInterval(3600))
+            ),
+            SyncFixture.commandLine(id: third, at: Fixture.now.addingTimeInterval(30), itemId: "calendar:event:1")
         ], to: container)
         try container.append(Data(#"{"id":"\#(acked)"}"#.utf8) + Data("\n".utf8), to: CommandReader.ackFileName)
 
@@ -128,7 +132,7 @@ struct CommandReaderTests {
                 op: "snooze",
                 itemId: "calendar:event:1",
                 until: ThirdHandJSON.dates.string(from: Fixture.now.addingTimeInterval(-60))
-            ),
+            )
         ], to: container)
 
         let report = try await reader(container, store).consume()
@@ -179,7 +183,7 @@ struct CommandReaderTests {
         try SyncFixture.appendCommands([
             "{not json at all",
             SyncFixture.commandLine(id: good, at: Fixture.now.addingTimeInterval(60), itemId: "calendar:event:1"),
-            #"{"id":"x","at":"yesterday","op":"done","itemId":"calendar:event:1"}"#,
+            #"{"id":"x","at":"yesterday","op":"done","itemId":"calendar:event:1"}"#
         ], to: container)
 
         let report = try await reader(container, store).consume()
@@ -202,7 +206,11 @@ struct CommandReaderTests {
             to: container
         )
         // A writer mid-append: bytes, no newline.
-        let half = SyncFixture.commandLine(id: pending, at: Fixture.now.addingTimeInterval(120), itemId: "calendar:event:1")
+        let half = SyncFixture.commandLine(
+            id: pending,
+            at: Fixture.now.addingTimeInterval(120),
+            itemId: "calendar:event:1"
+        )
         try container.append(Data(half.prefix(20).utf8), to: CommandReader.commandsFileName)
 
         let report = try await reader(container, store).consume()
@@ -255,7 +263,7 @@ struct CommandReaderTests {
         let id = UUID().uuidString
         try SyncFixture.appendCommands([
             "{broken",
-            SyncFixture.commandLine(id: id, at: Fixture.now.addingTimeInterval(60), itemId: "calendar:event:1"),
+            SyncFixture.commandLine(id: id, at: Fixture.now.addingTimeInterval(60), itemId: "calendar:event:1")
         ], to: container)
 
         let subject = reader(container, store)
@@ -285,7 +293,9 @@ struct CommandReaderTests {
         // The plugin compacts: same path, far fewer bytes, a new command.
         let id = UUID().uuidString
         try container.write(
-            Data((SyncFixture.commandLine(id: id, at: Fixture.now.addingTimeInterval(120), itemId: "calendar:event:1") + "\n").utf8),
+            Data((SyncFixture
+                    .commandLine(id: id, at: Fixture.now.addingTimeInterval(120), itemId: "calendar:event:1") + "\n")
+                .utf8),
             to: CommandReader.commandsFileName
         )
 
@@ -306,7 +316,9 @@ struct CommandReaderTests {
         let subject = reader(container, store)
         _ = try await subject.consume()
 
-        let replacement = #"{"id":"bbbbbbbb-0000","at":"2026-10-23T18:06:11.000Z","op":"done","itemId":"calendar:event:1"}"#
+        // Split only to stay inside the column limit; the two halves are one literal.
+        let replacement = #"{"id":"bbbbbbbb-0000","at":"2026-10-23T18:06:11.000Z","op":"done","#
+            + #""itemId":"calendar:event:1"}"#
         #expect(Data((first + "\n").utf8).count == Data((replacement + "\n").utf8).count)
         try container.write(Data((replacement + "\n").utf8), to: CommandReader.commandsFileName)
 
@@ -383,17 +395,17 @@ struct CommandReaderTests {
         try await store.upsert(
             detected: [
                 Fixture.detected("calendar:event:1", title: "Standup", kind: .deadline),
-                Fixture.detected("reminders:reminder:2", title: "File expenses", kind: .followup, priority: .high),
+                Fixture.detected("reminders:reminder:2", title: "File expenses", kind: .followup, priority: .high)
             ],
             run: "morning",
             now: Fixture.now
         )
         _ = try await store.userAction(
-            id: "calendar:event:1", verb: .snooze, until: Fixture.now.addingTimeInterval(3_600), now: Fixture.now
+            id: "calendar:event:1", verb: .snooze, until: Fixture.now.addingTimeInterval(3600), now: Fixture.now
         )
 
         let writer = SnapshotWriter(container: container, deviceName: "iPhone") { Fixture.now }
-        try writer.write(items: await store.allItems(), lastViewedAt: await store.lastViewed())
+        try await writer.write(items: store.allItems(), lastViewedAt: store.lastViewed())
 
         let decoded = try #require(try writer.read())
         let restored = ItemStore(items: decoded.items, lastViewedAt: decoded.lastViewedAt)

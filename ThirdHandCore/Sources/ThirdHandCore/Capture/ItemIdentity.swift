@@ -110,12 +110,12 @@ public enum ItemIdentity {
     ///     identity (`/pull/1` and `/pull/2` are different reviews).
     public static func normalizedSharedURL(_ raw: String) -> String? {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, var components = URLComponents(string: trimmed) else { return nil }
-        guard let scheme = components.scheme?.lowercased(), scheme == "https" || scheme == "http" else {
-            return nil
+        guard !trimmed.isEmpty, var components = URLComponents(string: trimmed),
+              let scheme = components.scheme?.lowercased(), scheme == "https" || scheme == "http",
+              var host = components.host?.lowercased(), !host.isEmpty else { return nil }
+        if host.hasPrefix("www.") {
+            host.removeFirst(4)
         }
-        guard var host = components.host?.lowercased(), !host.isEmpty else { return nil }
-        if host.hasPrefix("www.") { host.removeFirst(4) }
         guard !host.isEmpty else { return nil }
 
         components.scheme = scheme
@@ -123,7 +123,9 @@ public enum ItemIdentity {
         if (scheme == "https" && components.port == 443) || (scheme == "http" && components.port == 80) {
             components.port = nil
         }
-        if !fragmentCarriesIdentity(host: host) { components.fragment = nil }
+        if !fragmentCarriesIdentity(host: host) {
+            components.fragment = nil
+        }
 
         if let items = components.queryItems {
             let kept = items
@@ -138,7 +140,9 @@ public enum ItemIdentity {
         // trimming it also collapses the root path to `""`, so `https://x.com` and
         // `https://x.com/` agree.
         var path = components.path
-        while path.count > 1, path.hasSuffix("/") { path.removeLast() }
+        while path.count > 1, path.hasSuffix("/") {
+            path.removeLast()
+        }
         components.path = path == "/" ? "" : path
 
         // `URLComponents` percent-encodes on the way out and can return nil for a
@@ -164,7 +168,9 @@ public enum ItemIdentity {
     /// senders (Facebook, Google, Mailchimp, Instagram, Slack, Twitter) append.
     public static func isTrackingParameter(_ name: String) -> Bool {
         let lowered = name.lowercased()
-        if lowered.hasPrefix("utm_") { return true }
+        if lowered.hasPrefix("utm_") {
+            return true
+        }
         return ["fbclid", "gclid", "mc_cid", "mc_eid", "igshid", "si", "ref_src", "ref_url"].contains(lowered)
     }
 

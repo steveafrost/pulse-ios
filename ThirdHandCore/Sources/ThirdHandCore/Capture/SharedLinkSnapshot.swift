@@ -51,8 +51,8 @@ extension SharedLinkSnapshot: Codable {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw SharedLinkError.missingURL }
         url = trimmed
-        text = (try? container.decodeIfPresent(String.self, forKey: .text)) ?? nil
-        title = (try? container.decodeIfPresent(String.self, forKey: .title)) ?? nil
+        text = (try? container.decodeIfPresent(String.self, forKey: .text))
+        title = (try? container.decodeIfPresent(String.self, forKey: .title))
         // A line with no parsable instant is dated by the reader, so the item still
         // appears rather than vanishing.
         sharedAt = (try? container.decodeIfPresent(Date.self, forKey: .sharedAt)) ?? .distantPast
@@ -86,7 +86,7 @@ public enum SharedLinkError: Error, Sendable, Hashable, CustomStringConvertible 
     public var description: String {
         switch self {
         case .missingURL: "shared link had no url"
-        case .unsupportedURL(let raw): "unsupported shared url: \(raw)"
+        case let .unsupportedURL(raw): "unsupported shared url: \(raw)"
         }
     }
 }
@@ -147,8 +147,9 @@ public struct FileSharedLinkProvider: SharedLinkProviding, @unchecked Sendable {
             .split(separator: UInt8(ascii: "\n"))
             .compactMap { line in
                 let trimmed = line.drop { $0 == UInt8(ascii: " ") || $0 == UInt8(ascii: "\t") }
-                guard !trimmed.isEmpty else { return nil }
-                guard let decoded = try? decoder.decode(SharedLinkSnapshot.self, from: Data(trimmed)) else {
+                guard !trimmed.isEmpty,
+                      let decoded = try? decoder.decode(SharedLinkSnapshot.self, from: Data(trimmed))
+                else {
                     return nil
                 }
                 return decoded.dating(at: undated)
@@ -187,7 +188,7 @@ public struct SharedLinkWriter: @unchecked Sendable {
             "url": link.url,
             "text": link.text ?? NSNull(),
             "title": link.title ?? NSNull(),
-            "sharedAt": ThirdHandJSON.dates.string(from: link.sharedAt),
+            "sharedAt": ThirdHandJSON.dates.string(from: link.sharedAt)
         ]
         let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
         try appendLine(data + Data("\n".utf8))

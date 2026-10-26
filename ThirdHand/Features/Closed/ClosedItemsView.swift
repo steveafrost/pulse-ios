@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// #19: the review screen for done / dismissed / resolved items.
 public struct ClosedItemsView: View {
@@ -19,7 +19,9 @@ public struct ClosedItemsView: View {
                     ContentUnavailableView(
                         "Nothing closed recently",
                         systemImage: "checkmark.circle",
-                        description: Text("Items you finish or dismiss appear here for three days, so you can reopen them.")
+                        description: Text(
+                            "Items you finish or dismiss appear here for three days, so you can reopen them."
+                        )
                     )
                 } else {
                     list

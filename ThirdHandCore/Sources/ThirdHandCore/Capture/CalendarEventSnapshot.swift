@@ -26,7 +26,9 @@ public struct CalendarEventSnapshot: Sendable, Hashable, Identifiable {
     public var currentUserStatus: ParticipationStatus?
     public var isCancelled: Bool
 
-    public var id: String { identifier }
+    public var id: String {
+        identifier
+    }
 
     public init(
         identifier: String,
@@ -55,7 +57,9 @@ public struct CalendarEventSnapshot: Sendable, Hashable, Identifiable {
     }
 
     /// How long the event runs. Never negative.
-    public var duration: TimeInterval { max(0, endDate.timeIntervalSince(startDate)) }
+    public var duration: TimeInterval {
+        max(0, endDate.timeIntervalSince(startDate))
+    }
 
     /// Accepted and not cancelled -- the contract's "two accepted events".
     public var isAcceptedAndLive: Bool {
@@ -73,7 +77,9 @@ public struct CalendarEventSnapshot: Sendable, Hashable, Identifiable {
     }
 
     /// A meeting the user may have to attend: accepted and not all-day.
-    public var occupiesTime: Bool { isAcceptedAndLive && !isAllDay }
+    public var occupiesTime: Bool {
+        isAcceptedAndLive && !isAllDay
+    }
 }
 
 /// Someone on an event, plus what they said.
@@ -92,7 +98,9 @@ public struct Attendee: Sendable, Hashable {
 
     /// What the conflict hash sorts on: the address when there is one, else the
     /// display name.
-    public var hashKey: String { identifier ?? name }
+    public var hashKey: String {
+        identifier ?? name
+    }
 }
 
 /// EventKit's `EKParticipantStatus`, without the EventKit import.

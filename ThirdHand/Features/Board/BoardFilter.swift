@@ -20,7 +20,9 @@ public struct BoardFilter: Sendable, Hashable {
     }
 
     public func matches(_ item: ThirdHandItem) -> Bool {
-        if let source, item.sourceIdentity != source { return false }
+        if let source, item.sourceIdentity != source {
+            return false
+        }
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return true }
         let haystack = [item.title, item.detail, item.people.joined(separator: " ")].joined(separator: " ")

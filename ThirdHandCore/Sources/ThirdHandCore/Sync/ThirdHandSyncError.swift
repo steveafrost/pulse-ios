@@ -36,32 +36,36 @@ public enum ThirdHandSyncError: Error, Sendable, Hashable, CustomStringConvertib
 
     public var description: String {
         switch self {
-        case .unsupportedSchemaVersion(let found, let supported):
+        case let .unsupportedSchemaVersion(found, supported):
             "snapshot schemaVersion \(found) is newer than this build supports (\(supported)); update Pulse"
-        case .pathEscapesRoot(let path):
+        case let .pathEscapesRoot(path):
             "sync path escapes the container root: \(path)"
         case .iCloudUnavailable:
             "iCloud is unavailable; sign in to iCloud to mirror Pulse to the Mac"
-        case .iCloudDirectoryUnavailable(let why):
+        case let .iCloudDirectoryUnavailable(why):
             "couldn't create the Pulse folder in iCloud Drive: \(why)"
-        case .iCloudDownloadTimedOut(let path):
+        case let .iCloudDownloadTimedOut(path):
             "timed out downloading \(path) from iCloud"
-        case .atomicWriteFailed(let why):
+        case let .atomicWriteFailed(why):
             "couldn't write the snapshot atomically: \(why)"
-        case .corruptLine(let index, let text):
+        case let .corruptLine(index, text):
             "line \(index) is not a valid transport record: \(text)"
-        case .duplicateItemID(let id):
+        case let .duplicateItemID(id):
             "two items share the id \(id); refusing to publish a snapshot the mirror cannot key"
-        case .invalidTimestamp(let value):
+        case let .invalidTimestamp(value):
             "\(value) is not an ISO 8601 instant"
         }
     }
 
-    public var errorDescription: String? { description }
+    public var errorDescription: String? {
+        description
+    }
 
     /// Whether the user has to update the app to recover, as opposed to retrying.
     public var requiresUpdate: Bool {
-        if case .unsupportedSchemaVersion = self { return true }
+        if case .unsupportedSchemaVersion = self {
+            return true
+        }
         return false
     }
 }

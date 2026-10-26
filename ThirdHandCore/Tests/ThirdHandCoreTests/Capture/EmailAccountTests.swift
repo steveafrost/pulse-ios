@@ -66,7 +66,9 @@ struct EmailAccountTests {
     /// fooled by `dump` writing nowhere.
     final class LineCollector: TextOutputStream {
         private(set) var text = ""
-        func write(_ string: String) { text += string }
+        func write(_ string: String) {
+            text += string
+        }
     }
 
     // MARK: - Keychain key
@@ -128,7 +130,7 @@ struct EmailAccountTests {
         try store.deleteSecret(for: "k")
         #expect(try store.secret(for: "k") == nil)
         try store.deleteSecret(for: "k")
-        #expect(store.count == 0)
+        #expect(store.isEmpty)
     }
 
     @Test("the real keychain store reports missing values as nil, never as an error")

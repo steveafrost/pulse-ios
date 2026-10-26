@@ -1,6 +1,7 @@
 import Foundation
 
 // MARK: - Lenient wire enums
+
 //
 // The snapshot is produced by this app but *read* by other implementations
 // (the `bb-plugin-thirdhand` mirror, and later possibly a newer iOS build). A
@@ -24,8 +25,8 @@ public protocol LenientWireEnum: RawRepresentable, Codable, Sendable, Hashable w
     static var fallback: Self { get }
 }
 
-extension LenientWireEnum {
-    public init(from decoder: any Decoder) throws {
+public extension LenientWireEnum {
+    init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let raw = try container.decode(String.self)
         if let value = Self(rawValue: raw) {
@@ -36,7 +37,7 @@ extension LenientWireEnum {
         }
     }
 
-    public func encode(to encoder: any Encoder) throws {
+    func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(rawValue)
     }
@@ -71,7 +72,9 @@ public final class DecodeDiagnostics: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         events.append(Event(type: type, value: value))
-        if events.count > capacity { events.removeFirst(events.count - capacity) }
+        if events.count > capacity {
+            events.removeFirst(events.count - capacity)
+        }
     }
 
     /// The recorded substitutions, oldest first.

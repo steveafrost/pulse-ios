@@ -140,17 +140,22 @@ public struct EmailAccount: Sendable, Hashable, Codable {
         public var passwordGuidance: String {
             switch self {
             case .icloud:
-                "Use an app password, not your Apple Account password: account.apple.com → Sign-In and Security → App-Specific Passwords."
+                "Use an app password, not your Apple Account password: "
+                    + "account.apple.com → Sign-In and Security → App-Specific Passwords."
             case .gmail:
-                "Use an app-specific password: myaccount.google.com → Security → 2-Step Verification → App passwords."
+                "Use an app-specific password: "
+                    + "myaccount.google.com → Security → 2-Step Verification → App passwords."
             case .outlook:
-                "Use an app password if your account has two-step verification on. Microsoft has retired basic auth for many accounts, so this may not be available."
+                "Use an app password if your account has two-step verification on. "
+                    + "Microsoft has retired basic auth for many accounts, so this may not be available."
             case .yahoo:
                 "Generate an app password: account.yahoo.com → Account Security."
             case .fastmail:
-                "Use an app password: app.fastmail.com → Settings → Privacy & Security → App passwords. Your normal password may also work."
+                "Use an app password: app.fastmail.com → Settings → Privacy & Security → App passwords. "
+                    + "Your normal password may also work."
             case .other:
-                "Your provider's IMAP password. If two-step verification is on, this is usually an app-specific password."
+                "Your provider's IMAP password. If two-step verification is on, "
+                    + "this is usually an app-specific password."
             }
         }
 
@@ -242,7 +247,9 @@ public struct EmailCredentials: Sendable, CustomStringConvertible, CustomDebugSt
         "EmailCredentials(\(account.description), password: \(Self.redaction))"
     }
 
-    public var debugDescription: String { description }
+    public var debugDescription: String {
+        description
+    }
 
     /// `description` alone is not enough to keep this type out of a log.
     ///
@@ -255,7 +262,7 @@ public struct EmailCredentials: Sendable, CustomStringConvertible, CustomDebugSt
             self,
             children: [
                 "account": String(describing: account),
-                "password": Self.redaction,
+                "password": Self.redaction
             ],
             displayStyle: .struct
         )
@@ -285,7 +292,9 @@ public struct EmailAddress: Sendable, Hashable, CustomStringConvertible {
     }
 
     /// What a card should show: the display name when there is one, else the address.
-    public var description: String { name ?? address }
+    public var description: String {
+        name ?? address
+    }
 
     /// Whether this address is one of `candidates`. Both sides are normalised, so a
     /// caller never has to pre-lowercase anything.
@@ -312,8 +321,8 @@ public struct EmailAddress: Sendable, Hashable, CustomStringConvertible {
         let token = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !token.isEmpty else { return nil }
         if let open = token.lastIndex(of: "<"), let close = token.lastIndex(of: ">"), open < close {
-            let address = String(token[token.index(after: open)..<close])
-            let name = String(token[token.startIndex..<open])
+            let address = String(token[token.index(after: open) ..< close])
+            let name = String(token[token.startIndex ..< open])
             guard isPlausibleAddress(address) else { return nil }
             // A quoted display name keeps its internal comma but loses the quotes that
             // were only there to protect it from the list split.
@@ -355,10 +364,16 @@ public struct EmailAddress: Sendable, Hashable, CustomStringConvertible {
         var inQuotes = false
         var depth = 0
         for character in raw {
-            if character == "\"" { inQuotes.toggle() }
+            if character == "\"" {
+                inQuotes.toggle()
+            }
             if !inQuotes {
-                if character == "<" || character == "(" { depth += 1 }
-                if character == ">" || character == ")" { depth -= 1 }
+                if character == "<" || character == "(" {
+                    depth += 1
+                }
+                if character == ">" || character == ")" {
+                    depth -= 1
+                }
                 if character == separator, depth <= 0 {
                     pieces.append(current)
                     current = ""
@@ -402,7 +417,9 @@ public struct StaticEmailAccountProvider: EmailAccountProviding {
         self.account = account
     }
 
-    public func configuredAccount() throws -> EmailAccount? { account }
+    public func configuredAccount() throws -> EmailAccount? {
+        account
+    }
 }
 
 /// The non-secret half of the connection, persisted in `UserDefaults`.
@@ -436,6 +453,6 @@ public struct UserDefaultsEmailAccountProvider: EmailAccountProviding, @unchecke
             defaults.removeObject(forKey: key)
             return
         }
-        defaults.set(try JSONEncoder().encode(account), forKey: key)
+        try defaults.set(JSONEncoder().encode(account), forKey: key)
     }
 }

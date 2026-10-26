@@ -2,7 +2,7 @@ import Foundation
 import Observation
 import ThirdHandCore
 #if canImport(UIKit)
-import UIKit
+    import UIKit
 #endif
 
 /// The loop that makes the Mac mirror live.
@@ -47,7 +47,10 @@ public final class SyncCoordinator {
     /// write to the *local fallback* clears `lastError`, and reading the flag off
     /// that made the capsule claim "Mac · 2m ago" while the Mac saw nothing. That
     /// is the failure this property exists to make impossible.
-    public var isMirroring: Bool { mirrorUnavailable == nil }
+    public var isMirroring: Bool {
+        mirrorUnavailable == nil
+    }
+
     /// Why the mirror is unreachable, or nil when it is. Sticky for the lifetime
     /// of the coordinator: the container is resolved once at launch, so a
     /// successful publish never means the mirror came back.
@@ -82,11 +85,11 @@ public final class SyncCoordinator {
     private var pollTask: Task<Void, Never>?
 
     /// 500 ms, per the plan: a burst of Done/Done/Done writes one snapshot.
-    nonisolated public static let publishDebounce: Duration = .milliseconds(500)
+    public nonisolated static let publishDebounce: Duration = .milliseconds(500)
     /// The contract's poll cadence while the app is active.
-    nonisolated public static let pollInterval: Duration = .seconds(15)
+    public nonisolated static let pollInterval: Duration = .seconds(15)
     /// Declared in `project.yml` under `BGTaskSchedulerPermittedIdentifiers`.
-    nonisolated public static let backgroundTaskIdentifier = "com.steveafrost.thirdhand.refresh"
+    public nonisolated static let backgroundTaskIdentifier = "com.steveafrost.thirdhand.refresh"
 
     public init(
         store: ItemStore,
@@ -98,8 +101,8 @@ public final class SyncCoordinator {
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.store = store
-        self.writer = SnapshotWriter(container: container, deviceName: deviceName, now: now)
-        self.reader = CommandReader(
+        writer = SnapshotWriter(container: container, deviceName: deviceName, now: now)
+        reader = CommandReader(
             container: container,
             store: store,
             // Device-local, deliberately outside the transport directory: the
@@ -108,13 +111,17 @@ public final class SyncCoordinator {
             now: now
         )
         self.log = log
-        self.clock = now
+        clock = now
         self.deviceName = deviceName
         self.mirrorUnavailable = mirrorUnavailable
     }
 
     /// Built from the resolved container, logging the iCloud fallback once.
-    public static func live(store: ItemStore, paths: ThirdHandPaths = ThirdHandPaths(), now: @escaping @Sendable () -> Date = { Date() }) -> SyncCoordinator {
+    public static func live(
+        store: ItemStore,
+        paths: ThirdHandPaths = ThirdHandPaths(),
+        now: @escaping @Sendable () -> Date = { Date() }
+    ) -> SyncCoordinator {
         let resolved = SyncContainer.resolve(paths: paths)
         let coordinator = SyncCoordinator(
             store: store,
@@ -126,7 +133,8 @@ public final class SyncCoordinator {
             now: now
         )
         if let reason = resolved.unavailable {
-            coordinator.log.append("iCloud unavailable (\(reason.message)); publishing to the local fallback the Mac cannot see")
+            coordinator.log
+                .append("iCloud unavailable (\(reason.message)); publishing to the local fallback the Mac cannot see")
             coordinator.phase = .notConnected(reason.shortReason)
         } else {
             coordinator.log.append("sync started at \(resolved.container.rootURL.lastPathComponent)")
@@ -135,7 +143,9 @@ public final class SyncCoordinator {
     }
 
     /// The transport directory, for the debug sheet and the simulator check.
-    public var rootURL: URL { writer.container.rootURL }
+    public var rootURL: URL {
+        writer.container.rootURL
+    }
 
     // MARK: Publish
 
@@ -159,10 +169,10 @@ public final class SyncCoordinator {
         phase = .syncing
         do {
             let runs = await store.recentRuns()
-            let snapshot = try writer.write(
-                items: await store.allItems(),
+            let snapshot = try await writer.write(
+                items: store.allItems(),
                 runs: runs,
-                lastViewedAt: await store.lastViewed()
+                lastViewedAt: store.lastViewed()
             )
             lastPublishedAt = snapshot.generatedAt
             lastError = nil
@@ -172,7 +182,10 @@ public final class SyncCoordinator {
             // "Mac · 2m ago" over a file the Mac can never read.
             phase = mirrorUnavailable.map { .notConnected($0.shortReason) } ?? .idle
             await onPublished?()
-            log.append("published \(snapshot.items.count) items\(mirrorUnavailable == nil ? "" : " (local fallback; Mac cannot see this)")")
+            log
+                .append(
+                    "published \(snapshot.items.count) items\(mirrorUnavailable == nil ? "" : " (local fallback; Mac cannot see this)")"
+                )
         } catch {
             let message = (error as? ThirdHandSyncError)?.description ?? "\(error)"
             lastError = message
@@ -191,13 +204,20 @@ public final class SyncCoordinator {
     public func pollCommands() async -> Bool {
         // Nothing to drain without a container we can read; the local fallback
         // holds no commands and polling it would only log noise every 15 s.
-        if mirrorUnavailable != nil { return false }
+        if mirrorUnavailable != nil {
+            return false
+        }
         do {
             let report = try await reader.consume()
             lastReport = report
             guard !report.isEmpty else { return false }
-            log.append("drained \(report.applied.count) applied, \(report.dropped.count) dropped, \(report.corruptedLines) corrupt")
-            for summary in report.dropSummaries { log.append(summary) }
+            log
+                .append(
+                    "drained \(report.applied.count) applied, \(report.dropped.count) dropped, \(report.corruptedLines) corrupt"
+                )
+            for summary in report.dropSummaries {
+                log.append(summary)
+            }
             if report.needsCompaction {
                 log.append("commands.jsonl is past 5 MB; the mirror should compact it")
             }
@@ -264,7 +284,7 @@ public final class SyncCoordinator {
         guard pollTask == nil else { return }
         log.append("polling every \(Int(Self.pollInterval.components.seconds))s")
         #if DEBUG
-        print("[Pulse] polling started")
+            print("[Pulse] polling started")
         #endif
         pollTask = Task { [weak self] in
             while !Task.isCancelled {
@@ -274,7 +294,7 @@ public final class SyncCoordinator {
                     return
                 }
                 guard let self, !Task.isCancelled else { return }
-                await self.pollCommands()
+                await pollCommands()
             }
         }
     }
@@ -284,7 +304,9 @@ public final class SyncCoordinator {
         pollTask = nil
     }
 
-    public var isPolling: Bool { pollTask != nil }
+    public var isPolling: Bool {
+        pollTask != nil
+    }
 
     // MARK: Helpers
 
@@ -311,9 +333,9 @@ enum DeviceName {
     /// exactly what the contract's `deviceName` shows in the Mac mirror.
     static var current: String {
         #if canImport(UIKit)
-        return UIDevice.current.name
+            return UIDevice.current.name
         #else
-        return ProcessInfo.processInfo.hostName
+            return ProcessInfo.processInfo.hostName
         #endif
     }
 }

@@ -78,10 +78,14 @@ public struct RemindersSource: CaptureSource {
     /// The `reason` recorded in history. Kept provider-neutral and factual: it
     /// states the relationship between the due date and today, and nothing else.
     static func reason(due: Date, now: Date, calendar: Calendar = .current) -> String {
-        if due < now { return "overdue" }
+        if due < now {
+            return "overdue"
+        }
         let dueDay = calendar.startOfDay(for: due)
         let today = calendar.startOfDay(for: now)
-        if dueDay <= today { return "due today" }
+        if dueDay <= today {
+            return "due today"
+        }
         return "due later"
     }
 

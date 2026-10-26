@@ -34,7 +34,7 @@ public struct ICloudContainer: CloudContainer, @unchecked Sendable {
         fileManager: FileManager = .default,
         downloadTimeout: TimeInterval = 10
     ) {
-        self.rootURL = containerURL
+        rootURL = containerURL
         self.fileManager = fileManager
         self.downloadTimeout = downloadTimeout
         try? fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
@@ -87,7 +87,9 @@ public struct ICloudContainer: CloudContainer, @unchecked Sendable {
         ) { coordinated in
             result = Result { try Data(contentsOf: coordinated) }
         }
-        if let coordinatorError { throw coordinatorError }
+        if let coordinatorError {
+            throw coordinatorError
+        }
         return try result.get()
     }
 
@@ -102,7 +104,9 @@ public struct ICloudContainer: CloudContainer, @unchecked Sendable {
         ) { coordinated in
             date = (try? fileManager.attributesOfItem(atPath: coordinated.path))?[.modificationDate] as? Date
         }
-        if let coordinatorError { throw coordinatorError }
+        if let coordinatorError {
+            throw coordinatorError
+        }
         return date
     }
 
@@ -123,7 +127,9 @@ public struct ICloudContainer: CloudContainer, @unchecked Sendable {
         let url = try SyncPaths.resolve(relativePath, in: rootURL)
         try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         let tmp = url.deletingLastPathComponent()
-            .appendingPathComponent("\(url.lastPathComponent).\(ProcessInfo.processInfo.processIdentifier).\(UUID().uuidString).tmp")
+            .appendingPathComponent(
+                "\(url.lastPathComponent).\(ProcessInfo.processInfo.processIdentifier).\(UUID().uuidString).tmp"
+            )
 
         do {
             try data.write(to: tmp, options: .atomic)
@@ -149,7 +155,9 @@ public struct ICloudContainer: CloudContainer, @unchecked Sendable {
                 thrown = error
             }
         }
-        if let coordinatorError { try? fileManager.removeItem(at: tmp); throw coordinatorError }
+        if let coordinatorError {
+            try? fileManager.removeItem(at: tmp); throw coordinatorError
+        }
         if let thrown {
             try? fileManager.removeItem(at: tmp)
             throw ThirdHandSyncError.atomicWriteFailed("\(relativePath): \(thrown.localizedDescription)")
@@ -180,8 +188,12 @@ public struct ICloudContainer: CloudContainer, @unchecked Sendable {
                 thrown = error
             }
         }
-        if let coordinatorError { throw coordinatorError }
-        if let thrown { throw thrown }
+        if let coordinatorError {
+            throw coordinatorError
+        }
+        if let thrown {
+            throw thrown
+        }
     }
 
     // MARK: Eviction
@@ -198,7 +210,9 @@ public struct ICloudContainer: CloudContainer, @unchecked Sendable {
         let deadline = Date().addingTimeInterval(downloadTimeout)
         while Date() < deadline {
             let current = try? url.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
-            if current?.ubiquitousItemDownloadingStatus == .current { return }
+            if current?.ubiquitousItemDownloadingStatus == .current {
+                return
+            }
             Thread.sleep(forTimeInterval: 0.1)
         }
         throw ThirdHandSyncError.iCloudDownloadTimedOut(url.lastPathComponent)

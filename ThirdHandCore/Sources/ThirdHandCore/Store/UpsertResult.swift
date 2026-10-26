@@ -19,7 +19,9 @@ public struct UpsertResult: Sendable, Hashable {
         }
 
         /// `"calendar:event:x [title,due]"`, byte-identical to the Node summary.
-        public var description: String { "\(id) [\(fields.joined(separator: ","))]" }
+        public var description: String {
+            "\(id) [\(fields.joined(separator: ","))]"
+        }
     }
 
     /// An item the pass saw but did not touch because the user's state is sticky.
@@ -33,7 +35,9 @@ public struct UpsertResult: Sendable, Hashable {
         }
 
         /// `"calendar:event:x (done)"`, byte-identical to the Node summary.
-        public var description: String { "\(id) (\(status.rawValue))" }
+        public var description: String {
+            "\(id) (\(status.rawValue))"
+        }
     }
 
     public var created: [ThirdHandItem.ID] = []
@@ -48,7 +52,9 @@ public struct UpsertResult: Sendable, Hashable {
     public init() {}
 
     /// Every id whose state actually changed, in the order the pass saw them.
-    public var changedIDs: [ThirdHandItem.ID] { created + resolved + reopened + updated.map(\.id) }
+    public var changedIDs: [ThirdHandItem.ID] {
+        created + resolved + reopened + updated.map(\.id)
+    }
 
     /// Nothing changed at all -- the cheap "no republish needed" check.
     public var isEmpty: Bool {

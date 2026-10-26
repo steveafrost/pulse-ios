@@ -80,6 +80,7 @@ enum EmailFixture {
         account: EmailAccount? = EmailFixture.account,
         secret: String? = EmailFixture.dummyPassword,
         limit: Int = IMAPClient.defaultLimit
+        // swiftlint:disable:next large_tuple
     ) -> (source: EmailSource, transport: FakeIMAPTransport, secrets: InMemorySecretStore) {
         let transport = FakeIMAPTransport(messages: messages, behaviour: behaviour)
         let secrets = InMemorySecretStore(
@@ -109,6 +110,7 @@ enum EmailFixture {
         func secret(for account: String) throws -> String? {
             throw KeychainError.unexpectedStatus(-34018)
         }
+
         func setSecret(_ secret: String, for account: String) throws {}
         func deleteSecret(for account: String) throws {}
     }

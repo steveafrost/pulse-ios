@@ -51,7 +51,7 @@ struct EventKitSourceTests {
             organizer: "Ada Lovelace",
             attendees: [
                 Attendee(name: "Grace Hopper", identifier: "grace@example.com"),
-                Attendee(name: EventFixture.me, identifier: "steve@example.com"),
+                Attendee(name: EventFixture.me, identifier: "steve@example.com")
             ],
             status: .invited
         )
@@ -71,7 +71,7 @@ struct EventKitSourceTests {
 
     @Test("an invite in 3 days is rsvp/normal")
     func inviteLater() throws {
-        let event = EventFixture.event("E2", startsIn: 3 * 86_400, status: .invited)
+        let event = EventFixture.event("E2", startsIn: 3 * 86400, status: .invited)
         let item = try #require(EventKitSource.detect(events: [event], now: Fixture.now).first)
         #expect(item.kind == .rsvp)
         #expect(item.priority == .normal)
@@ -120,17 +120,34 @@ struct EventKitSourceTests {
         #expect(parts[0] == "calendar")
         #expect(parts[1] == "conflict")
         #expect(parts[2] == "20261023")
-        #expect(parts[3].count == 8 && parts[3].allSatisfy(\.isHexDigit))
+        // Outside the macro: `#expect` cannot forward a throwing `allSatisfy`.
+        let allHexDigits = parts[3].allSatisfy(\.isHexDigit)
+        #expect(parts[3].count == 8 && allHexDigits)
     }
 
     @Test("three mutually overlapping events give one conflict per pair and no duplicate ids")
     func threeWayConflict() {
-        let a = EventFixture.event("A", title: "A", startsIn: 3600, lasts: 3600,
-                                   attendees: [Attendee(name: "Ada", identifier: "ada@x")])
-        let b = EventFixture.event("B", title: "B", startsIn: 3600, lasts: 3600,
-                                   attendees: [Attendee(name: "Grace", identifier: "grace@x")])
-        let c = EventFixture.event("C", title: "C", startsIn: 3600, lasts: 3600,
-                                   attendees: [Attendee(name: "Linus", identifier: "linus@x")])
+        let a = EventFixture.event(
+            "A",
+            title: "A",
+            startsIn: 3600,
+            lasts: 3600,
+            attendees: [Attendee(name: "Ada", identifier: "ada@x")]
+        )
+        let b = EventFixture.event(
+            "B",
+            title: "B",
+            startsIn: 3600,
+            lasts: 3600,
+            attendees: [Attendee(name: "Grace", identifier: "grace@x")]
+        )
+        let c = EventFixture.event(
+            "C",
+            title: "C",
+            startsIn: 3600,
+            lasts: 3600,
+            attendees: [Attendee(name: "Linus", identifier: "linus@x")]
+        )
 
         let conflicts = EventKitSource.detect(events: [a, b, c], now: Fixture.now).filter { $0.kind == .conflict }
         #expect(conflicts.count == 3)
@@ -142,14 +159,14 @@ struct EventKitSourceTests {
         // 60-minute events offset by 56 minutes share 4 minutes.
         let four = [
             EventFixture.event("A", title: "A", startsIn: 3600, lasts: 3600),
-            EventFixture.event("B", title: "B", startsIn: 3600 + 3360, lasts: 3600),
+            EventFixture.event("B", title: "B", startsIn: 3600 + 3360, lasts: 3600)
         ]
         #expect(EventKitSource.detect(events: four, now: Fixture.now).filter { $0.kind == .conflict }.isEmpty)
 
         // Offset by 54 minutes -> 6 minutes of overlap.
         let six = [
             EventFixture.event("C", title: "C", startsIn: 3600, lasts: 3600),
-            EventFixture.event("D", title: "D", startsIn: 3600 + 3240, lasts: 3600),
+            EventFixture.event("D", title: "D", startsIn: 3600 + 3240, lasts: 3600)
         ]
         #expect(EventKitSource.detect(events: six, now: Fixture.now).filter { $0.kind == .conflict }.count == 1)
     }
@@ -158,23 +175,23 @@ struct EventKitSourceTests {
     func conflictRequiresAccepted() {
         let declined = [
             EventFixture.event("A", title: "A", startsIn: 3600, lasts: 3600),
-            EventFixture.event("B", title: "B", startsIn: 3600, lasts: 3600, status: .declined),
+            EventFixture.event("B", title: "B", startsIn: 3600, lasts: 3600, status: .declined)
         ]
         #expect(EventKitSource.detect(events: declined, now: Fixture.now).filter { $0.kind == .conflict }.isEmpty)
 
         let cancelled = [
             EventFixture.event("C", title: "C", startsIn: 3600, lasts: 3600),
-            EventFixture.event("D", title: "D", startsIn: 3600, lasts: 3600, isCancelled: true),
+            EventFixture.event("D", title: "D", startsIn: 3600, lasts: 3600, isCancelled: true)
         ]
         #expect(EventKitSource.detect(events: cancelled, now: Fixture.now).filter { $0.kind == .conflict }.isEmpty)
     }
 
     @Test("an overlap beyond tomorrow is not a conflict")
     func conflictOnlyTodayOrTomorrow() {
-        let far = 5 * 86_400.0
+        let far = 5 * 86400.0
         let events = [
             EventFixture.event("A", title: "A", startsIn: far, lasts: 3600),
-            EventFixture.event("B", title: "B", startsIn: far + 600, lasts: 3600),
+            EventFixture.event("B", title: "B", startsIn: far + 600, lasts: 3600)
         ]
         #expect(EventKitSource.detect(events: events, now: Fixture.now).filter { $0.kind == .conflict }.isEmpty)
     }
@@ -199,10 +216,10 @@ struct EventKitSourceTests {
 
     @Test("exactly 60 minutes away counts; one second more does not")
     func imminentBoundary() {
-        let exactly = EventFixture.event("E9", startsIn: 3_600)
+        let exactly = EventFixture.event("E9", startsIn: 3600)
         #expect(EventKitSource.detect(events: [exactly], now: Fixture.now).count == 1)
 
-        let over = EventFixture.event("E10", startsIn: 3_601)
+        let over = EventFixture.event("E10", startsIn: 3601)
         #expect(EventKitSource.detect(events: [over], now: Fixture.now).isEmpty)
     }
 
@@ -213,7 +230,7 @@ struct EventKitSourceTests {
         let event = EventFixture.event(
             "E11",
             title: "Reading group",
-            startsIn: 3 * 86_400,
+            startsIn: 3 * 86400,
             notes: "Notes: https://example.com/reading",
             attendees: []
         )
@@ -243,7 +260,7 @@ struct EventKitSourceTests {
         let events = [
             EventFixture.event("Z", title: "Z", startsIn: 600),
             EventFixture.event("A", title: "A", startsIn: 1200),
-            EventFixture.event("M", title: "M", startsIn: 1800),
+            EventFixture.event("M", title: "M", startsIn: 1800)
         ]
         let items = EventKitSource.detect(events: events, now: Fixture.now)
         #expect(items.map(\.id) == items.map(\.id).sorted())
@@ -256,7 +273,7 @@ struct EventKitSourceTests {
         // provider's items come through unchanged.
         let provider = FakeEventProvider(events: [
             EventFixture.event("B", title: "B", startsIn: 600, lasts: 60),
-            EventFixture.event("A", title: "A", startsIn: 900, lasts: 60),
+            EventFixture.event("A", title: "A", startsIn: 900, lasts: 60)
         ])
         let source = EventKitSource(provider: provider, currentUserName: EventFixture.me, calendar: Fixture.calendar)
         let items = try await source.detect(now: Fixture.now, window: CaptureWindow.next(days: 7, now: Fixture.now))

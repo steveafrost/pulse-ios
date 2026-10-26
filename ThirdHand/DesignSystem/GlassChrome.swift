@@ -43,7 +43,8 @@ public struct ThirdHandGlassStyle: ViewModifier {
                 .background(ThirdHandColor.surfaceCard, in: anyShape)
                 .overlay {
                     anyShape.stroke(
-                        ThirdHandColor.separator.opacity(ThirdHandContrast(colorSchemeContrast: contrast).separatorOpacity),
+                        ThirdHandColor.separator
+                            .opacity(ThirdHandContrast(colorSchemeContrast: contrast).separatorOpacity),
                         lineWidth: ThirdHandMetrics.hairline
                     )
                 }
@@ -72,20 +73,23 @@ public struct ThirdHandGlassStyle: ViewModifier {
     private var anyShape: AnyShape {
         switch shape {
         case .capsule: AnyShape(Capsule())
-        case .rounded(let radius): AnyShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+        case let .rounded(radius): AnyShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
         }
     }
 }
 
-extension View {
+public extension View {
     /// The one glass entry point. `variant` picks the interaction/tint behaviour,
     /// `shape` picks the clip.
-    public func pulseGlass(_ variant: ThirdHandGlassStyle.Variant = .regular, in shape: ThirdHandGlassStyle.Shape = .capsule) -> some View {
+    func pulseGlass(
+        _ variant: ThirdHandGlassStyle.Variant = .regular,
+        in shape: ThirdHandGlassStyle.Shape = .capsule
+    ) -> some View {
         modifier(ThirdHandGlassStyle(variant: variant, shape: shape))
     }
 
     /// A glass cluster (§6.3): one container, never nested.
-    public func thirdHandGlassContainer(spacing: CGFloat = 8) -> some View {
+    func thirdHandGlassContainer(spacing: CGFloat = 8) -> some View {
         GlassEffectContainer(spacing: spacing) { self }
     }
 }
@@ -113,8 +117,13 @@ public struct ThirdHandProminentButtonStyle: ButtonStyle {
     /// A disabled primary action drops its fill to the neutral pressed surface and
     /// its label to `textTertiary` — clearly present, clearly not available. It keeps
     /// its 44pt frame so the layout does not jump when the form becomes valid.
-    private var fill: Color { isEnabled ? tint : ThirdHandColor.surfaceCardPressed }
-    private var labelColor: Color { isEnabled ? ThirdHandColor.textOnAccent : ThirdHandColor.textTertiary }
+    private var fill: Color {
+        isEnabled ? tint : ThirdHandColor.surfaceCardPressed
+    }
+
+    private var labelColor: Color {
+        isEnabled ? ThirdHandColor.textOnAccent : ThirdHandColor.textTertiary
+    }
 
     public func makeBody(configuration: Configuration) -> some View {
         if !reduceTransparency {
@@ -142,20 +151,19 @@ public struct ThirdHandProminentButtonStyle: ButtonStyle {
     }
 }
 
-extension ButtonStyle where Self == ThirdHandProminentButtonStyle {
-    public static func pulseProminent(tint: Color = ThirdHandColor.horizonNow) -> ThirdHandProminentButtonStyle {
+public extension ButtonStyle where Self == ThirdHandProminentButtonStyle {
+    static func pulseProminent(tint: Color = ThirdHandColor.horizonNow) -> ThirdHandProminentButtonStyle {
         ThirdHandProminentButtonStyle(tint: tint)
     }
 }
 
 // MARK: - Sheet chrome
 
-extension View {
+public extension View {
     /// §6.1: sheet backing is material, never glass, and it is 28pt at the top
     /// per §4.
-    public func pulseSheetChrome() -> some View {
-        self
-            .presentationBackground(.regularMaterial)
+    func pulseSheetChrome() -> some View {
+        presentationBackground(.regularMaterial)
             .presentationCornerRadius(ThirdHandRadius.sheetTop)
             .presentationDragIndicator(.visible)
     }

@@ -124,7 +124,10 @@ struct SharedLinkSourceTests {
 
     @Test("a missing title falls back to the text's first line, then the path, never empty")
     func titleFallbacks() {
-        let fromText = SharedLinkSource.item(for: link("https://github.com/acme/api/pull/42", text: "Fix the flaky test\n\nMore detail"))
+        let fromText = SharedLinkSource.item(for: link(
+            "https://github.com/acme/api/pull/42",
+            text: "Fix the flaky test\n\nMore detail"
+        ))
         #expect(fromText?.title == "Fix the flaky test")
 
         let fromPath = SharedLinkSource.item(for: link("https://github.com/acme/api/pull/42"))
@@ -147,7 +150,7 @@ struct SharedLinkSourceTests {
             links: [
                 link(url),
                 link(url, title: "Add retry to the queue"),
-                link("https://github.com/acme/api/pull/43"),
+                link("https://github.com/acme/api/pull/43")
             ],
             now: Fixture.now
         )
@@ -161,7 +164,7 @@ struct SharedLinkSourceTests {
         let items = SharedLinkSource.detect(
             links: [
                 link("https://github.com/acme/api/pull/42"),
-                link("https://github.com/acme/api/pull/42?utm_source=slack&utm_campaign=x"),
+                link("https://github.com/acme/api/pull/42?utm_source=slack&utm_campaign=x")
             ],
             now: Fixture.now
         )
@@ -175,7 +178,7 @@ struct SharedLinkSourceTests {
             links: [
                 link("https://acme.slack.com/archives/C1/p1"),
                 link("https://github.com/acme/api/pull/1"),
-                link("https://mail.google.com/mail/u/0/#inbox/abc"),
+                link("https://mail.google.com/mail/u/0/#inbox/abc")
             ],
             now: Fixture.now
         )
@@ -196,8 +199,18 @@ struct SharedLinkSourceTests {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         let paths = ThirdHandPaths(root: root)
         let writer = SharedLinkWriter(paths: paths)
-        try writer.append(url: "https://github.com/acme/api/pull/42", text: "Review please", title: nil, now: Fixture.now)
-        try writer.append(url: "https://acme.slack.com/archives/C1/p1?utm_source=x", text: "Ship it?", title: nil, now: Fixture.now)
+        try writer.append(
+            url: "https://github.com/acme/api/pull/42",
+            text: "Review please",
+            title: nil,
+            now: Fixture.now
+        )
+        try writer.append(
+            url: "https://acme.slack.com/archives/C1/p1?utm_source=x",
+            text: "Ship it?",
+            title: nil,
+            now: Fixture.now
+        )
 
         // The last line is half-written, as a killed extension would leave it.
         let handle = try FileHandle(forWritingTo: paths.sharedLinksURL)
@@ -240,31 +253,31 @@ struct SharedLinkSourceTests {
 @Suite("Classifier.classifySharedLink")
 struct SharedLinkClassifierTests {
     @Test("github pull request -> review / normal")
-    func github() {
-        let (kind, priority) = Classifier.classifySharedLink(target: .githubPullRequest, text: nil)!
+    func github() throws {
+        let (kind, priority) = try #require(Classifier.classifySharedLink(target: .githubPullRequest, text: nil))
         #expect(kind == .review)
         #expect(priority == .normal)
     }
 
     @Test("mail -> reply / normal")
-    func mail() {
-        let (kind, priority) = Classifier.classifySharedLink(target: .mail, text: nil)!
+    func mail() throws {
+        let (kind, priority) = try #require(Classifier.classifySharedLink(target: .mail, text: nil))
         #expect(kind == .reply)
         #expect(priority == .normal)
     }
 
     @Test("slack: decision outranks a question mark")
-    func decisionFirst() {
-        let (kind, _) = Classifier.classifySharedLink(
+    func decisionFirst() throws {
+        let (kind, _) = try #require(Classifier.classifySharedLink(
             target: .slack,
             text: "Should we roll back? It is worse than before."
-        )!
+        ))
         #expect(kind == .decision)
     }
 
     @Test("slack with no text is a followup, never nothing")
-    func alwaysAnItem() {
-        let (kind, _) = Classifier.classifySharedLink(target: .slack, text: nil)!
+    func alwaysAnItem() throws {
+        let (kind, _) = try #require(Classifier.classifySharedLink(target: .slack, text: nil))
         #expect(kind == .followup)
         #expect(Classifier.classifySharedLink(target: .other, text: nil)?.0 == .fyi)
     }

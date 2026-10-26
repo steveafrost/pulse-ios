@@ -1,6 +1,7 @@
 import Foundation
 
 // MARK: - Wire date coding
+
 //
 // The contract stores dates as ISO 8601 strings, always UTC, e.g.
 // `2026-10-23T18:04:11.000Z`. The plugin's `isoOrNull`/`now()` always emit
@@ -34,8 +35,13 @@ public struct ThirdHandDateCoding: Sendable, Hashable {
         ThirdHandFormatters.shared.read(string)
     }
 
-    public static func == (lhs: ThirdHandDateCoding, rhs: ThirdHandDateCoding) -> Bool { true }
-    public func hash(into hasher: inout Hasher) { hasher.combine(0) }
+    public static func == (lhs: ThirdHandDateCoding, rhs: ThirdHandDateCoding) -> Bool {
+        true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(0)
+    }
 }
 
 /// The two `ISO8601DateFormatter` instances, created once and guarded by a lock.
@@ -87,7 +93,8 @@ public enum ThirdHandJSON {
             var container = encoder.singleValueContainer()
             try container.encode(dates.string(from: date))
         }
-        encoder.outputFormatting = prettyPrinted ? [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes] : [.sortedKeys]
+        encoder
+            .outputFormatting = prettyPrinted ? [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes] : [.sortedKeys]
         return encoder
     }
 
@@ -113,7 +120,7 @@ public enum ThirdHandJSON {
 
     /// Encodes with the shared configuration, optionally pretty-printed the way
     /// the snapshot file on disk is.
-    public static func encode<T: Encodable>(_ value: T, prettyPrinted: Bool = false) throws -> Data {
+    public static func encode(_ value: some Encodable, prettyPrinted: Bool = false) throws -> Data {
         try makeEncoder(prettyPrinted: prettyPrinted).encode(value)
     }
 

@@ -39,7 +39,7 @@ public struct MirrorCommand: Sendable, Hashable, Identifiable {
 
 // MARK: - Wire decoding
 
-extension MirrorCommand {
+public extension MirrorCommand {
     /// The on-wire form. Separate from `MirrorCommand` so the domain type can
     /// hold real `Date`s while the JSON stays the contract's ISO strings, and so a
     /// malformed line is a decoding failure on this struct rather than a
@@ -69,7 +69,7 @@ extension MirrorCommand {
 
     /// Parses one JSONL line. Throws when the line is not a valid command -- the
     /// caller records it as a corrupt line and moves on.
-    public static func decode(line: String) throws -> MirrorCommand {
+    static func decode(line: String) throws -> MirrorCommand {
         let data = Data(line.utf8)
         let wire = try ThirdHandJSON.decoder.decode(Wire.self, from: data)
         return MirrorCommand(
@@ -84,13 +84,13 @@ extension MirrorCommand {
 
     /// The ack record: `{"id":"..."}` and nothing else, so the plugin can diff ids
     /// without parsing the rest.
-    public var ackData: Data {
+    var ackData: Data {
         Data(#"{"id":"\#(Self.escape(id))"}"#.utf8)
     }
 
     /// Minimal JSON string escaping for the id we just decoded, so a hostile id
     /// cannot produce an invalid ack line.
-    static func escape(_ value: String) -> String {
+    internal static func escape(_ value: String) -> String {
         var out = ""
         out.reserveCapacity(value.count)
         for character in value.unicodeScalars {

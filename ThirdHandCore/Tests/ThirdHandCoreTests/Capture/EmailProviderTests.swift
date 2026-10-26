@@ -1,6 +1,5 @@
 import Foundation
 import Testing
-
 @testable import ThirdHandCore
 
 /// The provider presets exist so the user does not have to know an IMAP hostname.
@@ -9,14 +8,13 @@ import Testing
 /// have under that name.
 @Suite("Email provider presets")
 struct EmailProviderTests {
-
     /// Every host the presets can fill in, with the provider it belongs to.
     static let knownHosts: [(EmailAccount.Provider, String)] = [
         (.icloud, "imap.mail.me.com"),
         (.gmail, "imap.gmail.com"),
         (.outlook, "outlook.office365.com"),
         (.yahoo, "imap.mail.yahoo.com"),
-        (.fastmail, "imap.fastmail.com"),
+        (.fastmail, "imap.fastmail.com")
     ]
 
     @Test("every provider except .other has an IMAPS host on port 993")

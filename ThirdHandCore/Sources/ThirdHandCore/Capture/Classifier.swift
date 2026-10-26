@@ -17,7 +17,8 @@ import Foundation
 /// | Reminder overdue or due today, incomplete | `deadline` | high if overdue | |
 /// | Event/reminder with a link in notes and no action needed | `fyi` | low | collapsed under Nice to Know |
 /// | Imported mail awaiting a reply | `reply` | normal | share-sheet import path |
-/// | Link shared into Pulse | by host: `review` / `reply` / `decision` / `followup` / `fyi` | normal, `fyi` low | `classifySharedLink` (M7.1) |
+/// | Link shared into Pulse | by host: `review` / `reply` / `decision` / `followup` / `fyi` | normal, `fyi` low |
+/// `classifySharedLink` (M7.1) |
 public enum Classifier {
     /// "Meeting accepted=false, start within 7d".
     public static let inviteHorizon: TimeInterval = 7 * CaptureWindow.secondsPerDay
@@ -125,7 +126,7 @@ public enum Classifier {
     /// "decide". A question mark outranks nothing here -- see `classifySharedLink`.
     public static let decisionPhrases: [String] = [
         "can you approve", "need your approval", "sign off", "sign-off", "should we",
-        "do we want", "decide", "decision needed", "which option", "vote on",
+        "do we want", "decide", "decision needed", "which option", "vote on"
     ]
 
     /// Row 7: a link the user shared into Pulse, by host.

@@ -17,7 +17,7 @@ public enum KeychainError: Error, Sendable, Hashable, CustomStringConvertible {
 
     public var description: String {
         switch self {
-        case .unexpectedStatus(let status):
+        case let .unexpectedStatus(status):
             let message = SecCopyErrorMessageString(status, nil) as String? ?? "unknown error"
             return "keychain error \(status): \(message)"
         case .unreadableSecret:
@@ -53,7 +53,9 @@ public struct KeychainSecretStore: SecretStoring, @unchecked Sendable {
     /// `CFString`s and so are not `Sendable`, which `SWIFT_STRICT_CONCURRENCY:
     /// complete` rejects as a global. It is written out at the one place it is applied
     /// (`setSecret`) so there is nothing to drift.
-    static var accessibility: CFString { kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly }
+    static var accessibility: CFString {
+        kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+    }
 
     private let service: String
 
@@ -68,7 +70,7 @@ public struct KeychainSecretStore: SecretStoring, @unchecked Sendable {
         [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
+            kSecAttrAccount as String: account
         ]
     }
 
@@ -182,5 +184,14 @@ public final class InMemorySecretStore: SecretStoring, @unchecked Sendable {
     }
 
     /// How many secrets are held. For assertions that never print a value.
-    public var count: Int { lock.withLock { secrets.count } }
+    public var count: Int {
+        lock.withLock { secrets.count }
+    }
+
+    /// Whether nothing is held. Same reason as `count`, in the form assertions read
+    /// better in: `#expect(store.isEmpty)` says what was checked, `count == 0` makes the
+    /// reader compare numbers.
+    public var isEmpty: Bool {
+        lock.withLock { secrets.isEmpty }
+    }
 }

@@ -23,7 +23,7 @@ public actor PlacementCoordinator {
     public init(advisor: PlacementAdvising?, cache: PlacementCache = .appGroup()) {
         self.advisor = advisor
         self.cache = cache
-        self.decisions = cache.load()
+        decisions = cache.load()
     }
 
     /// The board right now: cached decisions applied over the rules.

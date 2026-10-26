@@ -107,7 +107,9 @@ public struct EventKitSource: CaptureSource {
         excluding currentUser: String? = nil
     ) -> [String] {
         var raw: [String] = []
-        if let organizer = event.organizerName { raw.append(organizer) }
+        if let organizer = event.organizerName {
+            raw.append(organizer)
+        }
         raw += event.attendees.map(\.name)
 
         let excluded = currentUser?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -116,7 +118,9 @@ public struct EventKitSource: CaptureSource {
             let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty else { return nil }
             let key = trimmed.lowercased()
-            if let excluded, !excluded.isEmpty, key == excluded { return nil }
+            if let excluded, !excluded.isEmpty, key == excluded {
+                return nil
+            }
             return seen.insert(key).inserted ? trimmed : nil
         }
     }
@@ -137,7 +141,11 @@ public struct EventKitSource: CaptureSource {
         now: Date,
         calendar: Calendar = .current
     ) -> [DetectedItem] {
-        let candidates = events.filter { $0.occupiesTime && startsTodayOrTomorrow($0.startDate, now: now, calendar: calendar) }
+        let candidates = events.filter { $0.occupiesTime && startsTodayOrTomorrow(
+            $0.startDate,
+            now: now,
+            calendar: calendar
+        ) }
         guard candidates.count > 1 else { return [] }
 
         var items: [String: DetectedItem] = [:]

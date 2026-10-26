@@ -6,7 +6,10 @@ import ThirdHandCore
 /// One source that could not be read. §8.1/§9.3: a denial is a paused source and
 /// never a full-screen blocker when another source still works.
 public struct SourceFailure: Sendable, Hashable, Identifiable {
-    public var id: String { identity.rawValue }
+    public var id: String {
+        identity.rawValue
+    }
+
     public var identity: SourceIdentity
     public var reason: Reason
 
@@ -32,7 +35,7 @@ public struct SourceFailure: Sendable, Hashable, Identifiable {
         switch reason {
         case .denied: "\(identity.title) access is off"
         case .unavailable: "\(identity.title) isn't available on this device"
-        case .failed(let detail): "Couldn't read \(identity.title): \(detail)"
+        case let .failed(detail): "Couldn't read \(identity.title): \(detail)"
         }
     }
 }
@@ -84,7 +87,9 @@ public protocol CaptureProviding: Sendable {
 public enum PermissionStatus: String, Sendable, CaseIterable, Hashable {
     case notDetermined, granted, denied, restricted
 
-    public var isUsable: Bool { self == .granted }
+    public var isUsable: Bool {
+        self == .granted
+    }
 }
 
 /// Per-source permission state, surfaced to the preamble and the banner.
@@ -97,8 +102,13 @@ public struct PermissionState: Sendable, Hashable {
         self.reminders = reminders
     }
 
-    public var allGranted: Bool { calendar.isUsable && reminders.isUsable }
-    public var anyDenied: Bool { calendar == .denied || reminders == .denied }
+    public var allGranted: Bool {
+        calendar.isUsable && reminders.isUsable
+    }
+
+    public var anyDenied: Bool {
+        calendar == .denied || reminders == .denied
+    }
 
     /// §9.2: "If only Reminders is available the primary becomes Connect Reminders."
     public var preferredSource: SourceIdentity {
@@ -135,7 +145,7 @@ public final class PermissionCoordinator {
     public init(state: PermissionState = PermissionState(), defaults: UserDefaults = .standard) {
         self.state = state
         self.defaults = defaults
-        self.hasAsked = defaults.bool(forKey: Self.askedKey)
+        hasAsked = defaults.bool(forKey: Self.askedKey)
     }
 
     /// §9.2 / §8.3: the preamble shows until the user has answered once.
@@ -144,7 +154,9 @@ public final class PermissionCoordinator {
     }
 
     public func load() async {
-        if let refresh { state = await refresh() }
+        if let refresh {
+            state = await refresh()
+        }
     }
 
     @discardableResult
@@ -200,7 +212,7 @@ public struct CaptureStatusModel: Sendable, Hashable {
 
     public var lastCapturedAt: Date? {
         switch phase {
-        case .idle(let date), .failed(let date): date
+        case let .idle(date), let .failed(date): date
         case .capturing: nil
         }
     }
@@ -212,12 +224,16 @@ public struct CaptureStatusModel: Sendable, Hashable {
     }
 
     public var isFailed: Bool {
-        if case .failed = phase { return true }
+        if case .failed = phase {
+            return true
+        }
         return false
     }
 
     public var isCapturing: Bool {
-        if case .capturing = phase { return true }
+        if case .capturing = phase {
+            return true
+        }
         return false
     }
 }

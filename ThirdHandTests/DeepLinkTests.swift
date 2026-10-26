@@ -2,6 +2,9 @@ import Foundation
 import Testing
 @testable import ThirdHand
 
+// Force-unwrapping is the fixture style here on purpose: these are fixed literals, and
+// a malformed one is a broken test that should stop the run at the line that built it.
+
 /// The widget deep links.
 ///
 /// These exist because the scheme check silently regressed during the Pulse → Third
@@ -11,10 +14,10 @@ import Testing
 /// test and neither side was wrong on its own.
 @Suite("Deep links")
 struct DeepLinkTests {
-
     private func url(_ string: String) -> URL {
         // Force-unwrap is deliberate: a malformed literal is a broken test, not a
         // condition the code under test should be asked to handle.
+        // swiftlint:disable:next force_unwrapping
         URL(string: string)!
     }
 

@@ -52,7 +52,7 @@ public struct SnoozeCommandWriter: @unchecked Sendable {
             "op": command.op.rawValue,
             "itemId": command.itemId,
             "until": command.until.map { ThirdHandJSON.dates.string(from: $0) } ?? NSNull(),
-            "reason": command.reason ?? NSNull(),
+            "reason": command.reason ?? NSNull()
         ]
         let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
         let line = data + Data("\n".utf8)

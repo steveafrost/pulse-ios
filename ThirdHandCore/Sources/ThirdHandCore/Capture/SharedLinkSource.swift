@@ -75,7 +75,7 @@ public struct SharedLinkSource: CaptureSource {
     /// One share to one item, or `nil` when the URL is not a link we can act on.
     public static func item(for link: SharedLinkSnapshot) -> DetectedItem? {
         guard let url = ItemIdentity.normalizedSharedURL(link.url) else { return nil }
-        let target = self.target(for: url)
+        let target = target(for: url)
         guard let (kind, priority) = Classifier.classifySharedLink(
             target: target,
             text: link.text
@@ -115,7 +115,9 @@ public struct SharedLinkSource: CaptureSource {
         if host == "github.com" || host.hasSuffix(".github.com") {
             // `/pull/12`, and the Enterprise/compare shape `/owner/repo/pull/12`.
             let segments = path.split(separator: "/").map(String.init)
-            if segments.contains("pull") || segments.contains("pulls") { return .githubPullRequest }
+            if segments.contains("pull") || segments.contains("pulls") {
+                return .githubPullRequest
+            }
             return .githubOther
         }
         if host == "mail.google.com" {
@@ -133,11 +135,15 @@ public struct SharedLinkSource: CaptureSource {
     /// text, then the last path component, then the host. Never empty: a card with
     /// no title is useless on the board.
     public static func title(for link: SharedLinkSnapshot, url: String, target: SharedLinkTarget) -> String {
-        if let title = clean(link.title) { return title }
+        if let title = clean(link.title) {
+            return title
+        }
         if let text = clean(link.text) {
             let firstLine = text.split(separator: "\n").first.map(String.init) ?? text
             let trimmed = firstLine.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmed.isEmpty { return String(trimmed.prefix(140)) }
+            if !trimmed.isEmpty {
+                return String(trimmed.prefix(140))
+            }
         }
         guard let components = URLComponents(string: url) else { return url }
         let last = components.path.split(separator: "/").last.map(String.init)
@@ -148,7 +154,7 @@ public struct SharedLinkSource: CaptureSource {
     /// The shared text, kept whole (a Slack thread quote is the useful part) and
     /// capped so one long message cannot bloat a snapshot.
     public static func detail(for link: SharedLinkSnapshot) -> String? {
-        clean(link.text).map { String($0.prefix(1_000)) }
+        clean(link.text).map { String($0.prefix(1000)) }
     }
 
     private static func clean(_ value: String?) -> String? {

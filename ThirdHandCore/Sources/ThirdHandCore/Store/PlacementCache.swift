@@ -35,7 +35,9 @@ public struct PlacementCache: Sendable {
     }
 
     /// An in-memory cache for tests and previews.
-    public static func inMemory() -> PlacementCache { PlacementCache(fileURL: nil) }
+    public static func inMemory() -> PlacementCache {
+        PlacementCache(fileURL: nil)
+    }
 
     /// Every stored decision, keyed by item id. Unreadable or malformed storage
     /// yields an empty cache.

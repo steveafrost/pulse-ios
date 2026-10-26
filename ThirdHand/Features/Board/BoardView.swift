@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// The board (#17): four sections, the filter bar, the capture capsule and the
 /// FAB. It owns the `BoardViewModel` and nothing else — every rule lives in the
@@ -66,9 +66,9 @@ public struct BoardView: View {
             }
             .safeAreaInset(edge: .top) {
                 VStack(spacing: ThirdHandSpacing.xs) {
-                    /// §8.1: the capture capsule sits with the filter bar, not over
-                    /// the rows — floating it on top of the last card covers the
-                    /// "show more" control.
+                    // §8.1: the capture capsule sits with the filter bar, not over
+                    // the rows — floating it on top of the last card covers the
+                    // "show more" control.
                     HStack {
                         CaptureStatusCapsule(status: model.captureStatus, now: model.nowDate) {
                             Task { await model.refresh() }
@@ -114,14 +114,18 @@ public struct BoardView: View {
                 }
             }
             .sheet(isPresented: $isSettingsPresented) {
-                if let mailbox { settingsSheet(mailbox) }
+                if let mailbox {
+                    settingsSheet(mailbox)
+                }
             }
             // The mailbox form opened straight from a board banner. It needs its own
             // sheet slot because the Settings sheet is not up in that path -- SwiftUI
             // drops a second `.sheet` presented from the same view while the first is
             // still on screen.
             .sheet(isPresented: $isMailboxPresented, onDismiss: checkMailboxIfChanged) {
-                if let mailbox { EmailAccountView(model: mailbox) }
+                if let mailbox {
+                    EmailAccountView(model: mailbox)
+                }
             }
             .navigationDestination(item: $route) { item in
                 ItemDetailView(model: model.detailModel(for: item), namespace: boardNamespace)
@@ -135,7 +139,9 @@ public struct BoardView: View {
                 routeDeepLinkIfNeeded()
             }
             .onChange(of: scenePhase) { _, phase in
-                if phase == .background { Task { await model.markSeen() } }
+                if phase == .background {
+                    Task { await model.markSeen() }
+                }
             }
             .accessibilityIdentifier("board.root")
         }
@@ -147,7 +153,6 @@ public struct BoardView: View {
     /// `onOpenEmail` used to be `{}` — the row was drawn, tapped, and did nothing.
     /// It now opens the mailbox screen, which is the only place a mailbox can be
     /// connected.
-    @ViewBuilder
     private func settingsSheet(_ mailbox: EmailAccountModel) -> some View {
         SettingsView(
             sources: settingsSources,
@@ -192,8 +197,22 @@ public struct BoardView: View {
         let calendar = status(model.permissionState.calendar)
         let reminders = status(model.permissionState.reminders)
         return [
-            .init(id: "calendar", source: .calendar, title: "Calendar", systemImage: "calendar", state: calendar.0, needsAttention: calendar.1),
-            .init(id: "reminders", source: .other, title: "Reminders", systemImage: "checklist", state: reminders.0, needsAttention: reminders.1),
+            .init(
+                id: "calendar",
+                source: .calendar,
+                title: "Calendar",
+                systemImage: "calendar",
+                state: calendar.0,
+                needsAttention: calendar.1
+            ),
+            .init(
+                id: "reminders",
+                source: .other,
+                title: "Reminders",
+                systemImage: "checklist",
+                state: reminders.0,
+                needsAttention: reminders.1
+            )
         ]
     }
 
@@ -227,7 +246,7 @@ public struct BoardView: View {
         switch model.state {
         case .loading:
             ScrollView { LoadingBoardView() }
-        case .failed(let message):
+        case let .failed(message):
             ScrollView {
                 ErrorBoardView(
                     failures: [SourceFailure(identity: .calendar, reason: .failed(message))],
@@ -235,7 +254,7 @@ public struct BoardView: View {
                     onOpenSettings: settingsDestination(for: .calendar)
                 )
             }
-        case .empty(let reason):
+        case let .empty(reason):
             ScrollView {
                 VStack(spacing: ThirdHandSpacing.s) {
                     ForEach(model.state.failures) { failure in
@@ -280,9 +299,9 @@ public struct BoardView: View {
                         isExpanded: model.isExpanded(horizon),
                         now: model.nowDate,
                         lastViewedAt: model.lastViewedAt,
-                        /// §7.5: the stagger runs across the board, so each section
-                        /// starts where the previous one left off. Derived from the
-                        /// same collapse limits the rows use.
+                        // §7.5: the stagger runs across the board, so each section
+                        // starts where the previous one left off. Derived from the
+                        // same collapse limits the rows use.
                         loadInOffset: loadInOffset(forSection: sectionIndex),
                         onToggle: {
                             withAnimation(motion.sectionExpansion) { model.toggleExpansion(horizon) }
@@ -294,8 +313,8 @@ public struct BoardView: View {
                 }
             }
             .padding(.top, ThirdHandSpacing.m)
-            /// Room for the capture capsule and the FAB, which are a floating
-            /// overlay rather than a safe-area inset, so the last row is reachable.
+            // Room for the capture capsule and the FAB, which are a floating
+            // overlay rather than a safe-area inset, so the last row is reachable.
             .padding(.bottom, bottomInset)
             .frame(maxWidth: ThirdHandSpacing.maxContentWidth)
             .frame(maxWidth: .infinity)
@@ -328,6 +347,7 @@ public struct BoardView: View {
     }
 
     // MARK: No floating action button
+
     //
     // The FAB used to sit bottom-right and complete whatever the topmost Now item
     // was. That is the wrong gesture for this product: Pulse is a board you work
@@ -355,7 +375,9 @@ public struct BoardView: View {
     private func connect(_ identity: SourceIdentity) async {
         let status = await permission.allow(identity)
         model.setPermissionState(permission.state)
-        if status.isUsable { await model.refresh() }
+        if status.isUsable {
+            await model.refresh()
+        }
     }
 
     private func handle(_ item: ThirdHandItem, _ action: BoardItemRow.LocalAction) {
@@ -366,9 +388,9 @@ public struct BoardView: View {
             route = item
         case .reopen:
             route = item
-        case .copy(let text):
+        case let .copy(text):
             Pasteboard.write(text)
-        case .open(let url):
+        case let .open(url):
             openURL(url)
         }
     }

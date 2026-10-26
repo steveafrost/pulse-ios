@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// §5: the item row is the product. One opaque card, a leading horizon rail, a
 /// kind glyph, title (+ detail), the trailing 44pt completion control and an
@@ -63,23 +63,23 @@ public struct BoardItemRow: View {
 
     private var card: some View {
         HStack(alignment: .top, spacing: ThirdHandSpacing.s) {
-            /// The leading rail lived here: a 3pt neutral spine (4pt `HorizonNow`
-            /// when urgent), absent for Nice to Know. It never encoded source --
-            /// that is the badge on the meta line -- it encoded *which horizon the
-            /// card is in*, which the section header already says and the card's
-            /// position makes obvious. Two cues for one fact, and the rail was the
-            /// weaker one, so it is gone. `isUrgent` survives in `railTint` because
-            /// the horizon is still worth knowing in code; it is just not drawn as
-            /// a stripe any more.
-            ///
-            /// The meta strip is a sibling of the title block, not a child of it:
-            /// inside the text column the horizontal scroller is clipped to that
-            /// column's width, so dates truncate to "Oct 2".
+            // The leading rail lived here: a 3pt neutral spine (4pt `HorizonNow`
+            // when urgent), absent for Nice to Know. It never encoded source --
+            // that is the badge on the meta line -- it encoded *which horizon the
+            // card is in*, which the section header already says and the card's
+            // position makes obvious. Two cues for one fact, and the rail was the
+            // weaker one, so it is gone. `isUrgent` survives in `railTint` because
+            // the horizon is still worth knowing in code; it is just not drawn as
+            // a stripe any more.
+            //
+            // The meta strip is a sibling of the title block, not a child of it:
+            // inside the text column the horizontal scroller is clipped to that
+            // column's width, so dates truncate to "Oct 2".
             VStack(alignment: .leading, spacing: ThirdHandSpacing.xs) {
                 if dynamicTypeSize >= .accessibility3 {
-                    /// §3 at AX3+: the completion control moves below the text.
-                    /// Beside a 3xl title it leaves about eight characters a line,
-                    /// which turns every row into a column.
+                    // §3 at AX3+: the completion control moves below the text.
+                    // Beside a 3xl title it leaves about eight characters a line,
+                    // which turns every row into a column.
                     VStack(alignment: .leading, spacing: ThirdHandSpacing.xs) {
                         HStack(alignment: .top, spacing: ThirdHandSpacing.s) {
                             kindGlyph
@@ -100,10 +100,10 @@ public struct BoardItemRow: View {
                     metaLine
                 }
             }
-            /// §5.1 rule 1 used to inset rail rows 3+12pt. With the rail gone every
-            /// row uses the same leading edge, so the card's own `m` padding is the
-            /// only left inset and columns of titles finally line up across
-            /// horizons.
+            // §5.1 rule 1 used to inset rail rows 3+12pt. With the rail gone every
+            // row uses the same leading edge, so the card's own `m` padding is the
+            // only left inset and columns of titles finally line up across
+            // horizons.
         }
         .padding(.horizontal, ThirdHandSpacing.m)
         .padding(.vertical, ThirdHandSpacing.s)
@@ -122,12 +122,15 @@ public struct BoardItemRow: View {
     }
 
     private var rowBackground: Color {
-        isMarking ? ThirdHandColor.statusDone.opacity(0.12) : (isPressed ? ThirdHandColor.surfaceCardPressed : ThirdHandColor.surfaceCard)
+        isMarking ? ThirdHandColor.statusDone
+            .opacity(0.12) : (isPressed ? ThirdHandColor.surfaceCardPressed : ThirdHandColor.surfaceCard)
     }
 
     /// §4: 72 title-only / 92 title+detail / 112 title+detail+two meta chips.
     private var minimumHeight: CGFloat {
-        if item.detail.isEmpty { return ThirdHandSpacing.rowTitleMinHeight }
+        if item.detail.isEmpty {
+            return ThirdHandSpacing.rowTitleMinHeight
+        }
         return ThirdHandSpacing.rowTitleDetailMinHeight
     }
 
@@ -170,13 +173,13 @@ public struct BoardItemRow: View {
             Text(item.title)
                 .font(ThirdHandTypography.itemTitle)
                 .foregroundStyle(ThirdHandColor.textPrimary)
-                /// §3: the 2-line limit is removed at AX1+.
+                // §3: the 2-line limit is removed at AX1+.
                 .lineLimit(dynamicTypeSize < .accessibility1 ? 2 : nil)
                 .truncationMode(.tail)
                 .fixedSize(horizontal: false, vertical: true)
                 .multilineTextAlignment(.leading)
 
-            /// §3: detail hides on the board at AX3+.
+            // §3: detail hides on the board at AX3+.
             if !item.detail.isEmpty, dynamicTypeSize < .accessibility3 {
                 Text(item.detail)
                     .font(ThirdHandTypography.itemDetail)
@@ -297,14 +300,22 @@ public struct BoardItemRow: View {
     }
 
     private var completionGlyph: String {
-        if isMarking || item.status == .done { return "checkmark.circle.fill" }
-        if item.status == .snoozed { return "moon.zzz.fill" }
-        if item.status == .waiting { return "arrow.uturn.backward.circle" }
+        if isMarking || item.status == .done {
+            return "checkmark.circle.fill"
+        }
+        if item.status == .snoozed {
+            return "moon.zzz.fill"
+        }
+        if item.status == .waiting {
+            return "arrow.uturn.backward.circle"
+        }
         return "checkmark.circle"
     }
 
     private var completionLabel: String {
-        if item.status == .done { return "Reopen this item" }
+        if item.status == .done {
+            return "Reopen this item"
+        }
         return "Mark done"
     }
 
@@ -355,14 +366,18 @@ public struct BoardItemRow: View {
 
     var accessibilityValue: String {
         var parts: [String] = []
-        if !item.detail.isEmpty { parts.append(item.detail) }
+        if !item.detail.isEmpty {
+            parts.append(item.detail)
+        }
         if item.isSnoozed, let until = item.snoozedUntil {
             parts.append("Snoozed \(ThirdHandDateFormat.snoozeUntil(until))")
         } else {
             parts.append(ThirdHandDateFormat.duePhrase(item.due, now: now))
         }
         let people = ThirdHandPeople.spokenPhrase(item.people)
-        if !people.isEmpty { parts.append(people) }
+        if !people.isEmpty {
+            parts.append(people)
+        }
         parts.append(ThirdHandDateFormat.relativePhrase(item.lastSeenAt, now: now))
         switch item.status {
         case .waiting: parts.append("waiting on someone else")
@@ -371,7 +386,9 @@ public struct BoardItemRow: View {
         case .dismissed: parts.append("dismissed")
         default: break
         }
-        if isNew { parts.append("new since you last looked") }
+        if isNew {
+            parts.append("new since you last looked")
+        }
         return parts.joined(separator: ". ")
     }
 

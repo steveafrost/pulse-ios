@@ -36,36 +36,38 @@ public enum ThirdHandStoreError: Error, Sendable, Hashable, CustomStringConverti
 
     public var description: String {
         switch self {
-        case .emptyTitle(let id):
+        case let .emptyTitle(id):
             "new item \(id) needs a title"
-        case .unknownItem(let id):
+        case let .unknownItem(id):
             "no item \(id)"
-        case .invalidIdentifier(let id):
+        case let .invalidIdentifier(id):
             #"item id must look like "<source>:<stable-id>", got \#(id)"#
-        case .snoozeRequiresUntil(let id):
+        case let .snoozeRequiresUntil(id):
             "snooze for \(id) needs an until time"
-        case .reopenRequiresReason(let id):
+        case let .reopenRequiresReason(id):
             "reopen for \(id) requires a reason"
-        case .statusRequiresUserAction(let id, let status):
+        case let .statusRequiresUserAction(id, status):
             "item \(id) cannot be set to \(status.rawValue) by a capture pass; only a user action can"
         case .tooManyQuickActions:
             "quickActions allows at most \(ThirdHandItem.maxQuickActions) actions"
-        case .invalidQuickAction(let why):
+        case let .invalidQuickAction(why):
             "quickAction \(why)"
-        case .invalidDate(let field, let value):
+        case let .invalidDate(field, value):
             "\(field) is not a valid date: \(value)"
         case .missingRun:
             "run name is required"
-        case .actionAlreadyRunning(let id, let threadId):
+        case let .actionAlreadyRunning(id, threadId):
             "item \(id) already has a running action (\(threadId))"
-        case .unknownVerb(let verb):
+        case let .unknownVerb(verb):
             "unknown action \(verb)"
-        case .unsupportedSchemaVersion(let found, let supported):
+        case let .unsupportedSchemaVersion(found, supported):
             "snapshot schemaVersion \(found) is newer than this build supports (\(supported)); update Pulse"
         }
     }
 
-    public var errorDescription: String? { description }
+    public var errorDescription: String? {
+        description
+    }
 }
 
 extension ThirdHandStoreError: LocalizedError {}

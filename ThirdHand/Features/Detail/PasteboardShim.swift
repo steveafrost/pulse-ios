@@ -1,5 +1,5 @@
 #if canImport(UIKit)
-import UIKit
+    import UIKit
 #endif
 
 /// Isolates the `UIPasteboard` call so `ItemDetailViewModel` stays testable and
@@ -7,7 +7,7 @@ import UIKit
 enum UIPasteboardShim {
     static func write(_ text: String) {
         #if canImport(UIKit)
-        UIPasteboard.general.string = text
+            UIPasteboard.general.string = text
         #endif
     }
 }

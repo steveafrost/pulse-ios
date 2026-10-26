@@ -1,6 +1,6 @@
+import Testing
 @testable import ThirdHand
 import ThirdHandCore
-import Testing
 
 @Suite("App scaffold")
 struct ThirdHandAppTests {

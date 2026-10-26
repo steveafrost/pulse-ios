@@ -22,17 +22,23 @@ public final class ItemDetailViewModel {
         self.clock = clock
     }
 
-    public var now: Date { clock() }
+    public var now: Date {
+        clock()
+    }
 
     public var canReopen: Bool {
         item.status == .done || item.status == .dismissed || item.status == .resolved
     }
 
-    public var history: [HistoryEntry] { Array(item.history.reversed()) }
+    public var history: [HistoryEntry] {
+        Array(item.history.reversed())
+    }
 
     /// §18: the detail's primary button follows the status.
     public var primaryTitle: String {
-        if canReopen { return "Reopen" }
+        if canReopen {
+            return "Reopen"
+        }
         return "Done"
     }
 
@@ -122,7 +128,7 @@ public final class ItemDetailViewModel {
 /// The only type that touches the pasteboard (#18 acceptance: `grep UIPasteboard`
 /// matches one file). The protocol keeps previews off the real clipboard.
 public enum Pasteboard {
-    nonisolated(unsafe) public static var writer: @MainActor (String) -> Void = { UIPasteboardShim.write($0) }
+    public nonisolated(unsafe) static var writer: @MainActor (String) -> Void = { UIPasteboardShim.write($0) }
 
     public static func write(_ text: String) {
         MainActor.assumeIsolated { writer(text) }

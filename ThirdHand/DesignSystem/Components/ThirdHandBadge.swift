@@ -36,9 +36,9 @@ public struct ThirdHandBadge: View {
         }
         .font(ThirdHandTypography.chip)
         .lineLimit(1)
-        /// §2 "never wraps" holds at standard sizes. At AX sizes `.fixedSize()`
-        /// makes the chip demand its full scaled width, which widens the whole
-        /// card past the screen; there the chip compresses instead.
+        // §2 "never wraps" holds at standard sizes. At AX sizes `.fixedSize()`
+        // makes the chip demand its full scaled width, which widens the whole
+        // card past the screen; there the chip compresses instead.
         .fixedSize(horizontal: dynamicTypeSize < .accessibility1, vertical: true)
         .foregroundStyle(tint)
         .padding(.horizontal, 6)

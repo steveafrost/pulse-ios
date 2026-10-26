@@ -81,7 +81,7 @@ public enum PlacementSignature {
             item.effectiveStatus(at: instant).rawValue,
             item.priority.rawValue,
             due,
-            item.title,
+            item.title
         ].joined(separator: "\u{1F}")
 
         let digest = SHA256.hash(data: Data(payload.utf8))
@@ -113,7 +113,7 @@ public enum PlacementPolicy {
     ) -> [Horizon: [ThirdHandItem]] {
         var buckets: [Horizon: [ThirdHandItem]] = [:]
         for item in items {
-            let horizon = self.horizon(
+            let horizon = horizon(
                 of: item,
                 decision: decisions[item.id],
                 at: instant,
@@ -238,9 +238,8 @@ extension PlacementCandidate {
     ) -> [PlacementCandidate] {
         let today = calendar.startOfDay(for: instant)
         let candidates = items.compactMap { item -> (ThirdHandItem, Horizon)? in
-            guard let horizon = HorizonDerivation.horizon(of: item, at: instant, calendar: calendar)
-            else { return nil }
-            guard horizon == .now || horizon == .next else { return nil }
+            guard let horizon = HorizonDerivation.horizon(of: item, at: instant, calendar: calendar),
+                  horizon == .now || horizon == .next else { return nil }
             return (item, horizon)
         }
         // Stable order so a cached decision maps to the same item next run.
@@ -281,7 +280,9 @@ extension PlacementCandidate {
         let days = calendar.dateComponents([.day], from: today, to: dueDay).day ?? 0
         switch horizon {
         case .now:
-            if days < 0 { return "overdue by \(-days) day\(days == -1 ? "" : "s")" }
+            if days < 0 {
+                return "overdue by \(-days) day\(days == -1 ? "" : "s")"
+            }
             return "due today"
         case .next:
             return "due in \(days) day\(days == 1 ? "" : "s")"

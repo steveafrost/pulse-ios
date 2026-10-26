@@ -1,7 +1,7 @@
 import Foundation
-import ThirdHandCore
 import Testing
 @testable import ThirdHand
+import ThirdHandCore
 
 /// The degraded-mirror path, end to end at the coordinator.
 ///
@@ -14,7 +14,6 @@ import Testing
 @Suite("SyncCoordinator degraded mirror")
 @MainActor
 struct SyncContainerTests {
-
     /// 2026-10-23T18:04:11.000Z, the instant from the data contract.
     private let now = Date(timeIntervalSince1970: 1_792_778_651)
 
@@ -41,7 +40,7 @@ struct SyncContainerTests {
     // MARK: Resolution
 
     @Test("a synchronous failure to resolve the container yields a reason, not nil")
-    func resolveReportsReason() {
+    func resolveReportsReason() throws {
         // On this machine (no signed-in ubiquity container in a test process) the
         // real resolve falls back. The assertion is the shape, not the cause: a
         // fallback container must always carry a reason, or the coordinator would
@@ -51,8 +50,8 @@ struct SyncContainerTests {
             // iCloud genuinely resolved. Nothing to assert about the fallback.
             return
         }
-        #expect(!resolved.unavailable!.shortReason.isEmpty)
-        #expect(!resolved.unavailable!.message.isEmpty)
+        #expect(try !#require(resolved.unavailable?.shortReason.isEmpty))
+        #expect(try !#require(resolved.unavailable?.message.isEmpty))
     }
 
     @Test("the no-container reason reads 'Not connected to iCloud', not a failure")

@@ -33,7 +33,7 @@ final class ShareViewController: UIViewController {
             stack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             stack.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             stack.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 24),
-            stack.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -24),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -24)
         ])
         spinner.startAnimating()
 
@@ -84,14 +84,26 @@ final class ShareViewController: UIViewController {
         for item in items {
             for provider in item.attachments ?? [] {
                 if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier),
-                   let value = try? await provider.loadItem(forTypeIdentifier: UTType.url.identifier) {
-                    if let url = value as? URL { directURLs.append(url.absoluteString) }
-                    if let url = value as? NSURL, let string = url.absoluteString { directURLs.append(string) }
+                   let value = try? await provider.loadItem(forTypeIdentifier: UTType.url.identifier)
+                {
+                    if let url = value as? URL {
+                        directURLs.append(url.absoluteString)
+                    }
+                    if let url = value as? NSURL, let string = url.absoluteString {
+                        directURLs.append(string)
+                    }
                 }
                 if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier),
-                   let value = try? await provider.loadItem(forTypeIdentifier: UTType.plainText.identifier) {
-                    if let text = value as? String { strings.append(text) }
-                    if let data = value as? Data, let text = String(data: data, encoding: .utf8) { strings.append(text) }
+                   let value = try? await provider.loadItem(forTypeIdentifier: UTType.plainText.identifier)
+                {
+                    if let text = value as? String {
+                        strings.append(text)
+                    }
+                    if let data = value as? Data,
+                       let text = String(data: data, encoding: .utf8)
+                    {
+                        strings.append(text)
+                    }
                 }
             }
         }
@@ -125,5 +137,7 @@ final class ShareViewController: UIViewController {
 }
 
 private extension String {
-    var nilIfEmpty: String? { isEmpty ? nil : self }
+    var nilIfEmpty: String? {
+        isEmpty ? nil : self
+    }
 }
