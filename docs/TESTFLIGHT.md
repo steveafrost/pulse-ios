@@ -1,4 +1,4 @@
-# TestFlight — Pulse Beta
+# TestFlight — Pulse
 
 The internal TestFlight setup for Pulse: the group, who is in it, how a build gets
 there, and what testers should do with it.
@@ -15,7 +15,7 @@ Status as of 24 October 2026:
 | Bundle IDs registered (`…thirdhand`, `…thirdhand.widgets`, `…thirdhand.share`) | done — `3SV5SH94CF`, `8UHD7M7N6D`, `9NL57L5636` |
 | App Groups + iCloud container entitlements in the archive | done — verified in the exported `.ipa` |
 | App Store Connect app record | done — **`6826457943`**, SKU `thirdhand-ios-001` |
-| Internal group `Pulse Beta` | done — `db830c96-822f-404b-a867-905261424a1b` |
+| Internal group `Third Hand Beta` | done — `db830c96-822f-404b-a867-905261424a1b` |
 | Internal tester | done — `hello@steveafrost.com` |
 | Build uploaded and processed | done — `0.1.0` (**2**), `processingState: VALID` |
 | Build attached to the beta group | **not verified** — see below |
@@ -27,7 +27,10 @@ Status as of 24 October 2026:
 `asc builds add-beta-group` exits 0 and prints nothing, twice, and `asc` exposes
 no read-back for a build's groups. The build is processed and the group has a
 tester, but whether the build is *in* the group has not been observed. Check the
-TestFlight tab: if the build is listed under "Pulse Beta", this row is done.
+TestFlight tab: if the build is listed under "Third Hand Beta", this row is done.
+The group predates the rename to Pulse and keeps its old name: renaming a beta
+group is cosmetic and would break the fastlane lane that matches the literal
+string. Testers see `Third Hand Beta` in TestFlight until it is renamed there.
 
 ### Version string
 
@@ -70,7 +73,7 @@ Ten apps are in the account and none is Pulse. So:
    | Platform | iOS |
    | Name | `Pulse — What Needs You` |
    | Primary Language | English (U.S.) |
-   | Bundle ID | `Pulse` (`com.steveafrost.thirdhand`) |
+   | Bundle ID | `com.steveafrost.thirdhand` |
    | SKU | `thirdhand-ios-001` |
    | User Access | Full Access |
 
@@ -109,7 +112,7 @@ THIRDHAND_ASC_APP_ID=<ID> fastlane ios groups
 Or by hand:
 
 ```sh
-asc testflight groups create --app-id <ID> --name "Pulse Beta" --internal
+asc testflight groups create --app-id <ID> --name "Third Hand Beta" --internal
 asc testflight groups list   --app-id <ID> --pretty
 ```
 
@@ -120,17 +123,17 @@ until one is uploaded:
 {
   "data": {
     "id": "<GROUP_ID>",
-    "name": "Pulse Beta",
+    "name": "Third Hand Beta",
     "isInternalGroup": true
   }
 }
 ```
 
-### Why "Pulse Beta" and not "Pulse Internal"
+### Why "Third Hand Beta" and not "Third Hand Internal"
 
-The name shows in the TestFlight app under the app icon. `Pulse Beta` reads as a
-product stage; `Pulse Internal` reads as a team. Either works technically; the
-fastlane lane looks for the literal string `Pulse Beta`, so if you rename it,
+The name shows in the TestFlight app under the app icon. `Third Hand Beta` reads as
+a product stage; `Third Hand Internal` reads as a team. Either works technically; the
+fastlane lane looks for the literal string `Third Hand Beta`, so if you rename it,
 rename it in `fastlane/Fastfile` too (`groups` lane).
 
 ---
@@ -261,7 +264,7 @@ and the widget, or from an unsigned extension. Both are prevented here by
 ## 7. Checklist to first tester
 
 - [ ] App record created, `THIRDHAND_ASC_APP_ID` recorded (§1)
-- [ ] Internal group `Pulse Beta` created (§2)
+- [ ] Internal group `Third Hand Beta` created (§2)
 - [ ] `fastlane ios beta` succeeded, upload accepted
 - [ ] Build reached `processingState: VALID`
 - [ ] Build attached to the group

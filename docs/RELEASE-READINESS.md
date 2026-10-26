@@ -213,13 +213,13 @@ nothing.
 Two required-reason API categories are used. The scan:
 
 ```console
-$ grep -rn "UserDefaults" --include=*.swift Pulse ThirdHandCore/Sources ThirdHandWidgets | grep -v Tests | wc -l
+$ grep -rn "UserDefaults" --include=*.swift ThirdHand ThirdHandCore/Sources ThirdHandWidgets | grep -v Tests | wc -l
 9
-$ grep -rn "attributesOfItem\|modificationDate" --include=*.swift Pulse ThirdHandCore/Sources ThirdHandWidgets
+$ grep -rn "attributesOfItem\|modificationDate" --include=*.swift ThirdHand ThirdHandCore/Sources ThirdHandWidgets
 ThirdHandCore/.../FileCloudContainer.swift:101,105,107,108
 ThirdHandCore/.../CloudContainer.swift:39,66
 ThirdHandCore/.../ICloudContainer.swift:78,87,95
-$ grep -rn "systemUptime\|mach_absolute_time\|statfs\|volumeAvailableCapacity" --include=*.swift Pulse ThirdHandCore/Sources ThirdHandWidgets
+$ grep -rn "systemUptime\|mach_absolute_time\|statfs\|volumeAvailableCapacity" --include=*.swift ThirdHand ThirdHandCore/Sources ThirdHandWidgets
 (no matches)
 ```
 
@@ -446,7 +446,7 @@ public create-app endpoint, so this is a click-path:
 | Platform | iOS |
 | Name | `Pulse — What Needs You` |
 | Primary Language | English (U.S.) |
-| Bundle ID | `Pulse` (`com.steveafrost.thirdhand`) |
+| Bundle ID | `com.steveafrost.thirdhand` |
 | SKU | `thirdhand-ios-001` |
 | User Access | Full Access |
 

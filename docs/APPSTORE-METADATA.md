@@ -25,15 +25,25 @@ portal click-paths) and [`PRIVACY.md`](PRIVACY.md) (the policy behind §5).
 | SKU | `thirdhand-ios-001` | — | — |
 | Subtitle | `Your day, ordered by urgency` | 30 | 28 |
 
-**The plain name `Pulse` is taken.** An exact-title app by `ua.com.pulse.app`
-sits in the US, GB, CA, AU, DE, FR and JP storefronts, and other developers hold
-near-identical titles. `Pulse — What Needs You` was verified free in US and GB
-(see `APPSTORE-SETUP.md` §3). The Home Screen label stays `Pulse`; that is
-independent of App Store name uniqueness, and `CFBundleDisplayName` already says
-so.
+**The plain name `Pulse` is taken.** A US App Store search for `pulse` returns
+13 apps carrying the word, from `Brightspace Pulse` and `ADT Pulse` down to
+several heart-rate monitors, and Apple requires App Store names to be unique
+within a storefront. A bare `Pulse` would therefore be rejected at submission.
+
+The qualifier is what makes it registrable. `Pulse — What Needs You` was accepted
+by App Store Connect on 2026-10-25 (app info localisation `1aeaa512`, recorded
+under app record `6826457943`), which is evidence the name is free but not proof:
+Apple enforces uniqueness again at submission, so a conflict would surface there
+rather than at the edit. The Home Screen label stays `Pulse`; that is independent
+of App Store name uniqueness, and `CFBundleDisplayName` already says so.
 
 `asc apps list` was re-run while writing this doc: no existing app record has
 bundle id `com.steveafrost.thirdhand`, so nothing is colliding with the new record.
+
+Note that the app was called `Third Hand` before commit `e717175`, and earlier
+revisions of this document discussed that name. Only the display name changed:
+the bundle id, SKU and every other identifier still say `thirdhand`, because they
+are permanent once the record exists.
 
 ---
 

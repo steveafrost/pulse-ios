@@ -6,7 +6,7 @@ uploading, and where things land.
 ```
 main ──► fastlane beta ──► xcodegen ──► xcodebuild archive ──► export .ipa ──► asc builds upload ──► TestFlight
               │                                                                                        │
-              └── Scripts/bump-build.sh writes project.yml                                     Pulse Beta
+              └── Scripts/bump-build.sh writes project.yml                                     Third Hand Beta
 ```
 
 ---
@@ -223,7 +223,8 @@ The record must be created once in the portal:
 2. Platform **iOS**
 3. Name **`Pulse — What Needs You`** (plain `Pulse` is taken — `APPSTORE-SETUP.md` §3)
 4. Primary language **English (U.S.)**
-5. Bundle ID **`Pulse` (`com.steveafrost.thirdhand`)**
+5. Bundle ID **`com.steveafrost.thirdhand`** (the portal calls the App ID
+   `XC com steveafrost thirdhand`; the bundle id is permanent)
 6. SKU **`thirdhand-ios-001`**
 7. Full Access → **Create**
 
@@ -245,7 +246,7 @@ asc iris apps create --name "Pulse — What Needs You" --bundle-id com.steveafro
 asc apps list --pretty
 
 # 2. create the internal group (idempotent in the fastlane lane)
-asc testflight groups create --app-id <APP_ID> --name "Pulse Beta" --internal
+asc testflight groups create --app-id <APP_ID> --name "Third Hand Beta" --internal
 
 # 3. list it
 asc testflight groups list --app-id <APP_ID> --pretty
@@ -264,12 +265,12 @@ Or all at once:
 THIRDHAND_ASC_APP_ID=<APP_ID> THIRDHAND_BETA_TESTERS=you@example.com fastlane ios groups
 ```
 
-That lane is idempotent: it looks for a group named `Pulse Beta` first and
+That lane is idempotent: it looks for a group named `Third Hand Beta` first and
 only creates it when absent. No tester address is ever invented — with
 `THIRDHAND_BETA_TESTERS` unset it prints the click-path and adds nobody.
 
 **Internal vs external:** internal testers are App Store Connect team members and
-need no App Review or beta review. External testers do. Pulse Beta is internal, so
+need no App Review or beta review. External testers do. Third Hand Beta is internal, so
 the first build is testable within minutes of processing.
 
 ### After the upload
@@ -305,4 +306,4 @@ TestFlight builds cannot be deleted, only expired. To stop testers seeing one:
 
 If a build reached the App Store, a version cannot be pulled, only superseded:
 submit a new version with the fix and request an expedited review if it is
-urgent. Who to tell: the internal tester list in `Pulse Beta`.
+urgent. Who to tell: the internal tester list in `Third Hand Beta`.

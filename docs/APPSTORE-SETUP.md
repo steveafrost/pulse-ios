@@ -61,16 +61,19 @@ Both bundle ids need **App Groups**; the main app additionally needs **iCloud**.
 ### 2a. Create the App Group — do this first
 
 1. <https://developer.apple.com/account/resources/identifiers/list/appGroup> → **Identifiers → App Groups** → **+**
-2. Register an App Group: Description `Pulse`, Identifier `group.com.steveafrost.thirdhand` → **Continue** → **Register**
+2. Register an App Group: Description `Third Hand` (already registered under that
+   description; a Description is free text and renaming it changes nothing, so
+   leave it), Identifier `group.com.steveafrost.thirdhand` → **Continue** → **Register**
 
 ### 2b. Create the iCloud container
 
 1. <https://developer.apple.com/account/resources/identifiers/list/cloudContainer> → **Identifiers → iCloud Containers** → **+**
-2. Description `Pulse`, Identifier `iCloud.com.steveafrost.thirdhand` → **Continue** → **Register**
+2. Description `Third Hand` (already registered; free text, changes nothing), Identifier
+   `iCloud.com.steveafrost.thirdhand` → **Continue** → **Register**
 
 ### 2c. Main app — `com.steveafrost.thirdhand`
 
-1. <https://developer.apple.com/account/resources/identifiers/list> → **Identifiers → App IDs** → click `Pulse` (`com.steveafrost.thirdhand`)
+1. <https://developer.apple.com/account/resources/identifiers/list> → **Identifiers → App IDs** → click `XC com steveafrost thirdhand` (`com.steveafrost.thirdhand`)
 2. Under **Capabilities**, tick:
    - **App Groups** → **Configure** → tick `group.com.steveafrost.thirdhand` → **Continue**
    - **iCloud** → **Configure** → *Enable iCloud*; tick **CloudKit**? **NO**; tick **iCloud Documents** → **Continue**.
@@ -81,7 +84,7 @@ Both bundle ids need **App Groups**; the main app additionally needs **iCloud**.
 
 ### 2d. Widget — `com.steveafrost.thirdhand.widgets`
 
-1. Same **App IDs** list → click `Pulse Widgets` (`com.steveafrost.thirdhand.widgets`)
+1. Same **App IDs** list → click `XC com steveafrost thirdhand widgets` (`com.steveafrost.thirdhand.widgets`)
 2. Tick **App Groups** → **Configure** → tick `group.com.steveafrost.thirdhand` → **Continue**
 3. **Save**. No iCloud capability on the widget. Do **not** tick Push or In-App Purchase —
    neither is needed for the MVP.
@@ -104,13 +107,20 @@ com.apple.security.application-groups: [group.com.steveafrost.thirdhand]
 
 ### The name "Pulse" is TAKEN
 
-An exact-title match exists on the App Store: **`Pulse`** by `ua.com.pulse.app`
-(present in the US, GB, CA, AU, DE, FR and JP storefronts, plus separate "Pulse"
-titles from other developers). The name `Pulse` cannot be used as the App Store name.
+A US App Store search for `pulse` returns 13 apps carrying the word —
+`Brightspace Pulse`, `ADT Pulse`, `NCR Voyix Pulse`, several heart-rate monitors —
+and Apple requires App Store names to be unique per storefront. A bare `Pulse`
+would be rejected at submission.
 
-Ranked alternatives (all verified **free** — no exact-title match in US or GB):
+Earlier revisions of this section claimed an exact-title match by
+`ua.com.pulse.app` in seven storefronts. That evidence was gathered for the name
+`Third Hand`, and it does not transfer: `Pulse` is contested by a different and
+larger set of apps. The claim is replaced rather than renamed.
 
-1. **`Pulse — What Needs You`** — recommended. Keeps the brand, states the value prop,
+Ranked alternatives (the first is now registered; the others are unverified):
+
+1. **`Pulse — What Needs You`** — recommended, and **registered** on app info
+   `cb2e0c6b` / localisation `1aeaa512` on 2026-10-25. Keeps the brand, states the value prop,
    and is the closest to the product line "what needs me right now?".
 2. **`Pulse Board`** — short, matches the Now/Next/Later/Nice-to-Know board metaphor.
 3. **`Pulse Daily`** — short, works if the product leans into the daily-review rhythm.
@@ -124,7 +134,7 @@ Use the full name in the App Store listing; the Home Screen display name can sta
 2. Platform **iOS**
 3. Name: **`Pulse — What Needs You`** (or #2/#3 if that is rejected)
 4. Primary Language: **English (U.S.)**
-5. Bundle ID: **`Pulse` (`com.steveafrost.thirdhand`)** — appears in the picker now that §1 is done
+5. Bundle ID: **`XC com steveafrost thirdhand` (`com.steveafrost.thirdhand`)** — appears in the picker now that §1 is done
 6. SKU: **`thirdhand-ios-001`**
 7. User Access: Full Access → **Create**
 
@@ -297,7 +307,7 @@ answer is Data Not Collected.
       (not CloudKit), container `iCloud.com.steveafrost.thirdhand`
       — Identifiers → App IDs → Pulse → Capabilities → iCloud → Configure
 - [ ] Enable **App Groups** on `com.steveafrost.thirdhand.widgets` (tick the group)
-      — Identifiers → App IDs → Pulse Widgets → Capabilities → App Groups → Configure
+      — Identifiers → App IDs → XC com steveafrost thirdhand widgets → Capabilities → App Groups → Configure
 - [ ] Create the app record (name `Pulse — What Needs You`, SKU `thirdhand-ios-001`)
       — App Store Connect → My Apps → **+** → New App
 - [ ] Set primary category `PRODUCTIVITY`, secondary `BUSINESS`

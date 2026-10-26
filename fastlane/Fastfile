@@ -167,11 +167,11 @@ platform :ios do
     UI.user_error!('No App Store Connect credentials - see the `fastlane beta` error for the login command.') unless have_credentials?
 
     groups = JSON.parse(`asc testflight groups list --app-id #{app_id}`)['data'] || []
-    group = groups.find { |g| g['name'] == 'Pulse Beta' }
+    group = groups.find { |g| g['name'] == 'Third Hand Beta' }
 
     group ||= begin
-      UI.message('creating internal group "Pulse Beta"')
-      JSON.parse(`asc testflight groups create --app-id #{app_id} --name 'Pulse Beta' --internal`)['data']
+      UI.message('creating internal group "Third Hand Beta"')
+      JSON.parse(`asc testflight groups create --app-id #{app_id} --name 'Third Hand Beta' --internal`)['data']
     end
 
     UI.success("beta group: #{group['id']} (#{group['name']})")
@@ -185,7 +185,7 @@ platform :ios do
 
     if ENV.fetch('THIRDHAND_BETA_TESTERS', '').strip.empty?
       UI.message('THIRDHAND_BETA_TESTERS unset - add internal testers in App Store Connect ' \
-                 '(TestFlight -> Internal Testing -> Pulse Beta -> +).')
+                 '(TestFlight -> Internal Testing -> Third Hand Beta -> +).')
     end
     group
   end
