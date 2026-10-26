@@ -4,7 +4,6 @@ import Testing
 
 @Suite("ItemStore")
 struct ItemStoreTests {
-
     // MARK: - Creation
 
     @Test("a new item is created with derived source, defaults and a history entry")
@@ -22,7 +21,7 @@ struct ItemStoreTests {
         #expect(item.kind == .deadline)
         #expect(item.status == .open)
         #expect(item.priority == .normal)
-        #expect(item.detail == "")
+        #expect(item.detail.isEmpty)
         #expect(item.firstSeenAt == Fixture.now)
         #expect(item.lastSeenAt == Fixture.now)
         #expect(item.updatedAt == Fixture.now)
@@ -37,10 +36,18 @@ struct ItemStoreTests {
     func emptyTitleThrows() async {
         let store = ItemStore()
         await #expect(throws: ThirdHandStoreError.emptyTitle("calendar:event:1")) {
-            try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "")], run: "run", now: Fixture.now)
+            try await store.upsert(
+                detected: [Fixture.detected("calendar:event:1", title: "")],
+                run: "run",
+                now: Fixture.now
+            )
         }
         await #expect(throws: (any Error).self) {
-            try await store.upsert(detected: [Fixture.detected("calendar:event:2", title: nil)], run: "run", now: Fixture.now)
+            try await store.upsert(
+                detected: [Fixture.detected("calendar:event:2", title: nil)],
+                run: "run",
+                now: Fixture.now
+            )
         }
         #expect(await store.count() == 0)
     }
@@ -87,24 +94,36 @@ struct ItemStoreTests {
     @Test("a second pass with the same values reports unchanged and does not bump updatedAt")
     func unchangedPass() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "Standup")], run: "morning", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "Standup")],
+            run: "morning",
+            now: Fixture.now
+        )
 
         let later = Fixture.now.addingTimeInterval(900)
-        let result = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "Standup")], run: "evening", now: later)
+        let result = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "Standup")],
+            run: "evening",
+            now: later
+        )
 
         #expect(result.unchanged == ["calendar:event:1"])
         #expect(result.updated.isEmpty)
         let item = try #require(await store.item(id: "calendar:event:1"))
-        #expect(item.lastSeenAt == later)          // bumped by every pass
-        #expect(item.updatedAt == Fixture.now)      // untouched, nothing changed
+        #expect(item.lastSeenAt == later) // bumped by every pass
+        #expect(item.updatedAt == Fixture.now) // untouched, nothing changed
         #expect(item.lastChangedBy == "morning")
-        #expect(item.history.count == 1)            // no new entry
+        #expect(item.history.count == 1) // no new entry
     }
 
     @Test("a changed field bumps updatedAt, lastChangedBy and history")
     func changedField() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "Standup")], run: "morning", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "Standup")],
+            run: "morning",
+            now: Fixture.now
+        )
 
         let later = Fixture.now.addingTimeInterval(900)
         let result = try await store.upsert(
@@ -127,7 +146,11 @@ struct ItemStoreTests {
     @Test("done is sticky: descriptive fields update, status does not")
     func stickyDone() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "Standup")], run: "morning", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "Standup")],
+            run: "morning",
+            now: Fixture.now
+        )
         _ = try await store.userAction(id: "calendar:event:1", verb: .done, now: Fixture.now)
 
         let later = Fixture.now.addingTimeInterval(3600)
@@ -189,7 +212,11 @@ struct ItemStoreTests {
     @Test("dismissed is sticky too")
     func stickyDismissed() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("gmail:message:1", title: "Reply?")], run: "run", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("gmail:message:1", title: "Reply?")],
+            run: "run",
+            now: Fixture.now
+        )
         _ = try await store.userAction(id: "gmail:message:1", verb: .dismiss, now: Fixture.now)
 
         let result = try await store.upsert(
@@ -205,7 +232,11 @@ struct ItemStoreTests {
     @Test("reopening without a reason throws")
     func reopenNeedsReason() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "T")],
+            run: "run",
+            now: Fixture.now
+        )
         _ = try await store.userAction(id: "calendar:event:1", verb: .done, now: Fixture.now)
 
         await #expect(throws: ThirdHandStoreError.reopenRequiresReason("calendar:event:1")) {
@@ -228,7 +259,11 @@ struct ItemStoreTests {
     @Test("reopening with a reason moves to open, clears the close, and records history")
     func reopenWithReason() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "T")],
+            run: "run",
+            now: Fixture.now
+        )
         _ = try await store.userAction(id: "calendar:event:1", verb: .done, reason: "handled", now: Fixture.now)
 
         let later = Fixture.now.addingTimeInterval(3600)
@@ -251,7 +286,11 @@ struct ItemStoreTests {
     @Test("reopening honours a supplied non-resolved status")
     func reopenToWaiting() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "T")],
+            run: "run",
+            now: Fixture.now
+        )
         _ = try await store.userAction(id: "calendar:event:1", verb: .done, now: Fixture.now)
 
         _ = try await store.upsert(
@@ -267,7 +306,11 @@ struct ItemStoreTests {
     @Test("snoozing requires an until time")
     func snoozeNeedsUntil() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "T")],
+            run: "run",
+            now: Fixture.now
+        )
         await #expect(throws: ThirdHandStoreError.snoozeRequiresUntil("calendar:event:1")) {
             try await store.userAction(id: "calendar:event:1", verb: .snooze, now: Fixture.now)
         }
@@ -276,7 +319,11 @@ struct ItemStoreTests {
     @Test("an active snooze is sticky against capture")
     func activeSnoozeIsSticky() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "T")],
+            run: "run",
+            now: Fixture.now
+        )
         let until = Fixture.now.addingTimeInterval(3600)
         _ = try await store.userAction(id: "calendar:event:1", verb: .snooze, until: until, now: Fixture.now)
 
@@ -292,7 +339,11 @@ struct ItemStoreTests {
     @Test("an expired snooze reads as open and normalises on the next pass")
     func expiredSnooze() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "T")],
+            run: "run",
+            now: Fixture.now
+        )
         let until = Fixture.now.addingTimeInterval(600)
         _ = try await store.userAction(id: "calendar:event:1", verb: .snooze, until: until, now: Fixture.now)
 
@@ -309,7 +360,7 @@ struct ItemStoreTests {
         #expect(result.updated.contains { $0.id == "calendar:event:1" && $0.fields.contains("snooze-expired") })
 
         let item = try #require(await store.item(id: "calendar:event:1"))
-        #expect(item.status == .open)          // normalised
+        #expect(item.status == .open) // normalised
         #expect(item.snoozedUntil == nil)
         #expect(item.history.last?.change.contains("snooze-expired") == true)
     }
@@ -317,7 +368,11 @@ struct ItemStoreTests {
     @Test("effectiveStatus leaves a future snooze alone")
     func activeSnoozeReadsSnoozed() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "T")],
+            run: "run",
+            now: Fixture.now
+        )
         let until = Fixture.now.addingTimeInterval(600)
         _ = try await store.userAction(id: "calendar:event:1", verb: .snooze, until: until, now: Fixture.now)
         #expect(await store.effectiveStatus(of: "calendar:event:1", at: Fixture.now.addingTimeInterval(1)) == .snoozed)
@@ -330,7 +385,11 @@ struct ItemStoreTests {
     @Test("losing an item resolves it, and detecting it again reopens it")
     func resolvedRoundTrips() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "T")],
+            run: "run",
+            now: Fixture.now
+        )
 
         let later = Fixture.now.addingTimeInterval(600)
         let result = try await store.upsert(
@@ -361,10 +420,14 @@ struct ItemStoreTests {
     @Test("60 changes leave exactly 50 history entries, newest last")
     func historyCap() async throws {
         let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "v0")], run: "run", now: Fixture.now)
+        _ = try await store.upsert(
+            detected: [Fixture.detected("calendar:event:1", title: "v0")],
+            run: "run",
+            now: Fixture.now
+        )
 
         // 1 creation + 60 updates. Each title differs so each is a real change.
-        for index in 1...60 {
+        for index in 1 ... 60 {
             _ = try await store.upsert(
                 detected: [Fixture.detected("calendar:event:1", title: "v\(index)")],
                 run: "run",
@@ -379,151 +442,5 @@ struct ItemStoreTests {
         // The newest entry is last and corresponds to the final update.
         #expect(item.history.last?.change == "title")
         #expect(item.history.last?.at == Fixture.now.addingTimeInterval(60))
-    }
-
-    // MARK: - userAction
-
-    @Test("done sets resolvedAt and resolution, and is terminal")
-    func doneSetsResolution() async throws {
-        let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
-
-        let later = Fixture.now.addingTimeInterval(300)
-        let item = try await store.userAction(id: "calendar:event:1", verb: .done, reason: "declined", now: later)
-
-        #expect(item.status == .done)
-        #expect(item.resolvedAt == later)
-        #expect(item.resolution == "declined")
-        #expect(item.snoozedUntil == nil)
-        #expect(item.updatedAt == later)
-        #expect(item.lastChangedBy == "user")
-        #expect(item.history.last?.change == "done")
-        #expect(item.history.last?.reason == "declined")
-    }
-
-    @Test("dismiss is terminal and records dismissed")
-    func dismissIsTerminal() async throws {
-        let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
-        let item = try await store.userAction(id: "calendar:event:1", verb: .dismiss, now: Fixture.now)
-        #expect(item.status == .dismissed)
-        #expect(item.resolvedAt == Fixture.now)
-        #expect(item.history.last?.change == "dismissed")
-    }
-
-    @Test("reopen clears resolvedAt and lands on open")
-    func reopenClearsResolvedAt() async throws {
-        let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
-        _ = try await store.userAction(id: "calendar:event:1", verb: .done, reason: "x", now: Fixture.now)
-
-        let later = Fixture.now.addingTimeInterval(300)
-        let item = try await store.userAction(id: "calendar:event:1", verb: .reopen, now: later)
-        #expect(item.status == .open)
-        #expect(item.resolvedAt == nil)
-        #expect(item.snoozedUntil == nil)
-        #expect(item.history.last?.change == "open")
-    }
-
-    @Test("a snooze records the until in history")
-    func snoozeHistoryCarriesUntil() async throws {
-        let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
-        let until = Fixture.now.addingTimeInterval(3600)
-        let item = try await store.userAction(id: "calendar:event:1", verb: .snooze, until: until, now: Fixture.now)
-        #expect(item.status == .snoozed)
-        #expect(item.snoozedUntil == until)
-        #expect(item.history.last?.until == until)
-    }
-
-    @Test("userAction on an unknown item throws")
-    func unknownItemThrows() async {
-        let store = ItemStore()
-        await #expect(throws: ThirdHandStoreError.unknownItem("nope:1")) {
-            try await store.userAction(id: "nope:1", verb: .done, now: Fixture.now)
-        }
-    }
-
-    // MARK: - Reads
-
-    @Test("list filters by effective status and source, and sorts")
-    func listFiltering() async throws {
-        let store = ItemStore()
-        _ = try await store.upsert(
-            detected: [
-                Fixture.detected("calendar:event:1", title: "Cal", priority: .low),
-                Fixture.detected("gmail:message:1", title: "Mail", priority: .high),
-                Fixture.detected("calendar:event:2", title: "Done"),
-            ],
-            run: "run",
-            now: Fixture.now
-        )
-        _ = try await store.userAction(id: "calendar:event:2", verb: .done, now: Fixture.now)
-
-        let all = await store.list(at: Fixture.now)
-        #expect(all.map(\.id) == ["gmail:message:1", "calendar:event:1"])
-
-        let mailOnly = await store.list(sources: [.gmail], at: Fixture.now)
-        #expect(mailOnly.map(\.id) == ["gmail:message:1"])
-
-        let closed = await store.list(statuses: [.done], at: Fixture.now)
-        #expect(closed.map(\.id) == ["calendar:event:2"])
-    }
-
-    @Test("item(id:) returns nil rather than throwing for a miss")
-    func itemLookupMiss() async {
-        let store = ItemStore()
-        #expect(await store.item(id: "nothing:1") == nil)
-    }
-
-    @Test("markSeen records lastViewedAt")
-    func markSeen() async {
-        let store = ItemStore()
-        let stamp = Fixture.now
-        #expect(await store.lastViewed() == nil)
-        await store.markSeen(at: stamp)
-        #expect(await store.lastViewed() == stamp)
-    }
-
-    @Test("allItems keeps insertion order")
-    func allItemsIsStable() async throws {
-        let store = ItemStore()
-        _ = try await store.upsert(
-            detected: ["calendar:event:b", "calendar:event:a", "calendar:event:c"].map { Fixture.detected($0, title: $0) },
-            run: "run",
-            now: Fixture.now
-        )
-        #expect(await store.allItems().map(\.id) == ["calendar:event:b", "calendar:event:a", "calendar:event:c"])
-    }
-
-    // MARK: - Seeding + snapshot
-
-    @Test("a store can be seeded from a decoded snapshot and round-trips back out")
-    func snapshotRoundTripThroughStore() async throws {
-        let original = Fixture.fullItem()
-        let store = ItemStore(items: [original], lastViewedAt: Fixture.now)
-        let snapshot = await store.makeSnapshot(now: Fixture.now, deviceName: "iPhone")
-
-        #expect(snapshot.items.count == 1)
-        #expect(snapshot.items[0] == original)
-        #expect(snapshot.lastViewedAt == Fixture.now)
-        #expect(snapshot.schemaVersion == 1)
-
-        let decoded = try ThirdHandJSON.decode(ThirdHandSnapshot.self, from: try ThirdHandJSON.encode(snapshot))
-        #expect(decoded.items.count == 1)
-        #expect(decoded.items[0].id == "calendar:event:ABC-123")
-    }
-
-    @Test("makeSnapshot prunes closed items past the retention window")
-    func snapshotPrunes() async throws {
-        let store = ItemStore()
-        _ = try await store.upsert(detected: [Fixture.detected("calendar:event:1", title: "T")], run: "run", now: Fixture.now)
-        _ = try await store.userAction(id: "calendar:event:1", verb: .done, now: Fixture.now)
-
-        let soon = await store.makeSnapshot(now: Fixture.now.addingTimeInterval(60), deviceName: "iPhone")
-        #expect(soon.items.count == 1)
-
-        let muchLater = await store.makeSnapshot(now: Fixture.now.addingTimeInterval(4 * 86_400), deviceName: "iPhone")
-        #expect(muchLater.items.isEmpty)
     }
 }

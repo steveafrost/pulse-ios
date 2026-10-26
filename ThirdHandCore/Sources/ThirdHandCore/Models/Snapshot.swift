@@ -3,7 +3,9 @@ import Foundation
 /// One capture run's outcome. The snapshot carries the recent runs so the mirror
 /// can show "last captured 3 min ago, 2 errors" without reading another file.
 public struct CaptureRun: Codable, Sendable, Hashable, Identifiable {
-    public var id: String { run + finishedAt.description }
+    public var id: String {
+        run + finishedAt.description
+    }
 
     public var run: String
     public var startedAt: Date?
@@ -163,9 +165,14 @@ public struct ThirdHandSnapshot: Codable, Sendable, Hashable {
     /// Prunes closed items older than three days, per the contract's write rule:
     /// "items carries every item, including done and dismissed closed within the
     /// last 3 days. Older closed items are pruned on write."
-    public static func closedItemRetention() -> TimeInterval { 3 * 86_400 }
+    public static func closedItemRetention() -> TimeInterval {
+        3 * 86400
+    }
 
-    public func pruningClosedItems(olderThan instant: Date, retention: TimeInterval = closedItemRetention()) -> ThirdHandSnapshot {
+    public func pruningClosedItems(
+        olderThan instant: Date,
+        retention: TimeInterval = closedItemRetention()
+    ) -> ThirdHandSnapshot {
         let cutoff = instant.addingTimeInterval(-retention)
         var copy = self
         copy.items = items.filter { item in

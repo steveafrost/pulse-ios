@@ -9,12 +9,12 @@ public struct LoadingBoardView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: ThirdHandSpacing.xxl) {
-            ForEach(0..<4, id: \.self) { index in
+            ForEach(0 ..< 4, id: \.self) { index in
                 VStack(alignment: .leading, spacing: ThirdHandSpacing.s) {
                     RoundedRectangle(cornerRadius: 6)
                         .fill(ThirdHandColor.surfaceCard.opacity(0.5))
                         .frame(width: 120, height: ThirdHandSpacing.xl)
-                    ForEach(0..<3, id: \.self) { _ in
+                    ForEach(0 ..< 3, id: \.self) { _ in
                         RoundedRectangle(cornerRadius: ThirdHandRadius.card, style: .continuous)
                             .fill(ThirdHandColor.surfaceCard.opacity(0.5))
                             .frame(height: 92)

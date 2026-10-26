@@ -1,6 +1,7 @@
 import Foundation
 
 // MARK: - Wire enums
+
 //
 // Every enum here uses the exact string raw values from `docs/DATA-CONTRACT.md`
 // and `bb-plugin-thirdhand/types.ts`. The JSON on disk is the contract, so the raw
@@ -17,7 +18,9 @@ public enum Source: String, Sendable, CaseIterable, Hashable, LenientWireEnum {
 
     /// `.other` is the contract's own catch-all bucket, so it is the fallback
     /// for a source string this build does not know.
-    public static var fallback: Source { .other }
+    public static var fallback: Source {
+        .other
+    }
 }
 
 /// What the item asks of the user.
@@ -27,7 +30,9 @@ public enum Kind: String, Sendable, CaseIterable, Hashable, LenientWireEnum {
     /// `.followup` is the generic classification: it does not claim urgency the
     /// way `deadline` would, and unlike `fyi` it is not hidden under
     /// "Nice to Know", so an unknown kind stays visible where the user can see it.
-    public static var fallback: Kind { .followup }
+    public static var fallback: Kind {
+        .followup
+    }
 }
 
 /// Item lifecycle. See the state machine in `docs/DATA-CONTRACT.md`.
@@ -37,7 +42,9 @@ public enum Status: String, Sendable, CaseIterable, Hashable, LenientWireEnum {
     /// `.open` never hides an item and is the only state a capture pass can
     /// safely reason about. Falling back to `.done`/`.resolved` would silently
     /// drop something the user may still need.
-    public static var fallback: Status { .open }
+    public static var fallback: Status {
+        .open
+    }
 
     /// Closed items are not on the board and are pruned from the snapshot
     /// after three days. `resolved` is non-sticky; `done`/`dismissed` are
@@ -65,7 +72,9 @@ public enum Priority: String, Sendable, CaseIterable, Hashable, LenientWireEnum 
     case high, normal, low
 
     /// `.normal` neither jumps the Now queue nor disappears from the board.
-    public static var fallback: Priority { .normal }
+    public static var fallback: Priority {
+        .normal
+    }
 
     /// Ascending rank used by the board sort (high first), matching `PR` in
     /// `lib/store.mjs`.
@@ -84,7 +93,9 @@ public enum ActionStatus: String, Sendable, CaseIterable, Hashable, LenientWireE
 
     /// A status we cannot interpret is treated as `failed` so the UI stops
     /// showing a spinner that will never resolve.
-    public static var fallback: ActionStatus { .failed }
+    public static var fallback: ActionStatus {
+        .failed
+    }
 }
 
 /// The four transitions a user (or the Mac mirror forwarding a user) can assert.

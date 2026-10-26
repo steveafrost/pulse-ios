@@ -1,7 +1,11 @@
 import Foundation
-import ThirdHandCore
 import Testing
 @testable import ThirdHand
+import ThirdHandCore
+
+// Force-unwrapping is the fixture style here on purpose: the calendar below is a fixed
+// literal, and a bad one is a broken test that should stop the run at the line that
+// built it.
 
 /// The projection the widgets and intents render (#29-#32).
 ///
@@ -14,6 +18,7 @@ struct WidgetPresentationTests {
     /// UTC, en_US, so the formatted hints are the same on any machine and simulator.
     private var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
+        // swiftlint:disable:next force_unwrapping
         calendar.timeZone = TimeZone(identifier: "UTC")!
         calendar.locale = Locale(identifier: "en_US_POSIX")
         return calendar
@@ -52,7 +57,7 @@ struct WidgetPresentationTests {
                 item("a", horizon: .now),
                 item("b", horizon: .next),
                 item("c", horizon: .later),
-                item("d", horizon: .niceToKnow),
+                item("d", horizon: .niceToKnow)
             ]
         )
         let projected = WidgetSnapshot(board: board)
@@ -63,10 +68,10 @@ struct WidgetPresentationTests {
 
     @Test("Order is priority, then due, then stored position")
     func ordersByPriorityThenDue() {
-        let late = item("late", priority: .normal, due: base.addingTimeInterval(7_200))
+        let late = item("late", priority: .normal, due: base.addingTimeInterval(7200))
         let soon = item("soon", priority: .normal, due: base.addingTimeInterval(600))
         let undated = item("undated", priority: .normal, due: nil)
-        let urgent = item("urgent", priority: .high, due: base.addingTimeInterval(9_000))
+        let urgent = item("urgent", priority: .high, due: base.addingTimeInterval(9000))
 
         let ordered = WidgetOrdering.sorted([late, soon, undated, urgent])
         #expect(ordered.map(\.id) == ["urgent", "soon", "late", "undated"])
@@ -92,7 +97,7 @@ struct WidgetPresentationTests {
 
     @Test("topItems and hiddenCount agree")
     func topItemsAndHidden() {
-        let projected = snapshot((1...5).map { item("i\($0)") })
+        let projected = snapshot((1 ... 5).map { item("i\($0)") })
         #expect(projected.topItems(limit: 3).map(\.id) == ["i1", "i2", "i3"])
         #expect(projected.hiddenCount(limit: 3) == 2)
         #expect(projected.hiddenCount(limit: 9) == 0)
@@ -114,11 +119,11 @@ struct WidgetPresentationTests {
         let projected = snapshot([])
         #expect(projected.ageText(now: base) == "now")
         #expect(projected.ageText(now: base.addingTimeInterval(120)) == "2m")
-        #expect(projected.ageText(now: base.addingTimeInterval(7_200)) == "2h")
+        #expect(projected.ageText(now: base.addingTimeInterval(7200)) == "2h")
         #expect(projected.ageText(now: base.addingTimeInterval(172_800)) == "2d")
         // A clock that went backwards must not render "-1m".
         #expect(projected.ageText(now: base.addingTimeInterval(-60)) == "now")
-        #expect(WidgetSnapshot().ageText(now: base) == "")
+        #expect(WidgetSnapshot().ageText(now: base).isEmpty)
     }
 
     // MARK: Circular
@@ -176,9 +181,9 @@ struct WidgetPresentationTests {
     @Test("Rectangular copy names the top item and its due hint")
     func rectangular() {
         let projected = snapshot([
-            item("a", title: "Design review", priority: .high, due: base.addingTimeInterval(2_400)),
+            item("a", title: "Design review", priority: .high, due: base.addingTimeInterval(2400)),
             item("b", title: "Second"),
-            item("c", title: "Third"),
+            item("c", title: "Third")
         ])
         #expect(WidgetCopy.rectangularTitle(projected) == "Design review")
         let detail = WidgetCopy.rectangularDetail(projected, now: base, calendar: calendar)
@@ -208,14 +213,14 @@ struct WidgetPresentationTests {
         let now = base
         #expect(WidgetCopy.dueHint(base.addingTimeInterval(-60), now: now, calendar: calendar) == "overdue")
         #expect(WidgetCopy.dueHint(base.addingTimeInterval(600), now: now, calendar: calendar) == "in 10m")
-        #expect(WidgetCopy.dueHint(base.addingTimeInterval(3_600), now: now, calendar: calendar) == "in 60m")
-        #expect(WidgetCopy.dueHint(base.addingTimeInterval(3_660), now: now, calendar: calendar).hasPrefix("Today "))
-        #expect(WidgetCopy.dueHint(base.addingTimeInterval(86_400), now: now, calendar: calendar) == "Tomorrow")
-        let fourDays = WidgetCopy.dueHint(base.addingTimeInterval(4 * 86_400), now: now, calendar: calendar)
+        #expect(WidgetCopy.dueHint(base.addingTimeInterval(3600), now: now, calendar: calendar) == "in 60m")
+        #expect(WidgetCopy.dueHint(base.addingTimeInterval(3660), now: now, calendar: calendar).hasPrefix("Today "))
+        #expect(WidgetCopy.dueHint(base.addingTimeInterval(86400), now: now, calendar: calendar) == "Tomorrow")
+        let fourDays = WidgetCopy.dueHint(base.addingTimeInterval(4 * 86400), now: now, calendar: calendar)
         #expect(fourDays.hasPrefix("Tue ") || fourDays.hasPrefix("Wed ") || fourDays.hasPrefix("Thu ")
-                || fourDays.hasPrefix("Fri ") || fourDays.hasPrefix("Sat ") || fourDays.hasPrefix("Sun ")
-                || fourDays.hasPrefix("Mon "))
-        #expect(WidgetCopy.dueHint(base.addingTimeInterval(20 * 86_400), now: now, calendar: calendar) == "Nov 16")
+            || fourDays.hasPrefix("Fri ") || fourDays.hasPrefix("Sat ") || fourDays.hasPrefix("Sun ")
+            || fourDays.hasPrefix("Mon "))
+        #expect(WidgetCopy.dueHint(base.addingTimeInterval(20 * 86400), now: now, calendar: calendar) == "Nov 16")
     }
 
     @Test("Counting copy agrees across surfaces")
@@ -253,18 +258,18 @@ struct WidgetPresentationTests {
     @Test("An item inside the window is imminent")
     func imminentInsideWindow() {
         let projected = snapshot([
-            item("later", due: base.addingTimeInterval(2 * 3_600)),
-            item("soon", due: base.addingTimeInterval(2_400)),
+            item("later", due: base.addingTimeInterval(2 * 3600)),
+            item("soon", due: base.addingTimeInterval(2400))
         ])
         #expect(ImminentItemRule.imminentItem(projected, now: base)?.id == "soon")
     }
 
     @Test("The 60-minute boundary is inclusive")
     func imminentBoundary() {
-        let exactly = snapshot([item("a", due: base.addingTimeInterval(3_600))])
+        let exactly = snapshot([item("a", due: base.addingTimeInterval(3600))])
         #expect(ImminentItemRule.imminentItem(exactly, now: base)?.id == "a")
 
-        let past = snapshot([item("a", due: base.addingTimeInterval(3_601))])
+        let past = snapshot([item("a", due: base.addingTimeInterval(3601))])
         #expect(ImminentItemRule.imminentItem(past, now: base) == nil)
     }
 
@@ -282,8 +287,8 @@ struct WidgetPresentationTests {
     @Test("The nearest imminent item wins regardless of board order")
     func imminentNearest() {
         let projected = snapshot([
-            item("further", priority: .high, due: base.addingTimeInterval(3_000)),
-            item("nearer", due: base.addingTimeInterval(600)),
+            item("further", priority: .high, due: base.addingTimeInterval(3000)),
+            item("nearer", due: base.addingTimeInterval(600))
         ])
         #expect(ImminentItemRule.imminentItem(projected, now: base)?.id == "nearer")
     }
@@ -315,12 +320,13 @@ struct WidgetPresentationTests {
 
     @Test("Intent summary: empty board")
     func intentEmpty() {
-        #expect(IntentSummary.whatNeedsMe(snapshot([], nowCount: 0), now: base, calendar: calendar) == "Nothing needs you.")
+        #expect(IntentSummary
+            .whatNeedsMe(snapshot([], nowCount: 0), now: base, calendar: calendar) == "Nothing needs you.")
     }
 
     @Test("Intent summary: one item")
     func intentOne() {
-        let projected = snapshot([item("a", title: "Design review", due: base.addingTimeInterval(2_400))])
+        let projected = snapshot([item("a", title: "Design review", due: base.addingTimeInterval(2400))])
         let spoken = IntentSummary.whatNeedsMe(projected, now: base, calendar: calendar)
         #expect(spoken == "1 thing needs you: Design review, in 40m.")
     }
@@ -328,9 +334,9 @@ struct WidgetPresentationTests {
     @Test("Intent summary: many items names two and counts the rest")
     func intentMany() {
         let projected = snapshot([
-            item("a", title: "Design review", priority: .high, due: base.addingTimeInterval(2_400)),
-            item("b", title: "RSVP to Priya", priority: .high, due: base.addingTimeInterval(3_600)),
-            item("c", title: "Send the invoice"),
+            item("a", title: "Design review", priority: .high, due: base.addingTimeInterval(2400)),
+            item("b", title: "RSVP to Priya", priority: .high, due: base.addingTimeInterval(3600)),
+            item("c", title: "Send the invoice")
         ])
         let spoken = IntentSummary.whatNeedsMe(projected, now: base, calendar: calendar)
         #expect(spoken.hasPrefix("3 things need you: "))
@@ -344,14 +350,19 @@ struct WidgetPresentationTests {
     func intentNoDue() {
         let projected = snapshot([item("a", title: "Reply in #platform")])
         #expect(IntentSummary.whatNeedsMe(projected, now: base, calendar: calendar)
-                == "1 thing needs you: Reply in #platform.")
+            == "1 thing needs you: Reply in #platform.")
     }
 
     @Test("Snooze dialogs name the item and the time")
-    func snoozeDialogs() {
-        let until = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: base.addingTimeInterval(86_400))!
+    func snoozeDialogs() throws {
+        let until = try #require(calendar.date(
+            bySettingHour: 9,
+            minute: 0,
+            second: 0,
+            of: base.addingTimeInterval(86400)
+        ))
         #expect(IntentSummary.snoozed(title: "Design review", until: until, calendar: calendar)
-                == "Snoozed Design review until 9:00\u{202F}AM.")
+            == "Snoozed Design review until 9:00\u{202F}AM.")
         #expect(IntentSummary.nothingToSnooze == "Nothing needs you, so there was nothing to snooze.")
     }
 }

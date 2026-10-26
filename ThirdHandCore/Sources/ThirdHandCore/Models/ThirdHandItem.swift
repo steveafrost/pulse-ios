@@ -89,12 +89,14 @@ public struct QuickAction: Codable, Sendable, Hashable {
     public func validate() throws {
         let trimmed = label.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, label.count <= Self.maxLabelLength else {
-            throw ThirdHandStoreError.invalidQuickAction("label must be a short string (1-\(Self.maxLabelLength) chars)")
+            throw ThirdHandStoreError
+                .invalidQuickAction("label must be a short string (1-\(Self.maxLabelLength) chars)")
         }
         if let text {
             let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !t.isEmpty, text.count <= Self.maxTextLength else {
-                throw ThirdHandStoreError.invalidQuickAction("text must be a non-empty string up to \(Self.maxTextLength) chars")
+                throw ThirdHandStoreError
+                    .invalidQuickAction("text must be a non-empty string up to \(Self.maxTextLength) chars")
             }
         }
         if let url {
@@ -108,14 +110,16 @@ public struct QuickAction: Codable, Sendable, Hashable {
     }
 }
 
-extension Array where Element == QuickAction {
+public extension [QuickAction] {
     /// Throws when the list breaks the contract's max-3 rule or any element is
     /// malformed. Empty lists are fine.
-    public func validateQuickActions() throws {
+    func validateQuickActions() throws {
         guard count <= 3 else {
             throw ThirdHandStoreError.tooManyQuickActions
         }
-        for action in self { try action.validate() }
+        for action in self {
+            try action.validate()
+        }
     }
 }
 
@@ -168,6 +172,9 @@ public struct ThirdHandItemAction: Codable, Sendable, Hashable {
 /// One thing that needs the user. Field-for-field identical to `ThirdHandItem` in
 /// `bb-plugin-thirdhand/types.ts` and the table in `docs/DATA-CONTRACT.md`.
 public struct ThirdHandItem: Codable, Sendable, Hashable, Identifiable {
+    // `ID` is the name `Identifiable` asks for; it is two characters because it is the
+    // protocol's own spelling, not a local choice we are free to lengthen.
+    // swiftlint:disable:next type_name
     public typealias ID = String
 
     /// Hard cap on `history`; oldest entries are dropped. Matches `pushHistory`.
@@ -316,27 +323,31 @@ public struct ThirdHandItem: Codable, Sendable, Hashable, Identifiable {
 
 // MARK: - Derived helpers
 
-extension ThirdHandItem {
+public extension ThirdHandItem {
     /// The item's status right now, with an expired snooze reading as `open`.
     /// Pure -- the caller supplies the instant. See `ItemStore.effectiveStatus`.
-    public func effectiveStatus(at instant: Date) -> Status {
+    func effectiveStatus(at instant: Date) -> Status {
         ThirdHandItem.effectiveStatus(status: status, snoozedUntil: snoozedUntil, at: instant)
     }
 
     /// The shared rule from `effectiveStatus` in `lib/store.mjs`: a snooze whose
     /// `snoozedUntil` is at or before `instant` is no longer a snooze.
-    public static func effectiveStatus(status: Status, snoozedUntil: Date?, at instant: Date) -> Status {
-        if status == .snoozed, let snoozedUntil, snoozedUntil <= instant { return .open }
+    static func effectiveStatus(status: Status, snoozedUntil: Date?, at instant: Date) -> Status {
+        if status == .snoozed, let snoozedUntil, snoozedUntil <= instant {
+            return .open
+        }
         return status
     }
 
     /// Whether the user has locked this item's status against a capture pass
     /// (`userLocked` in `lib/store.mjs`): `done`/`dismissed`, or a snooze that
     /// has not expired yet.
-    public func isUserLocked(at instant: Date) -> Bool {
+    func isUserLocked(at instant: Date) -> Bool {
         status.isUserTerminal || (status == .snoozed && effectiveStatus(at: instant) == .snoozed)
     }
 
     /// Status of the agent thread, if the mirror started one.
-    public var actionStatus: ActionStatus? { action?.status }
+    var actionStatus: ActionStatus? {
+        action?.status
+    }
 }

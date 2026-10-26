@@ -2,11 +2,17 @@ import Foundation
 import Testing
 @testable import ThirdHandCore
 
+// Force-unwrapping is the fixture style in this file on purpose: these are fixed
+// literals (a fixed-offset calendar, a hard-coded instant), and a bad one is a broken
+// test that should stop the run at the line that built it, not a condition the code
+// under test is asked to handle.
+
 /// A fixed UTC calendar so day-boundary tests do not depend on the machine's
 /// timezone or locale.
 enum Fixture {
     static let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
+        // swiftlint:disable:next force_unwrapping
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         calendar.locale = Locale(identifier: "en_US_POSIX")
         return calendar
@@ -85,12 +91,12 @@ enum Fixture {
                     change: "snoozed",
                     reason: "after standup",
                     until: date("2026-10-23T09:00:00.000Z")
-                ),
+                )
             ],
             quickActions: [
                 QuickAction(label: "Decline", text: "I cannot make this one."),
                 QuickAction(label: "Open event", url: "https://calendar.example.com/e/1"),
-                QuickAction(label: "Both", text: "note", url: "https://example.com/x"),
+                QuickAction(label: "Both", text: "note", url: "https://example.com/x")
             ],
             agentSkills: ["calendar-triage", "conflict-resolve"],
             action: ThirdHandItemAction(

@@ -12,7 +12,6 @@ import Testing
 /// explicit rather than hoping the OS provides one.
 @Suite("Interruption")
 struct InterruptionTests {
-
     private let clock = Fixture.now
 
     /// A store holding the one item the commands target, at the fixture instant.
@@ -35,13 +34,29 @@ struct InterruptionTests {
     private struct InterruptedWrite: CloudContainer {
         let base: any CloudContainer
 
-        var rootURL: URL { base.rootURL }
+        var rootURL: URL {
+            base.rootURL
+        }
 
-        func read(_ relativePath: String) throws -> Data? { try base.read(relativePath) }
-        func append(_ data: Data, to relativePath: String) throws { try base.append(data, to: relativePath) }
-        func fileExists(_ relativePath: String) -> Bool { base.fileExists(relativePath) }
-        func fileSize(_ relativePath: String) throws -> Int? { try base.fileSize(relativePath) }
-        func modificationDate(_ relativePath: String) throws -> Date? { try base.modificationDate(relativePath) }
+        func read(_ relativePath: String) throws -> Data? {
+            try base.read(relativePath)
+        }
+
+        func append(_ data: Data, to relativePath: String) throws {
+            try base.append(data, to: relativePath)
+        }
+
+        func fileExists(_ relativePath: String) -> Bool {
+            base.fileExists(relativePath)
+        }
+
+        func fileSize(_ relativePath: String) throws -> Int? {
+            try base.fileSize(relativePath)
+        }
+
+        func modificationDate(_ relativePath: String) throws -> Date? {
+            try base.modificationDate(relativePath)
+        }
 
         func write(_ data: Data, to relativePath: String) throws {
             // Write the tmp file the real implementation would have written,
@@ -139,7 +154,7 @@ struct InterruptionTests {
         let second = UUID().uuidString
         try SyncFixture.appendCommands([
             SyncFixture.commandLine(id: first, at: clock.addingTimeInterval(60), itemId: "calendar:event:1"),
-            SyncFixture.commandLine(id: second, at: clock.addingTimeInterval(120), itemId: "calendar:event:1"),
+            SyncFixture.commandLine(id: second, at: clock.addingTimeInterval(120), itemId: "calendar:event:1")
         ], to: container)
 
         // The plugin was killed mid-append on a third line: bytes, no newline.
@@ -168,7 +183,7 @@ struct InterruptionTests {
         let first = UUID().uuidString
         let pending = UUID().uuidString
         try SyncFixture.appendCommands([
-            SyncFixture.commandLine(id: first, at: clock.addingTimeInterval(60), itemId: "calendar:event:1"),
+            SyncFixture.commandLine(id: first, at: clock.addingTimeInterval(60), itemId: "calendar:event:1")
         ], to: container)
         let whole = SyncFixture.commandLine(id: pending, at: clock.addingTimeInterval(120), itemId: "calendar:event:1")
         let cut = 30
@@ -200,7 +215,8 @@ struct InterruptionTests {
         // The reader must not truncate or rewrite the log -- it is append-only on
         // the plugin side, and a drain that "cleaned up" a torn tail would destroy
         // a command the plugin is still writing.
-        let text = String(decoding: try #require(try container.read(CommandReader.commandsFileName)), as: UTF8.self)
+        // swiftlint:disable:next optional_data_string_conversion
+        let text = try String(decoding: #require(try container.read(CommandReader.commandsFileName)), as: UTF8.self)
         #expect(text.hasSuffix(tornText))
     }
 }

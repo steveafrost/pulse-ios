@@ -1,6 +1,5 @@
 import Foundation
 
-
 /// The widget-facing projection of one item. Only the fields a widget needs, so
 /// a future field addition in `ThirdHandItem` cannot silently bloat the cache or
 /// break the widget's decode.

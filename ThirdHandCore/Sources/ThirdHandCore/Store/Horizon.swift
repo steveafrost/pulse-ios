@@ -16,7 +16,9 @@ public enum Horizon: String, Sendable, CaseIterable, Hashable {
     }
 
     /// Whether "Now" should be tinted urgent. `niceToKnow` never is.
-    public var isUrgent: Bool { self == .now }
+    public var isUrgent: Bool {
+        self == .now
+    }
 }
 
 extension Horizon: Codable {}
@@ -94,7 +96,9 @@ public enum HorizonDerivation {
     }
 
     private static func bucket(for item: ThirdHandItem, at instant: Date, calendar: Calendar) -> Horizon {
-        if item.kind == .fyi { return .niceToKnow }
+        if item.kind == .fyi {
+            return .niceToKnow
+        }
 
         // An undated high-priority item has nothing to contradict it, so priority
         // is the only signal there is: it goes to Now. A *dated* item is placed by
@@ -112,14 +116,16 @@ public enum HorizonDerivation {
         }
 
         let horizonEnd = calendar.date(byAdding: .day, value: nextWindowDays, to: today) ?? today
-        if dueDay <= horizonEnd { return .next }
+        if dueDay <= horizonEnd {
+            return .next
+        }
         return .later
     }
 }
 
-extension ThirdHandItem {
+public extension ThirdHandItem {
     /// The item's board bucket right now, or `nil` when closed. See `HorizonDerivation`.
-    public func horizon(at instant: Date, calendar: Calendar = .current) -> Horizon? {
+    func horizon(at instant: Date, calendar: Calendar = .current) -> Horizon? {
         HorizonDerivation.horizon(of: self, at: instant, calendar: calendar)
     }
 }
@@ -155,7 +161,9 @@ public enum ThirdHandItemSort {
         default:
             break
         }
-        if a.firstSeenAt != b.firstSeenAt { return a.firstSeenAt < b.firstSeenAt }
+        if a.firstSeenAt != b.firstSeenAt {
+            return a.firstSeenAt < b.firstSeenAt
+        }
         return a.id < b.id
     }
 

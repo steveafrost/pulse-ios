@@ -77,7 +77,7 @@ public struct EmptyBoardView: View {
         case .allClear: "allClear"
         case .neverCaptured: "neverCaptured"
         case .filtered: "filtered"
-        case .denied(let identity): "denied.\(identity.rawValue)"
+        case let .denied(identity): "denied.\(identity.rawValue)"
         }
     }
 
@@ -104,7 +104,7 @@ public struct EmptyBoardView: View {
                 .buttonStyle(.bordered)
                 .frame(minHeight: ThirdHandSpacing.minimumHitTarget)
                 .accessibilityIdentifier("board.empty.reset")
-        case .denied(let identity):
+        case let .denied(identity):
             // §9.3: Open Settings is the way back; "Choose sources" re-runs the
             // preamble instead of refusing outright, which is what "Not now" in
             // 9.2 left the board able to do.
@@ -154,25 +154,28 @@ public struct EmptyBoardView: View {
         case .allClear: "You're all clear"
         case .neverCaptured: "Let's see what needs you"
         case .filtered: "Nothing matches this filter"
-        case .denied(let identity): "Pulse can't see your \(identity.title.lowercased())"
+        case let .denied(identity): "Pulse can't see your \(identity.title.lowercased())"
         }
     }
 
     private var bodyCopy: String {
         switch reason {
         case .allClear:
-            "Nothing needs you right now. Pulse is watching your calendar and reminders, and you can share a Slack thread, a pull request, or an email here to add it."
+            "Nothing needs you right now. Pulse is watching your calendar and reminders, "
+                + "and you can share a Slack thread, a pull request, or an email here to add it."
         case .neverCaptured:
-            "Connect your calendar and reminders, or share a link into Pulse. Everything is read on this device and never sent anywhere."
+            "Connect your calendar and reminders, or share a link into Pulse. "
+                + "Everything is read on this device and never sent anywhere."
         case .filtered:
             "Every item is filtered out. Clear the filter to see the whole board."
-        case .denied(let identity):
+        case let .denied(identity):
             // Mail is not a permission and cannot be turned on in iOS Settings -- it is
             // an account the user has to add, with an app password, on a screen this
             // app provides. Sending them to iOS Settings to look for a mailbox toggle
             // is the dead end that made email look broken.
             if identity == .email {
-                "No mailbox is connected, so there is no mail to read. Add one and Pulse will put the messages that need you on this board."
+                "No mailbox is connected, so there is no mail to read. "
+                    + "Add one and Pulse will put the messages that need you on this board."
             } else {
                 "\(identity.title) access is off. Turn it on in Settings and Pulse will fill this board."
             }

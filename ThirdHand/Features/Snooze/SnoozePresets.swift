@@ -7,7 +7,10 @@ import Foundation
 /// and disappears once it is gone.
 public struct SnoozePresets: Sendable {
     public struct Preset: Sendable, Hashable, Identifiable {
-        public var id: String { label }
+        public var id: String {
+            label
+        }
+
         public var label: String
         public var date: Date
         /// Shown as the trailing detail, e.g. "18:00".
@@ -31,7 +34,7 @@ public struct SnoozePresets: Sendable {
     /// #19: 1 hour, this evening (hidden after 18:00), tomorrow 9:00, next
     /// Monday 9:00. Only future dates are returned.
     public var all: [Preset] {
-        [laterToday, thisEvening, tomorrowMorning, nextMonday].compactMap { $0 }
+        [laterToday, thisEvening, tomorrowMorning, nextMonday].compactMap(\.self)
     }
 
     public var laterToday: Preset? {
@@ -62,9 +65,11 @@ public struct SnoozePresets: Sendable {
 
     // MARK: Helpers
 
-    static let secondsPerHour: TimeInterval = 3_600
+    static let secondsPerHour: TimeInterval = 3600
 
-    public func isFuture(_ date: Date) -> Bool { date > now }
+    public func isFuture(_ date: Date) -> Bool {
+        date > now
+    }
 
     /// Formatted in *this* preset's calendar, not the device's: with a Greenwich
     /// calendar and a New York device, "18:00" must read 18:00, or the label and
@@ -89,13 +94,16 @@ public struct SnoozePresets: Sendable {
         var probe = calendar.startOfDay(for: nextWeek)
         // Walk back to the Monday of that week rather than forward, so "next
         // Monday" from a Tuesday is the Monday coming, not a week later.
-        for _ in 0..<7 {
-            if calendar.component(.weekday, from: probe) == weekday { break }
+        for _ in 0 ..< 7 {
+            if calendar.component(.weekday, from: probe) == weekday {
+                break
+            }
             guard let previous = calendar.date(byAdding: .day, value: -1, to: probe) else { return nil }
             probe = previous
         }
         if calendar.component(.weekday, from: probe) != weekday,
-           let forward = calendar.date(byAdding: .day, value: 7, to: probe) {
+           let forward = calendar.date(byAdding: .day, value: 7, to: probe)
+        {
             probe = forward
         }
         guard let date = day(probe, hour: hour), isFuture(date) else { return nil }

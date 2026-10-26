@@ -59,9 +59,10 @@ public enum PlacementValidation {
             guard let horizon = Horizon(rawValue: verdict.horizon.lowercased()) else { continue }
             // `niceToKnow` is not a placement: it is a claim that the item is
             // informational, and honouring it would take a real task off the board.
-            guard horizon != .niceToKnow else { continue }
-            guard horizon != candidate.ruleHorizon else { continue }
-            guard isReachable(horizon, from: candidate.ruleHorizon) else { continue }
+            guard horizon != .niceToKnow, horizon != candidate.ruleHorizon, isReachable(
+                horizon,
+                from: candidate.ruleHorizon
+            ) else { continue }
 
             advice.append(PlacementAdvice(
                 itemID: candidate.itemID,
@@ -79,7 +80,9 @@ public enum PlacementValidation {
     /// weeks away into Now on the strength of its title alone. The asymmetry is
     /// deliberate -- being wrong upward displaces what genuinely needs the user.
     public static func isReachable(_ target: Horizon, from rule: Horizon) -> Bool {
-        if target.sortIndex > rule.sortIndex { return true }
+        if target.sortIndex > rule.sortIndex {
+            return true
+        }
         return rule.sortIndex - target.sortIndex == 1
     }
 
@@ -117,20 +120,20 @@ public enum PlacementValidation {
                 }
             } ?? "no due date"
             return """
-                [\(candidate.index)] kind=\(candidate.kind.rawValue) \
-                priority=\(candidate.priority.rawValue) \(due) \
-                placed_in=\(candidate.ruleHorizon.rawValue) \
-                because=\(candidate.ruleReason) \
-                title=\(candidate.title)
-                """
+            [\(candidate.index)] kind=\(candidate.kind.rawValue) \
+            priority=\(candidate.priority.rawValue) \(due) \
+            placed_in=\(candidate.ruleHorizon.rawValue) \
+            because=\(candidate.ruleReason) \
+            title=\(candidate.title)
+            """
         }
         return """
-            Items:
-            \(lines.joined(separator: "\n"))
+        Items:
+        \(lines.joined(separator: "\n"))
 
-            For each item, give the bucket it truly belongs in and a short reason the \
-            user will read on the card. Use the item's number as its index.
-            """
+        For each item, give the bucket it truly belongs in and a short reason the \
+        user will read on the card. Use the item's number as its index.
+        """
     }
 
     /// What a card says when the model gave no usable reason.

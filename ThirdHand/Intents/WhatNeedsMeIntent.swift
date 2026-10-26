@@ -9,7 +9,9 @@ import ThirdHandCore
 /// capture pass. `openAppWhenRun` is false: the answer is the whole point, and opening
 /// the app would hide it.
 struct WhatNeedsMeIntent: AppIntent {
-    static var title: LocalizedStringResource { "What needs me" }
+    static var title: LocalizedStringResource {
+        "What needs me"
+    }
 
     static var description: IntentDescription {
         IntentDescription(
@@ -25,7 +27,9 @@ struct WhatNeedsMeIntent: AppIntent {
     }
 
     /// The board is already on disk; there is nothing worth showing the app for.
-    static var openAppWhenRun: Bool { false }
+    static var openAppWhenRun: Bool {
+        false
+    }
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<String> {

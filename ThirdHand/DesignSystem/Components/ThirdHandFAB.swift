@@ -56,11 +56,11 @@ public struct ThirdHandFAB: View {
     private var content: some View {
         if isAX {
             VStack(alignment: .trailing, spacing: ThirdHandSpacing.xxs) {
-                /// §8.1 puts the item title above the glyph from AX1. Past AX2 the
-                /// caption is several lines of AX5 type and the control stops being
-                /// a control, so it is dropped and the label alone carries the
-                /// action (the full title is still in the accessibility label and
-                /// the row directly behind).
+                // §8.1 puts the item title above the glyph from AX1. Past AX2 the
+                // caption is several lines of AX5 type and the control stops being
+                // a control, so it is dropped and the label alone carries the
+                // action (the full title is still in the accessibility label and
+                // the row directly behind).
                 if let caption, !isVeryLargeAX {
                     Text(caption)
                         .font(ThirdHandTypography.meta)

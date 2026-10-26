@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// §8.2: the glass action bar at the bottom of the detail sheet. One primary
 /// action by state, plus a secondary overflow for Dismiss / Snooze / Copy link.
@@ -33,7 +33,8 @@ public struct ItemActionBar: View {
     public var body: some View {
         HStack(spacing: ThirdHandSpacing.s) {
             Button(primaryTitle, action: onPrimary)
-                .buttonStyle(.pulseProminent(tint: item.status.isClosed ? ThirdHandColor.statusDone : ThirdHandColor.horizonNow))
+                .buttonStyle(.pulseProminent(tint: item.status.isClosed ? ThirdHandColor.statusDone : ThirdHandColor
+                        .horizonNow))
                 .disabled(isBusy)
                 .accessibilityLabel(primaryTitle)
                 .accessibilityIdentifier("detail.primary")
@@ -67,8 +68,12 @@ public struct ItemActionBar: View {
     }
 
     private var primaryTitle: String {
-        if item.status.isClosed { return "Reopen" }
-        if item.isSnoozed { return "Unsnooze" }
+        if item.status.isClosed {
+            return "Reopen"
+        }
+        if item.isSnoozed {
+            return "Unsnooze"
+        }
         return "Done"
     }
 }

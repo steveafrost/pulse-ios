@@ -57,13 +57,13 @@ public struct FileFingerprint: Sendable, Hashable {
     public static let absent = FileFingerprint(exists: false, size: 0, modifiedAt: nil)
 }
 
-extension CloudContainer {
-    public func fingerprint(_ relativePath: String) throws -> FileFingerprint {
+public extension CloudContainer {
+    func fingerprint(_ relativePath: String) throws -> FileFingerprint {
         guard fileExists(relativePath) else { return .absent }
-        return FileFingerprint(
+        return try FileFingerprint(
             exists: true,
-            size: try fileSize(relativePath) ?? 0,
-            modifiedAt: try modificationDate(relativePath)
+            size: fileSize(relativePath) ?? 0,
+            modifiedAt: modificationDate(relativePath)
         )
     }
 
@@ -75,7 +75,7 @@ extension CloudContainer {
     /// most, and one implementation means `LocalContainer` (tests, `THIRDHAND_HOME`)
     /// and `ICloudContainer` behave identically. Callers that need the contract's
     /// 15 s command poll should use `CommandReader` directly instead of this.
-    public func changeStream(
+    func changeStream(
         _ relativePath: String,
         every interval: Duration = .seconds(2)
     ) -> AsyncStream<Void> {

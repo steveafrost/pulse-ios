@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// The widget extension's copy of the design tokens it needs.
 ///
@@ -53,27 +53,27 @@ enum WidgetTheme {
     /// reason as `glyph`: the extension cannot import the app target.
     static func spokenLabel(forKind kind: String) -> String {
         switch Kind(rawValue: kind) ?? .followup {
-        case .reply: return "Needs a reply"
-        case .decision: return "Needs a decision"
-        case .rsvp: return "Waiting on your RSVP"
-        case .conflict: return "Schedule conflict"
-        case .deadline: return "Deadline"
-        case .review: return "Needs review"
-        case .followup: return "Follow up"
-        case .fyi: return "For your information"
+        case .reply: "Needs a reply"
+        case .decision: "Needs a decision"
+        case .rsvp: "Waiting on your RSVP"
+        case .conflict: "Schedule conflict"
+        case .deadline: "Deadline"
+        case .review: "Needs review"
+        case .followup: "Follow up"
+        case .fyi: "For your information"
         }
     }
 
     static func glyph(forKind kind: String) -> String {
         switch Kind(rawValue: kind) ?? .followup {
-        case .reply: return "arrowshape.turn.up.left"
-        case .decision: return "questionmark.circle"
-        case .rsvp: return "calendar.badge.clock"
-        case .conflict: return "exclamationmark.triangle"
-        case .deadline: return "clock.badge.exclamationmark"
-        case .review: return "doc.text.magnifyingglass"
-        case .followup: return "arrow.turn.down.right"
-        case .fyi: return "info.circle"
+        case .reply: "arrowshape.turn.up.left"
+        case .decision: "questionmark.circle"
+        case .rsvp: "calendar.badge.clock"
+        case .conflict: "exclamationmark.triangle"
+        case .deadline: "clock.badge.exclamationmark"
+        case .review: "doc.text.magnifyingglass"
+        case .followup: "arrow.turn.down.right"
+        case .fyi: "info.circle"
         }
     }
 }

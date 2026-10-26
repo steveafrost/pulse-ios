@@ -7,8 +7,8 @@ import ThirdHandCore
 /// §2 / §4.1: `Horizon` owns the glyph, tint and collapse limit for each bucket;
 /// every other table derives from it. Keeping that in one extension means the
 /// board, the detail sheet and the history timeline cannot disagree.
-extension Horizon {
-    public var title: String {
+public extension Horizon {
+    var title: String {
         switch self {
         case .now: "Now"
         case .next: "Next"
@@ -19,7 +19,7 @@ extension Horizon {
 
     /// §4.1 hints. They hide at AX1+ (§3) but the board also uses them for
     /// VoiceOver on the section header, so they still exist.
-    public var hint: String {
+    var hint: String {
         switch self {
         case .now: "High priority or due today"
         case .next: "Due in the next three days"
@@ -28,7 +28,7 @@ extension Horizon {
         }
     }
 
-    public var systemImage: String {
+    var systemImage: String {
         switch self {
         case .now: "exclamationmark.circle.fill"
         case .next: "arrow.right.circle.fill"
@@ -37,7 +37,7 @@ extension Horizon {
         }
     }
 
-    public var tint: Color {
+    var tint: Color {
         switch self {
         case .now: ThirdHandColor.horizonNow
         case .next: ThirdHandColor.horizonNext
@@ -48,7 +48,7 @@ extension Horizon {
 
     /// §4.1: before "Show all" appears a section shows `.now` 3, `.next` 4,
     /// `.later` 3, `.fyi` 2.
-    public var collapseLimit: Int {
+    var collapseLimit: Int {
         switch self {
         case .now: 3
         case .next: 4
@@ -58,13 +58,15 @@ extension Horizon {
     }
 
     /// §5.1 rule 1: Nice to Know has no leading rail.
-    public var hasRail: Bool { self != .niceToKnow }
+    var hasRail: Bool {
+        self != .niceToKnow
+    }
 }
 
 // MARK: - Kind
 
-extension Kind {
-    public var systemImage: String {
+public extension Kind {
+    var systemImage: String {
         switch self {
         case .reply: "arrowshape.turn.up.left"
         case .decision: "questionmark.circle"
@@ -77,7 +79,7 @@ extension Kind {
         }
     }
 
-    public var title: String {
+    var title: String {
         switch self {
         case .reply: "Reply"
         case .decision: "Decision"
@@ -91,7 +93,7 @@ extension Kind {
     }
 
     /// §5.3 spoken labels, used in the row's composed VoiceOver label.
-    public var spokenLabel: String {
+    var spokenLabel: String {
         switch self {
         case .reply: "Needs a reply"
         case .decision: "Needs a decision"
@@ -104,7 +106,7 @@ extension Kind {
         }
     }
 
-    public var tint: Color {
+    var tint: Color {
         switch self {
         case .deadline: ThirdHandColor.kindDeadline
         case .decision, .rsvp, .conflict: ThirdHandColor.kindAttention
@@ -115,8 +117,8 @@ extension Kind {
 
 // MARK: - Source
 
-extension Source {
-    public var systemImage: String {
+public extension Source {
+    var systemImage: String {
         switch self {
         case .calendar: "calendar"
         case .gmail: "envelope"
@@ -125,7 +127,7 @@ extension Source {
         }
     }
 
-    public var title: String {
+    var title: String {
         switch self {
         case .calendar: "Calendar"
         case .gmail: "Email"
@@ -137,7 +139,7 @@ extension Source {
     }
 
     /// §5.3 spoken labels.
-    public var spokenLabel: String {
+    var spokenLabel: String {
         switch self {
         case .calendar: "from Calendar"
         case .gmail: "from Email"
@@ -148,7 +150,7 @@ extension Source {
         }
     }
 
-    public var tint: Color {
+    var tint: Color {
         switch self {
         case .calendar: ThirdHandColor.sourceCalendar
         case .gmail: ThirdHandColor.sourceGmail
@@ -156,13 +158,12 @@ extension Source {
         case .other, .github, .docs: ThirdHandColor.sourceOther
         }
     }
-
 }
 
 // MARK: - Priority
 
-extension Priority {
-    public var title: String {
+public extension Priority {
+    var title: String {
         switch self {
         case .high: "High"
         case .normal: "Normal"
@@ -170,7 +171,7 @@ extension Priority {
         }
     }
 
-    public var spokenLabel: String {
+    var spokenLabel: String {
         switch self {
         case .high: "high priority"
         case .normal: "normal priority"
@@ -178,7 +179,7 @@ extension Priority {
         }
     }
 
-    public var tint: Color {
+    var tint: Color {
         switch self {
         case .high: ThirdHandColor.horizonNow
         case .normal: ThirdHandColor.textSecondary
@@ -189,8 +190,8 @@ extension Priority {
 
 // MARK: - Status
 
-extension Status {
-    public var title: String {
+public extension Status {
+    var title: String {
         switch self {
         case .open: "Open"
         case .waiting: "Waiting"
@@ -201,7 +202,7 @@ extension Status {
         }
     }
 
-    public var tint: Color {
+    var tint: Color {
         switch self {
         case .waiting: ThirdHandColor.statusWaiting
         case .snoozed: ThirdHandColor.statusSnoozed
@@ -240,9 +241,9 @@ public enum ThirdHandDateFormat {
             let weekday = date.formatted(.dateTime.weekday(.wide))
             return time.map { "\(weekday) \($0)" } ?? weekday
         }
-        /// A week or more out, the clock time is the least useful part of the
-        /// chip and the row cannot hold "Oct 21 5:00 AM" beside the age, so only
-        /// the date survives; the exact time is on the detail sheet.
+        // A week or more out, the clock time is the least useful part of the
+        // chip and the row cannot hold "Oct 21 5:00 AM" beside the age, so only
+        // the date survives; the exact time is on the detail sheet.
         return date.formatted(.dateTime.month(.abbreviated).day())
     }
 
@@ -257,33 +258,55 @@ public enum ThirdHandDateFormat {
     public static func duePhrase(_ date: Date?, now: Date, calendar: Calendar = .current) -> String {
         guard let date else { return "No due date" }
         let time = date.formatted(.dateTime.hour().minute())
-        if calendar.isDate(date, inSameDayAs: now) { return "Due today at \(time)" }
-        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: now), to: calendar.startOfDay(for: date)).day ?? 0
-        if days == 1 { return "Due tomorrow at \(time)" }
-        if days < 0 { return "Overdue, was due \(date.formatted(.dateTime.month(.abbreviated).day().hour().minute()))" }
-        if days <= 6 { return "Due \(date.formatted(.dateTime.weekday(.wide))) at \(time)" }
+        if calendar.isDate(date, inSameDayAs: now) {
+            return "Due today at \(time)"
+        }
+        let days = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: now),
+            to: calendar.startOfDay(for: date)
+        ).day ?? 0
+        if days == 1 {
+            return "Due tomorrow at \(time)"
+        }
+        if days < 0 {
+            return "Overdue, was due \(date.formatted(.dateTime.month(.abbreviated).day().hour().minute()))"
+        }
+        if days <= 6 {
+            return "Due \(date.formatted(.dateTime.weekday(.wide))) at \(time)"
+        }
         return "Due \(date.formatted(.dateTime.month(.wide).day())) at \(time)"
     }
 
     /// §5.1: "5h ago".
     public static func relative(_ date: Date, now: Date) -> String {
         let seconds = now.timeIntervalSince(date)
-        if seconds < 60 { return "just now" }
-        if seconds < 3600 { return "\(Int(seconds / 60))m ago" }
-        if seconds < 86_400 { return "\(Int(seconds / 3600))h ago" }
-        return "\(Int(seconds / 86_400))d ago"
+        if seconds < 60 {
+            return "just now"
+        }
+        if seconds < 3600 {
+            return "\(Int(seconds / 60))m ago"
+        }
+        if seconds < 86400 {
+            return "\(Int(seconds / 3600))h ago"
+        }
+        return "\(Int(seconds / 86400))d ago"
     }
 
     /// §5.3: "Seen 5 hours ago".
     public static func relativePhrase(_ date: Date, now: Date) -> String {
         let seconds = max(0, now.timeIntervalSince(date))
-        if seconds < 60 { return "seen just now" }
-        if seconds < 3600 { return "seen \(Int(seconds / 60)) minutes ago" }
-        if seconds < 86_400 {
+        if seconds < 60 {
+            return "seen just now"
+        }
+        if seconds < 3600 {
+            return "seen \(Int(seconds / 60)) minutes ago"
+        }
+        if seconds < 86400 {
             let hours = Int(seconds / 3600)
             return "seen \(hours) hour\(hours == 1 ? "" : "s") ago"
         }
-        let days = Int(seconds / 86_400)
+        let days = Int(seconds / 86400)
         return "seen \(days) day\(days == 1 ? "" : "s") ago"
     }
 
@@ -328,7 +351,9 @@ public enum ThirdHandPeople {
 public enum SourceIdentity: String, Sendable, CaseIterable, Hashable, Identifiable {
     case calendar, reminders, email, slack, docs, other
 
-    public var id: String { rawValue }
+    public var id: String {
+        rawValue
+    }
 
     public init(item: ThirdHandItem) {
         let prefix = item.id.split(separator: ":", maxSplits: 1).first.map(String.init) ?? ""
@@ -399,10 +424,14 @@ public enum SourceIdentity: String, Sendable, CaseIterable, Hashable, Identifiab
 
 // MARK: - Item additions
 
-extension ThirdHandItem {
-    public var sourceIdentity: SourceIdentity { SourceIdentity(item: self) }
+public extension ThirdHandItem {
+    var sourceIdentity: SourceIdentity {
+        SourceIdentity(item: self)
+    }
 
-    public var isSnoozed: Bool { status == .snoozed }
+    var isSnoozed: Bool {
+        status == .snoozed
+    }
 
     /// §5.1 rule 1, revised in the craft pass: the rail is a *quiet spine* unless
     /// the row is genuinely urgent.
@@ -425,10 +454,14 @@ extension ThirdHandItem {
     /// in that screenshot. It shows up on the ordinary case — a Now row that is
     /// merely due today and not high priority now gets a quiet rail where it used to
     /// get a red one.
-    public func railTint(horizon: Horizon, now: Date) -> Color {
+    func railTint(horizon: Horizon, now: Date) -> Color {
         guard horizon.hasRail else { return .clear }
-        if isUrgent(now: now) { return ThirdHandColor.horizonNow }
-        if priority == .high { return ThirdHandColor.horizonNext }
+        if isUrgent(now: now) {
+            return ThirdHandColor.horizonNow
+        }
+        if priority == .high {
+            return ThirdHandColor.horizonNext
+        }
         return ThirdHandColor.railNeutral
     }
 
@@ -439,18 +472,16 @@ extension ThirdHandItem {
     /// than one due in an hour, so it must keep the red spine; clamping the past
     /// away (as a first draft of this did) silently demoted exactly the rows that
     /// most needed the emphasis.
-    public func isUrgent(now: Date) -> Bool {
+    func isUrgent(now: Date) -> Bool {
         guard priority == .high, let due else { return false }
-        return due.timeIntervalSince(now) <= 86_400
+        return due.timeIntervalSince(now) <= 86400
     }
 
     /// §5.2: newness derives from the snapshot's `lastViewedAt`.
-    public func isNew(since lastViewedAt: Date?) -> Bool {
+    func isNew(since lastViewedAt: Date?) -> Bool {
         guard let lastViewedAt else { return true }
         return firstSeenAt > lastViewedAt
     }
 }
 
 // MARK: - Colour import
-
-

@@ -4,7 +4,6 @@ import Testing
 
 @Suite("CloudContainer")
 struct CloudContainerTests {
-
     private func makeTemp() throws -> FileCloudContainer {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("pulse-container-\(UUID().uuidString)", isDirectory: true)
@@ -39,10 +38,13 @@ struct CloudContainerTests {
         let container = try makeTemp()
         defer { try? FileManager.default.removeItem(at: container.rootURL) }
 
-        for index in 1...3 {
+        for index in 1 ... 3 {
             try container.append(Data("line\(index)\n".utf8), to: "commands.jsonl")
         }
-        let text = String(decoding: try #require(try container.read("commands.jsonl")), as: UTF8.self)
+        // A test that reads back what the container wrote, so the assertion is on the
+        // bytes rather than on a decoded model.
+        // swiftlint:disable:next optional_data_string_conversion
+        let text = try String(decoding: #require(try container.read("commands.jsonl")), as: UTF8.self)
         #expect(text == "line1\nline2\nline3\n")
     }
 
@@ -83,15 +85,15 @@ struct CloudContainerTests {
         #expect(try SyncPaths.resolve("snapshot.json", in: container.rootURL).lastPathComponent == "snapshot.json")
     }
 
-    // The device failure this file guards against: the real iCloud container lives under
-    // `/private`, which `standardizedFileURL` folds away for the root (it exists) but not
-    // for a child that has not been created yet -- so the first write of any file threw
-    // `pathEscapesRoot`. That spelling asymmetry cannot be rebuilt from a test (a symlinked
-    // root standardises symmetrically, and `/private` is not addressable in a sandbox), so
-    // these assert the invariant instead of replaying the symptom: resolution stays inside
-    // the root for the contract's three filenames whether or not they exist yet. They hold
-    // before and after canonicalising the root -- they are here so a future containment
-    // change that reintroduces the asymmetry fails loudly.
+    /// The device failure this file guards against: the real iCloud container lives under
+    /// `/private`, which `standardizedFileURL` folds away for the root (it exists) but not
+    /// for a child that has not been created yet -- so the first write of any file threw
+    /// `pathEscapesRoot`. That spelling asymmetry cannot be rebuilt from a test (a symlinked
+    /// root standardises symmetrically, and `/private` is not addressable in a sandbox), so
+    /// these assert the invariant instead of replaying the symptom: resolution stays inside
+    /// the root for the contract's three filenames whether or not they exist yet. They hold
+    /// before and after canonicalising the root -- they are here so a future containment
+    /// change that reintroduces the asymmetry fails loudly.
     @Test("the contract's three filenames resolve inside an existing root")
     func transportPathsResolveInsideRoot() throws {
         let root = try makeTemp().rootURL

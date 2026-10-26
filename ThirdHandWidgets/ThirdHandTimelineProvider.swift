@@ -65,14 +65,38 @@ extension WidgetSnapshot {
     static var sample: WidgetSnapshot {
         let base = Date(timeIntervalSince1970: 1_793_059_200) // 2026-10-23 09:00 UTC
         let items = [
-            WidgetItem(sampleID: "calendar:event:sample-1", title: "Design review", kind: Kind.review.rawValue,
-                       priority: Priority.high.rawValue, due: base.addingTimeInterval(2_400), horizon: Horizon.now.rawValue),
-            WidgetItem(sampleID: "gmail:thread:sample-2", title: "RSVP to Priya", kind: Kind.rsvp.rawValue,
-                       priority: Priority.high.rawValue, due: base.addingTimeInterval(3_600), horizon: Horizon.now.rawValue),
-            WidgetItem(sampleID: "reminders:list:sample-3", title: "Send the invoice", kind: Kind.deadline.rawValue,
-                       priority: Priority.normal.rawValue, due: base.addingTimeInterval(7_200), horizon: Horizon.now.rawValue),
-            WidgetItem(sampleID: "slack:message:sample-4", title: "Reply in #platform", kind: Kind.reply.rawValue,
-                       priority: Priority.normal.rawValue, due: nil, horizon: Horizon.now.rawValue),
+            WidgetItem(
+                sampleID: "calendar:event:sample-1",
+                title: "Design review",
+                kind: Kind.review.rawValue,
+                priority: Priority.high.rawValue,
+                due: base.addingTimeInterval(2400),
+                horizon: Horizon.now.rawValue
+            ),
+            WidgetItem(
+                sampleID: "gmail:thread:sample-2",
+                title: "RSVP to Priya",
+                kind: Kind.rsvp.rawValue,
+                priority: Priority.high.rawValue,
+                due: base.addingTimeInterval(3600),
+                horizon: Horizon.now.rawValue
+            ),
+            WidgetItem(
+                sampleID: "reminders:list:sample-3",
+                title: "Send the invoice",
+                kind: Kind.deadline.rawValue,
+                priority: Priority.normal.rawValue,
+                due: base.addingTimeInterval(7200),
+                horizon: Horizon.now.rawValue
+            ),
+            WidgetItem(
+                sampleID: "slack:message:sample-4",
+                title: "Reply in #platform",
+                kind: Kind.reply.rawValue,
+                priority: Priority.normal.rawValue,
+                due: nil,
+                horizon: Horizon.now.rawValue
+            )
         ]
         return WidgetSnapshot(nowCount: items.count, nowItems: items, generatedAt: base, hasBoard: true)
     }
@@ -80,7 +104,7 @@ extension WidgetSnapshot {
     /// Twelve Now items, for the circular accessory's "10+" render.
     static var sampleOverflowing: WidgetSnapshot {
         let base = Date(timeIntervalSince1970: 1_793_059_200)
-        let items = (1...12).map { index in
+        let items = (1 ... 12).map { index in
             WidgetItem(
                 sampleID: "reminders:list:sample-\(index)",
                 title: "Reminder \(index)",
@@ -101,7 +125,7 @@ extension WidgetSnapshot {
             title: "Review the quarterly platform architecture proposal before Friday",
             kind: Kind.review.rawValue,
             priority: Priority.high.rawValue,
-            due: base.addingTimeInterval(2_400),
+            due: base.addingTimeInterval(2400),
             horizon: Horizon.now.rawValue
         )
         return WidgetSnapshot(nowCount: 1, nowItems: [item], generatedAt: base, hasBoard: true)

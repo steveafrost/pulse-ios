@@ -17,12 +17,17 @@ public enum CommandDropReason: String, Sendable, Hashable, CaseIterable {
     case refused
 
     /// The short label used in `SyncLog` lines and the debug sheet.
-    public var label: String { rawValue }
+    public var label: String {
+        rawValue
+    }
 }
 
 /// One consumed-but-dropped command, with enough detail to explain it in a log.
 public struct DroppedCommand: Sendable, Hashable, Identifiable {
-    public var id: String { commandID }
+    public var id: String {
+        commandID
+    }
+
     public var commandID: String
     public var itemID: String
     public var op: MirrorOp
@@ -89,13 +94,17 @@ public struct CommandConsumeReport: Sendable, Hashable {
     }
 
     /// Whether the store changed, i.e. whether the snapshot has to be rewritten.
-    public var didChangeStore: Bool { !changedItemIDs.isEmpty }
+    public var didChangeStore: Bool {
+        !changedItemIDs.isEmpty
+    }
 
     /// One line per dropped command, for `SyncLog`.
     public var dropSummaries: [String] {
         dropped.map { drop in
             var line = "dropped \(drop.op.rawValue) \(drop.itemID): \(drop.reason.label)"
-            if let detail = drop.detail { line += " (\(detail))" }
+            if let detail = drop.detail {
+                line += " (\(detail))"
+            }
             return line
         }
     }

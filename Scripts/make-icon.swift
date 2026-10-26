@@ -53,7 +53,7 @@ struct Variant {
     let glyph: (CGFloat, CGFloat, CGFloat)
 }
 
-// sRGB components, 0...1. Values are the literal hex from docs/DESIGN.md §2.
+/// sRGB components, 0...1. Values are the literal hex from docs/DESIGN.md §2.
 func rgb(_ hex: UInt32) -> (CGFloat, CGFloat, CGFloat) {
     (
         CGFloat((hex >> 16) & 0xFF) / 255,
@@ -70,7 +70,7 @@ let variants: [Variant] = [
     Variant(file: "AppIcon-1024-dark.png", background: rgb(0x000000), glyph: rgb(0xFF453A)),
     // Tinted appearance: the system derives the tint from luminance, so ship a
     // neutral grayscale version - white mark on black.
-    Variant(file: "AppIcon-1024-tinted.png", background: rgb(0x000000), glyph: rgb(0xFFFFFF)),
+    Variant(file: "AppIcon-1024-tinted.png", background: rgb(0x000000), glyph: rgb(0xFFFFFF))
 ]
 
 func makeContext() -> CGContext {
@@ -130,7 +130,7 @@ struct Beat {
 let beats: [Beat] = [
     Beat(dx: -252, up: 96, down: 66, halfWidth: 92),
     Beat(dx: 0, up: 236, down: 148, halfWidth: 104),
-    Beat(dx: 252, up: 118, down: 80, halfWidth: 96),
+    Beat(dx: 252, up: 118, down: 80, halfWidth: 96)
 ]
 
 /// Where the flat run enters and leaves the mark.
@@ -160,16 +160,20 @@ func render(_ variant: Variant) -> CGImage {
     let ctx = makeContext()
 
     // Full bleed: no corner rounding, no margin. The OS masks the icon itself.
-    ctx.setFillColor(CGColor(srgbRed: variant.background.0,
-                             green: variant.background.1,
-                             blue: variant.background.2,
-                             alpha: 1))
+    ctx.setFillColor(CGColor(
+        srgbRed: variant.background.0,
+        green: variant.background.1,
+        blue: variant.background.2,
+        alpha: 1
+    ))
     ctx.fill(CGRect(x: 0, y: 0, width: size, height: size))
 
-    ctx.setStrokeColor(CGColor(srgbRed: variant.glyph.0,
-                               green: variant.glyph.1,
-                               blue: variant.glyph.2,
-                               alpha: 1))
+    ctx.setStrokeColor(CGColor(
+        srgbRed: variant.glyph.0,
+        green: variant.glyph.1,
+        blue: variant.glyph.2,
+        alpha: 1
+    ))
     ctx.setLineWidth(strokeWeight)
     // Round caps and joins: the beats are sharp changes of direction, and a miter
     // join spikes out at the peaks — visible as little horns at small sizes.

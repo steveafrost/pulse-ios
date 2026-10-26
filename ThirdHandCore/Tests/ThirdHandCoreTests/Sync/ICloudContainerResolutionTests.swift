@@ -15,11 +15,12 @@ import Testing
 /// container and the un-creatable directory without any iCloud account.
 @Suite("ICloudContainer resolution")
 struct ICloudContainerResolutionTests {
-
     /// No ubiquity container: the signed-out / simulator / missing-entitlement
     /// case. Every one of those returns nil from the same call.
     private final class NoUbiquityContainer: FileManager, @unchecked Sendable {
-        override func url(forUbiquityContainerIdentifier identifier: String?) -> URL? { nil }
+        override func url(forUbiquityContainerIdentifier identifier: String?) -> URL? {
+            nil
+        }
     }
 
     /// A container that resolves to a path under a regular file, so
@@ -39,8 +40,13 @@ struct ICloudContainerResolutionTests {
     /// can get to the real path.
     private final class ResolvedContainer: FileManager, @unchecked Sendable {
         let base: URL
-        init(base: URL) { self.base = base }
-        override func url(forUbiquityContainerIdentifier identifier: String?) -> URL? { base }
+        init(base: URL) {
+            self.base = base
+        }
+
+        override func url(forUbiquityContainerIdentifier identifier: String?) -> URL? {
+            base
+        }
     }
 
     // MARK: The nil container

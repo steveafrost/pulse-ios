@@ -50,7 +50,7 @@ public enum CaptureCopy {
             return "Looking for what needs you…"
         case .failed:
             return "Couldn't refresh · Try again"
-        case .idle(let date):
+        case let .idle(date):
             guard let date else { return "Not checked yet" }
             return "\(Plural.items(status.itemCount)) · \(ThirdHandDateFormat.relative(date, now: now))"
         }
@@ -67,10 +67,10 @@ public enum CaptureCopy {
         switch status.phase {
         case .capturing:
             return "Checking now…"
-        case .failed(let date):
+        case let .failed(date):
             guard let date else { return "Couldn't check the board" }
             return "Couldn't check · last worked \(ThirdHandDateFormat.relative(date, now: now))"
-        case .idle(let date):
+        case let .idle(date):
             guard let date else { return "Not checked yet" }
             return "Checked \(ThirdHandDateFormat.relative(date, now: now)) · \(Plural.items(status.itemCount))"
         }
@@ -82,7 +82,7 @@ public enum CaptureCopy {
             return "Couldn't refresh. Double-tap to try again."
         case .capturing:
             return "Looking for what needs you"
-        case .idle(let date):
+        case let .idle(date):
             guard let date else { return "Not checked yet" }
             let base = "\(Plural.items(status.itemCount)), updated \(ThirdHandDateFormat.relative(date, now: now))"
             guard let sync = status.syncText else { return base }

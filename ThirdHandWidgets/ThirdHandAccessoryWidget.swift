@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 import WidgetKit
 
 /// The Lock Screen accessory widget (issue #30): circular gauge, rectangular top
@@ -31,8 +31,10 @@ struct ThirdHandAccessoryWidgetView: View {
     /// `WidgetCopy.circularMax` (9): past it the numeral reads "10+", which is what
     /// keeps a twelve-item board from overflowing the ring (#30's acceptance).
     private var circular: some View {
-        Gauge(value: min(Double(entry.snapshot.nowCount), Double(WidgetCopy.circularMax)),
-              in: 0...Double(WidgetCopy.circularMax)) {
+        Gauge(
+            value: min(Double(entry.snapshot.nowCount), Double(WidgetCopy.circularMax)),
+            in: 0 ... Double(WidgetCopy.circularMax)
+        ) {
             EmptyView()
         } currentValueLabel: {
             if entry.snapshot.isEmpty {
@@ -77,9 +79,13 @@ struct ThirdHandAccessoryWidgetView: View {
             return WidgetCopy.countAccessibilityLabel(0)
         }
         var parts = [WidgetCopy.countAccessibilityLabel(entry.snapshot.nowCount), top.title]
-        if let due = top.due { parts.append("due " + WidgetCopy.dueHint(due, now: entry.date)) }
+        if let due = top.due {
+            parts.append("due " + WidgetCopy.dueHint(due, now: entry.date))
+        }
         let hidden = entry.snapshot.hiddenCount(limit: 1)
-        if hidden > 0 { parts.append("and \(hidden) more") }
+        if hidden > 0 {
+            parts.append("and \(hidden) more")
+        }
         return parts.joined(separator: ", ")
     }
 
@@ -112,27 +118,27 @@ struct ThirdHandAccessoryWidget: Widget {
 // MARK: - Previews
 
 #if DEBUG
-#Preview("Circular", as: .accessoryCircular) {
-    ThirdHandAccessoryWidget()
-} timeline: {
-    ThirdHandEntry(date: .now, snapshot: .sample, isPlaceholder: false)
-    ThirdHandEntry(date: .now, snapshot: .sampleOverflowing, isPlaceholder: false)
-    ThirdHandEntry(date: .now, snapshot: WidgetSnapshot(), isPlaceholder: false)
-}
+    #Preview("Circular", as: .accessoryCircular) {
+        ThirdHandAccessoryWidget()
+    } timeline: {
+        ThirdHandEntry(date: .now, snapshot: .sample, isPlaceholder: false)
+        ThirdHandEntry(date: .now, snapshot: .sampleOverflowing, isPlaceholder: false)
+        ThirdHandEntry(date: .now, snapshot: WidgetSnapshot(), isPlaceholder: false)
+    }
 
-#Preview("Rectangular", as: .accessoryRectangular) {
-    ThirdHandAccessoryWidget()
-} timeline: {
-    ThirdHandEntry(date: .now, snapshot: .sample, isPlaceholder: false)
-    ThirdHandEntry(date: .now, snapshot: .sampleLongTitle, isPlaceholder: false)
-    ThirdHandEntry(date: .now, snapshot: WidgetSnapshot(), isPlaceholder: false)
-}
+    #Preview("Rectangular", as: .accessoryRectangular) {
+        ThirdHandAccessoryWidget()
+    } timeline: {
+        ThirdHandEntry(date: .now, snapshot: .sample, isPlaceholder: false)
+        ThirdHandEntry(date: .now, snapshot: .sampleLongTitle, isPlaceholder: false)
+        ThirdHandEntry(date: .now, snapshot: WidgetSnapshot(), isPlaceholder: false)
+    }
 
-#Preview("Inline", as: .accessoryInline) {
-    ThirdHandAccessoryWidget()
-} timeline: {
-    ThirdHandEntry(date: .now, snapshot: .sample, isPlaceholder: false)
-    ThirdHandEntry(date: .now, snapshot: .sampleLongTitle, isPlaceholder: false)
-    ThirdHandEntry(date: .now, snapshot: WidgetSnapshot(), isPlaceholder: false)
-}
+    #Preview("Inline", as: .accessoryInline) {
+        ThirdHandAccessoryWidget()
+    } timeline: {
+        ThirdHandEntry(date: .now, snapshot: .sample, isPlaceholder: false)
+        ThirdHandEntry(date: .now, snapshot: .sampleLongTitle, isPlaceholder: false)
+        ThirdHandEntry(date: .now, snapshot: WidgetSnapshot(), isPlaceholder: false)
+    }
 #endif

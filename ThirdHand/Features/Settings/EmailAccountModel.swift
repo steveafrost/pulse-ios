@@ -57,6 +57,7 @@ public final class EmailAccountModel {
             }
         }
     }
+
     /// Set when a save attempt failed, for an inline message under the form.
     public private(set) var saveError: String?
 
@@ -74,19 +75,19 @@ public final class EmailAccountModel {
         self.secrets = secrets
 
         let configured = try? accounts.configuredAccount()
-        let maybeAccount = configured ?? nil
+        let maybeAccount = configured
         if let account = maybeAccount {
-            let hasSecret = (try? secrets.secret(for: account.keychainAccount)) ?? nil
-            self.phase = hasSecret == nil ? .needsPassword(account) : .connected(account)
-            self.status = .notConnected
-            self.draftAddress = account.username
-            self.draftHost = account.host
+            let hasSecret = (try? secrets.secret(for: account.keychainAccount))
+            phase = hasSecret == nil ? .needsPassword(account) : .connected(account)
+            status = .notConnected
+            draftAddress = account.username
+            draftHost = account.host
             // Show the picker on the provider that owns the stored host, so an
             // existing Gmail account does not open showing iCloud guidance.
-            self.draftProvider = EmailAccount.Provider.matching(host: account.host) ?? .other
+            draftProvider = EmailAccount.Provider.matching(host: account.host) ?? .other
         } else {
-            self.phase = .notConnected
-            self.status = .notConnected
+            phase = .notConnected
+            status = .notConnected
         }
     }
 
@@ -177,7 +178,9 @@ public final class EmailAccountModel {
     /// is gone cannot have checked anything, and `statusLine` already renders
     /// "Password needed" for it — a transport status would only contradict that.
     public func apply(_ outcome: CaptureOutcome) {
-        if case .needsPassword = phase { return }
+        if case .needsPassword = phase {
+            return
+        }
         guard case .connected = phase else {
             // No mailbox configured. The pass failing is expected and not the user's
             // mail server's fault, so it must not read as a broken mailbox.
@@ -202,11 +205,13 @@ public final class EmailAccountModel {
     /// configured but has lost its Keychain secret is *not* "Not connected", and
     /// saying so would send the user to a form that is already filled in.
     public var statusLine: String {
-        if case .needsPassword = phase { return "Password needed" }
+        if case .needsPassword = phase {
+            return "Password needed"
+        }
         return switch status {
         case .notConnected: "Not connected"
         case .checking: "Checking…"
-        case .unread(let count): Plural.count(count, "unread message")
+        case let .unread(count): Plural.count(count, "unread message")
         case .failed: "Couldn't check"
         }
     }
@@ -222,9 +227,9 @@ public final class EmailAccountModel {
             "Email is not connected. Add a mailbox in Settings to see mail on your board."
         case .checking:
             "Checking your mailbox now"
-        case .unread(let count):
+        case let .unread(count):
             "\(Plural.count(count, "unread message")) in your mailbox"
-        case .failed(let reason):
+        case let .failed(reason):
             "Couldn't check your mailbox. \(reason)"
         }
     }

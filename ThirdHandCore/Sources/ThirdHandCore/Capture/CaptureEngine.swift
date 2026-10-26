@@ -17,15 +17,23 @@ public enum CaptureMode: String, Sendable, Codable, CaseIterable, Hashable {
             let end = start.addingTimeInterval(CaptureWindow.secondsPerDay * 8)
             return DateInterval(start: start, end: end)
         case .incremental:
-            return CaptureWindow.around(now: now, back: CaptureWindow.secondsPerDay, forward: 2 * CaptureWindow.secondsPerDay)
+            return CaptureWindow.around(
+                now: now,
+                back: CaptureWindow.secondsPerDay,
+                forward: 2 * CaptureWindow.secondsPerDay
+            )
         }
     }
 
     /// Whether a pass in this mode may move unseen items to `resolved`.
-    public var resolvesMissingItems: Bool { self == .full }
+    public var resolvesMissingItems: Bool {
+        self == .full
+    }
 
     /// The name recorded as `lastChangedBy` and in history.
-    public var runName: String { "capture-\(rawValue)" }
+    public var runName: String {
+        "capture-\(rawValue)"
+    }
 }
 
 /// One source's failure, kept per source so the board can say "Calendar is off"
@@ -46,10 +54,9 @@ public struct SourceError: Sendable, Hashable, Codable, CustomStringConvertible 
     /// Builds from a thrown error, classifying `CaptureError.denied`/`unavailable`.
     public init(source: Source, error: any Error) {
         let captureError = error as? CaptureError
-        let denied: Bool
-        switch captureError {
-        case .denied, .unavailable: denied = true
-        default: denied = false
+        let denied = switch captureError {
+        case .denied, .unavailable: true
+        default: false
         }
         self.init(
             source: captureError?.source ?? source,
@@ -58,7 +65,9 @@ public struct SourceError: Sendable, Hashable, Codable, CustomStringConvertible 
         )
     }
 
-    public var description: String { "\(source.rawValue): \(message)" }
+    public var description: String {
+        "\(source.rawValue): \(message)"
+    }
 }
 
 /// What one capture pass did, per source and in total.
@@ -102,7 +111,9 @@ public struct CaptureReport: Sendable, Hashable, Codable {
     }
 
     /// Total items detected across all sources.
-    public var detectedCount: Int { countsBySource.values.reduce(0, +) }
+    public var detectedCount: Int {
+        countsBySource.values.reduce(0, +)
+    }
 
     /// Sources that reported a permission problem -- the UI's "paused" list.
     public var pausedSources: [Source] {
@@ -115,7 +126,7 @@ public struct CaptureReport: Sendable, Hashable, Codable {
         let parts = [
             "\(detectedCount) detected",
             "\(created.count) new",
-            "\(resolved.count) resolved",
+            "\(resolved.count) resolved"
         ]
         return CaptureRun(
             run: "capture",
@@ -181,7 +192,9 @@ public actor CaptureEngine {
     }
 
     /// Whether a pass is currently running. Exposed for the UI's status capsule.
-    public var isRunning: Bool { inFlight != nil }
+    public var isRunning: Bool {
+        inFlight != nil
+    }
 
     private func perform(mode: CaptureMode) async -> CaptureReport {
         let startedAt = now()
@@ -226,7 +239,7 @@ public actor CaptureEngine {
                 // detected again. User-locked items (done/dismissed/active snooze)
                 // are left alone, and an already-resolved one is not re-resolved.
                 let seen = Set(deduped.map(\.id))
-                let missing = (await store.allItems())
+                let missing = await (store.allItems())
                     .filter { item in
                         let status = item.effectiveStatus(at: startedAt)
                         return !seen.contains(item.id) && !status.isUserTerminal && status != .resolved
@@ -263,7 +276,9 @@ public actor CaptureEngine {
         var order: [String] = []
         var byID: [String: DetectedItem] = [:]
         for item in items {
-            if byID[item.id] == nil { order.append(item.id) }
+            if byID[item.id] == nil {
+                order.append(item.id)
+            }
             byID[item.id] = item
         }
         return order.compactMap { byID[$0] }

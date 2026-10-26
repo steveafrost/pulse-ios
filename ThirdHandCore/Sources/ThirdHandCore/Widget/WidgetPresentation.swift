@@ -1,6 +1,7 @@
 import Foundation
 
 // MARK: - Reading the projection
+
 //
 // Everything the widgets and intents *derive* from `board.json` lives here, in
 // `ThirdHandCore`, so it is visible to the app, the widget extension and the intent
@@ -21,7 +22,9 @@ public enum WidgetOrdering {
                 let b = rhs.element
                 let pa = Priority(rawValue: a.priority)?.sortRank ?? Priority.normal.sortRank
                 let pb = Priority(rawValue: b.priority)?.sortRank ?? Priority.normal.sortRank
-                if pa != pb { return pa < pb }
+                if pa != pb {
+                    return pa < pb
+                }
                 switch (a.due, b.due) {
                 case let (ad?, bd?) where ad != bd: return ad < bd
                 case (nil, .some): return false
@@ -81,22 +84,30 @@ public struct WidgetSnapshot: Sendable, Hashable {
         max(0, nowItems.count - max(0, limit))
     }
 
-    public var isEmpty: Bool { nowItems.isEmpty }
+    public var isEmpty: Bool {
+        nowItems.isEmpty
+    }
 
     /// An empty board with a *known* board file vs a missing one. The widgets show the
     /// same sentence either way (#29 acceptance: "Nothing needs you" with a checkmark),
     /// but the distinction is kept on the type so a footer can offer setup instead.
-    public var needsSetup: Bool { !hasBoard }
+    public var needsSetup: Bool {
+        !hasBoard
+    }
 
     /// The single most urgent item: the rectangular accessory, the Live Activity and
     /// Snooze Top all resolve it through here.
-    public var topItem: WidgetItem? { nowItems.first }
+    public var topItem: WidgetItem? {
+        nowItems.first
+    }
 
     /// The highest priority present, for the circular gauge's tone.
     public var urgency: WidgetUrgency {
         guard !nowItems.isEmpty else { return .clear }
         let hasHigh = nowItems.contains { $0.priority == Priority.high.rawValue }
-        if hasHigh { return .high }
+        if hasHigh {
+            return .high
+        }
         return nowCount >= WidgetCopy.urgencyThreshold ? .elevated : .normal
     }
 
@@ -104,10 +115,16 @@ public struct WidgetSnapshot: Sendable, Hashable {
     public func ageText(now: Date) -> String {
         guard let generatedAt else { return "" }
         let seconds = max(0, now.timeIntervalSince(generatedAt))
-        if seconds < 60 { return "now" }
-        if seconds < 3_600 { return "\(Int(seconds / 60))m" }
-        if seconds < 86_400 { return "\(Int(seconds / 3_600))h" }
-        return "\(Int(seconds / 86_400))d"
+        if seconds < 60 {
+            return "now"
+        }
+        if seconds < 3600 {
+            return "\(Int(seconds / 60))m"
+        }
+        if seconds < 86400 {
+            return "\(Int(seconds / 3600))h"
+        }
+        return "\(Int(seconds / 86400))d"
     }
 }
 
@@ -116,7 +133,9 @@ public struct WidgetSnapshot: Sendable, Hashable {
 public enum WidgetUrgency: Sendable, Hashable {
     case clear, normal, elevated, high
 
-    public var isUrgent: Bool { self == .elevated || self == .high }
+    public var isUrgent: Bool {
+        self == .elevated || self == .high
+    }
 }
 
 // MARK: - Copy
@@ -153,18 +172,18 @@ public enum WidgetCopy {
     /// "3 need you" / "1 needs you" / "Nothing needs you".
     public static func needYou(_ count: Int) -> String {
         switch count {
-        case 0: return emptyTitle
-        case 1: return "1 needs you"
-        default: return "\(count) need you"
+        case 0: emptyTitle
+        case 1: "1 needs you"
+        default: "\(count) need you"
         }
     }
 
     /// The VoiceOver label for a count, so it never reads a bare numeral.
     public static func countAccessibilityLabel(_ count: Int) -> String {
         switch count {
-        case 0: return emptyTitle
-        case 1: return "1 item needs you"
-        default: return "\(count) items need you"
+        case 0: emptyTitle
+        case 1: "1 item needs you"
+        default: "\(count) items need you"
         }
     }
 
@@ -199,7 +218,11 @@ public enum WidgetCopy {
     ///
     /// "in 40m" for the next hour, "Today 5:30 PM" beyond it, and nothing when the
     /// item has no due date -- never an invented time.
-    public static func rectangularDetail(_ snapshot: WidgetSnapshot, now: Date, calendar: Calendar = .current) -> String {
+    public static func rectangularDetail(
+        _ snapshot: WidgetSnapshot,
+        now: Date,
+        calendar: Calendar = .current
+    ) -> String {
         var parts: [String] = []
         if snapshot.nowCount > 0 {
             parts.append(needYou(snapshot.nowCount))
@@ -208,7 +231,9 @@ public enum WidgetCopy {
             parts.append(dueHint(due, now: now, calendar: calendar))
         }
         let more = snapshot.hiddenCount(limit: 1)
-        if more > 0 { parts.append("+\(more) more") }
+        if more > 0 {
+            parts.append("+\(more) more")
+        }
         return parts.joined(separator: " \u{00B7} ")
     }
 
@@ -218,8 +243,12 @@ public enum WidgetCopy {
     /// lives in the app target and is not visible to the extension.
     public static func dueHint(_ due: Date, now: Date, calendar: Calendar = .current) -> String {
         let delta = due.timeIntervalSince(now)
-        if delta < 0 { return "overdue" }
-        if delta <= 3_600 { return "in \(max(1, Int(delta / 60)))m" }
+        if delta < 0 {
+            return "overdue"
+        }
+        if delta <= 3600 {
+            return "in \(max(1, Int(delta / 60)))m"
+        }
         if calendar.isDate(due, inSameDayAs: now) {
             return "Today " + time(due, calendar: calendar)
         }
@@ -228,7 +257,9 @@ public enum WidgetCopy {
             from: calendar.startOfDay(for: now),
             to: calendar.startOfDay(for: due)
         ).day ?? 0
-        if days == 1 { return "Tomorrow" }
+        if days == 1 {
+            return "Tomorrow"
+        }
         if days > 1, days <= 6 {
             return weekday(due, calendar: calendar) + " " + time(due, calendar: calendar)
         }
@@ -312,21 +343,22 @@ public enum ImminentItemRule {
         now: Date,
         runningItemID: String?
     ) -> WidgetItem? {
-        guard let item = imminentItem(snapshot, now: now) else { return nil }
-        guard item.id != runningItemID else { return nil }
+        guard let item = imminentItem(snapshot, now: now), item.id != runningItemID else { return nil }
         return item
     }
 
     /// Whether a running activity is over: its item left the board entirely (done,
     /// snoozed, or dropped by a capture pass).
     public static func shouldEnd(runningItemID: String, snapshot: WidgetSnapshot) -> Bool {
-        snapshot.nowItems.first { $0.id == runningItemID } == nil
+        !snapshot.nowItems.contains { $0.id == runningItemID }
     }
 
     /// "in 40 min" / "starting now" for the countdown.
     public static func countdownText(_ start: Date, now: Date) -> String {
         let delta = start.timeIntervalSince(now)
-        if delta <= 0 { return "starting now" }
+        if delta <= 0 {
+            return "starting now"
+        }
         let minutes = max(1, Int((delta / 60).rounded(.up)))
         return "in \(minutes) min"
     }

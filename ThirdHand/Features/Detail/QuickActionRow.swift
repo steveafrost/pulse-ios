@@ -1,5 +1,5 @@
-import ThirdHandCore
 import SwiftUI
+import ThirdHandCore
 
 /// #18: each quick action — text-only shows Copy, url-only shows Open, both show
 /// a Menu. The whole row is at least 44pt.

@@ -1,7 +1,7 @@
 import Foundation
-import ThirdHandCore
 import Testing
 @testable import ThirdHand
+import ThirdHandCore
 
 /// The app-group write path the intents use (#32).
 ///
@@ -25,7 +25,7 @@ struct SnoozeWritePathTests {
     func writesDecodableCommand() throws {
         let paths = try temporaryPaths()
         let writer = SnoozeCommandWriter(paths: paths)
-        let until = base.addingTimeInterval(86_400)
+        let until = base.addingTimeInterval(86400)
 
         let id = try writer.snooze(itemID: "calendar:event:a", until: until, now: base)
 
@@ -66,7 +66,7 @@ struct SnoozeWritePathTests {
                 title: "Design review",
                 kind: Kind.review.rawValue,
                 priority: Priority.high.rawValue,
-                due: base.addingTimeInterval(2_400),
+                due: base.addingTimeInterval(2400),
                 horizon: Horizon.now.rawValue
             )]
         )
@@ -75,7 +75,11 @@ struct SnoozeWritePathTests {
         try data.write(to: paths.boardURL)
 
         let before = try Data(contentsOf: paths.boardURL)
-        try SnoozeCommandWriter(paths: paths).snooze(itemID: "calendar:event:a", until: base.addingTimeInterval(86_400), now: base)
+        try SnoozeCommandWriter(paths: paths).snooze(
+            itemID: "calendar:event:a",
+            until: base.addingTimeInterval(86400),
+            now: base
+        )
         let after = try Data(contentsOf: paths.boardURL)
 
         // Byte-identical: the snooze is a command, not a cache edit, so nothing the
@@ -86,7 +90,7 @@ struct SnoozeWritePathTests {
 
     @Test("The board reader treats an absent file as the empty state")
     func readerMissingBoard() throws {
-        let reader = WidgetBoardReader(paths: try temporaryPaths())
+        let reader = try WidgetBoardReader(paths: temporaryPaths())
         #expect(reader.readBoard() == nil)
         let snapshot = reader.snapshot()
         #expect(snapshot.nowCount == 0)
@@ -105,7 +109,7 @@ struct SnoozeWritePathTests {
                 title: "RSVP to Priya",
                 kind: Kind.rsvp.rawValue,
                 priority: Priority.high.rawValue,
-                due: base.addingTimeInterval(3_600),
+                due: base.addingTimeInterval(3600),
                 horizon: Horizon.now.rawValue
             )]
         )
@@ -133,11 +137,11 @@ struct SnoozeWritePathTests {
     }
 
     @Test("Snooze durations resolve into the future")
-    func snoozeDurations() {
+    func snoozeDurations() throws {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
+        calendar.timeZone = try #require(TimeZone(identifier: "UTC"))
 
-        #expect(SnoozeDuration.hour.date(from: base, calendar: calendar) == base.addingTimeInterval(3_600))
+        #expect(SnoozeDuration.hour.date(from: base, calendar: calendar) == base.addingTimeInterval(3600))
 
         // 09:00 UTC -> 18:00 the same day is still ahead.
         let evening = SnoozeDuration.evening.date(from: base, calendar: calendar)
@@ -145,7 +149,7 @@ struct SnoozeWritePathTests {
         #expect(evening > base)
 
         // 20:00 UTC -> 18:00 has passed, so it must roll to tomorrow.
-        let lateNight = base.addingTimeInterval(20 * 3_600)
+        let lateNight = base.addingTimeInterval(20 * 3600)
         let eveningTomorrow = SnoozeDuration.evening.date(from: lateNight, calendar: calendar)
         #expect(calendar.component(.hour, from: eveningTomorrow) == 18)
         #expect(eveningTomorrow > lateNight)

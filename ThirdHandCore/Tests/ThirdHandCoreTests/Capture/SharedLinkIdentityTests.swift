@@ -42,7 +42,7 @@ struct SharedLinkIdentityTests {
     // MARK: - Normalisation
 
     @Test("tracking query parameters are normalised away")
-    func trackingParameters() throws {
+    func trackingParameters() {
         let clean = ItemIdentity.sharedLink(source: .github, url: "https://github.com/acme/api/pull/9")
         let tracked = ItemIdentity.sharedLink(
             source: .github,

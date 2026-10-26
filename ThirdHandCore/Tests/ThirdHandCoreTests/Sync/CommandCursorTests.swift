@@ -4,7 +4,6 @@ import Testing
 
 @Suite("CommandCursor")
 struct CommandCursorTests {
-
     @Test("a file cursor round-trips across reader instances")
     func fileCursorPersists() throws {
         let directory = FileManager.default.temporaryDirectory
@@ -36,8 +35,12 @@ struct CommandCursorTests {
     func fingerprintIsStable() {
         // FNV-1a, pinned: `Hasher` is seeded per process and would invalidate every
         // stored bookmark on relaunch.
-        #expect(CommandReader.fingerprint(Data()) == 0xcbf2_9ce4_8422_2325)
-        #expect(CommandReader.fingerprint(Data("a".utf8)) == 0xaf63_dc4c_8601_ec8c)
+        #expect(CommandReader.fingerprint(Data()) == 0xCBF2_9CE4_8422_2325)
+        #expect(CommandReader.fingerprint(Data("a".utf8)) == 0xAF63_DC4C_8601_EC8C)
+        // Comparing a fingerprint to itself is the assertion, not a typo: it pins that
+        // the digest is a pure function with no per-call seed, which is exactly what
+        // `Hasher` fails and what the stored bookmarks depend on.
+        // swiftlint:disable:next identical_operands
         #expect(CommandReader.fingerprint(Data("ab".utf8)) == CommandReader.fingerprint(Data("ab".utf8)))
         #expect(CommandReader.fingerprint(Data("ab".utf8)) != CommandReader.fingerprint(Data("ba".utf8)))
     }

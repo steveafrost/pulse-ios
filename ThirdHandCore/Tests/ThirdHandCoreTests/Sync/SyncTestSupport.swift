@@ -15,7 +15,7 @@ enum SyncFixture {
         status: Status = .open,
         updatedAt: Date,
         resolvedAt: Date? = nil,
-        firstSeenAt: Date = Fixture.now.addingTimeInterval(-86_400)
+        firstSeenAt: Date = Fixture.now.addingTimeInterval(-86400)
     ) -> ThirdHandItem {
         ThirdHandItem(
             id: id,
@@ -45,7 +45,7 @@ enum SyncFixture {
             #""id":"\#(id)""#,
             #""at":"\#(ThirdHandJSON.dates.string(from: at))""#,
             #""op":"\#(op)""#,
-            #""itemId":"\#(itemId)""#,
+            #""itemId":"\#(itemId)""#
         ]
         fields.append(until.map { #""until":"\#($0)""# } ?? #""until":null"#)
         fields.append(reason.map { #""reason":"\#($0)""# } ?? #""reason":null"#)
