@@ -45,6 +45,22 @@ public final class BoardViewModel {
     /// Injectable clock. A preview pins it; the app passes `Date.init`.
     private let clock: @Sendable () -> Date
 
+    /// On-device placement, when the app has one.
+    ///
+    /// Optional so previews, tests and the debug screen keep working with no model
+    /// and no app group -- exactly like `sync`. When it is nil the board is placed by
+    /// the deterministic rules alone, which is the same path a device without Apple
+    /// Intelligence takes. Nothing downstream has to know which case it is in.
+    private let placement: PlacementCoordinator?
+
+    /// Why the board last moved an item, for the row that wants to say so.
+    ///
+    /// Populated from the coordinator after a refresh, not derived per item: the
+    /// board reads happen many times per frame and a decision lookup for every row
+    /// on every read would be the kind of invisible cost that shows up as scroll
+    /// jitter.
+    public private(set) var placementReasons: [ThirdHandItem.ID: String] = [:]
+
     // MARK: State
 
     public private(set) var state: BoardState = .loading
@@ -73,7 +89,8 @@ public final class BoardViewModel {
         calendar: Calendar = .current,
         clock: @escaping @Sendable () -> Date = { Date() },
         markSeenOnLoad: Bool = true,
-        sync: SyncCoordinator? = nil
+        sync: SyncCoordinator? = nil,
+        placement: PlacementCoordinator? = nil
     ) {
         self.store = store
         self.capture = capture
@@ -84,6 +101,7 @@ public final class BoardViewModel {
         self.clock = clock
         self.markSeenOnLoad = markSeenOnLoad
         self.sync = sync
+        self.placement = placement
         self.filter = Self.restoreFilter(shared)
     }
 
@@ -163,11 +181,33 @@ public final class BoardViewModel {
 
     // MARK: Intents
 
+    /// Reads the board, letting on-device placement override the rules where it has
+    /// said something.
+    ///
+    /// One helper for every read site, so the four places that used to call
+    /// `store.board` cannot drift into one of them forgetting the decisions. With no
+    /// coordinator this is exactly `store.board`.
+    private func readBoard(at instant: Date) async -> [Horizon: [ThirdHandItem]] {
+        let items = await store.allItems()
+        guard let placement else {
+            // No coordinator: the store's own rules-only projection.
+            return await store.board(at: instant, calendar: calendar)
+        }
+        let projected = await placement.board(items: items, at: instant, calendar: calendar)
+        placementReasons = await Self.reasons(
+            from: items,
+            coordinator: placement,
+            at: instant,
+            calendar: calendar
+        )
+        return projected
+    }
+
     /// First paint: read the store, project the board, decide the state.
     public func load() async {
         let now = nowDate
         lastViewedAt = await store.lastViewed()
-        board = await store.board(at: now, calendar: calendar)
+        board = await readBoard(at: now)
         captureStatus = CaptureStatusModel(
             phase: .idle(shared.date(.lastCaptureAt)),
             itemCount: totalCount,
@@ -192,7 +232,18 @@ public final class BoardViewModel {
             _ = try? await store.upsert(detected: outcome.detected, run: "foreground", now: outcome.ranAt)
         }
         shared.set(outcome.ranAt, for: .lastCaptureAt)
-        board = await store.board(at: nowDate, calendar: calendar)
+
+        // Ask the on-device model to reconsider, then re-read so its answers show.
+        //
+        // After capture, not before: the model should judge the board that exists,
+        // including anything the pass just added. A refresh that changes nothing
+        // (the normal case -- the model usually agrees with the rules) skips the
+        // second read entirely, so the board does not flicker on every tap.
+        if let placement {
+            let items = await store.allItems()
+            _ = await placement.refresh(items: items, at: outcome.ranAt, calendar: calendar)
+        }
+        board = await readBoard(at: nowDate)
         // The Mac mirror sees every capture pass, not just user actions.
         sync?.publishSoon()
         captureStatus = CaptureStatusModel(
@@ -275,7 +326,7 @@ public final class BoardViewModel {
     /// Re-reads the board after the sync layer applied a mirror command, so a Done
     /// tapped on the Mac appears without waiting for the next capture pass.
     public func reloadAfterSync() async {
-        board = await store.board(at: nowDate, calendar: calendar)
+        board = await readBoard(at: nowDate)
         captureStatus = CaptureStatusModel(
             phase: captureStatus.phase,
             itemCount: totalCount,
@@ -310,7 +361,7 @@ public final class BoardViewModel {
         } catch {
             errorMessage = "Couldn't save that. Try again."
         }
-        board = await store.board(at: nowDate, calendar: calendar)
+        board = await readBoard(at: nowDate)
         recomputeState()
         persist()
         // Debounced: a burst of Done taps writes one snapshot.
@@ -382,5 +433,36 @@ public final class BoardViewModel {
     private static func restoreFilter(_ shared: SharedStore) -> BoardFilter {
         guard let raw = shared.string(.boardFilter) else { return .all }
         return BoardFilter(source: SourceIdentity(rawValue: raw))
+    }
+
+    /// The reasons on-device placement has given, for the items that still carry one.
+    ///
+    /// Built with a single `Task` over the item list: each decision lives behind the
+    /// coordinator actor, and awaiting it once per row would serialise a round trip
+    /// per item on every board read.
+    private static func reasons(
+        from items: [ThirdHandItem],
+        coordinator: PlacementCoordinator,
+        at instant: Date,
+        calendar: Calendar
+    ) async -> [ThirdHandItem.ID: String] {
+        // One `decisionsSnapshot` hop instead of one actor round trip per item: the
+        // reason map is rebuilt on every board read, and N awaits inside a loop is
+        // how a cheap read quietly becomes an expensive one.
+        let decisions = await coordinator.allDecisions()
+        var found: [ThirdHandItem.ID: String] = [:]
+        for item in items {
+            guard let decision = decisions[item.id] else { continue }
+            // A decision that no longer matches the item is about to be swept, so
+            // showing its reason would explain a placement that is not in effect.
+            guard PlacementPolicy.isFresh(
+                decision,
+                for: item,
+                at: instant,
+                calendar: calendar
+            ) else { continue }
+            found[item.id] = decision.reason
+        }
+        return found
     }
 }

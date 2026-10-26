@@ -52,30 +52,22 @@ public struct ThirdHandGlassStyle: ViewModifier {
         }
     }
 
-    @ViewBuilder
+    /// No availability branch: the deployment target is iOS 26, so the glass effect
+    /// is always present. The app-wide floor was raised deliberately (see
+    /// `project.yml`) because placement uses the system language model, which does
+    /// not exist below 26.
     private func glass(_ content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            switch variant {
-            case .regular:
-                content.glassEffect(.regular, in: anyShape)
-            case .interactive:
-                content.glassEffect(.regular.interactive(), in: anyShape)
-            case .tintedUrgent:
-                content.glassEffect(.regular.tint(ThirdHandColor.horizonNow.opacity(0.15)), in: anyShape)
-            case .selected:
-                content.glassEffect(.regular.tint(ThirdHandColor.textPrimary.opacity(0.10)).interactive(), in: anyShape)
-            }
-        } else {
-            // iOS 18 fallback: the system material, tinted for the urgent variant.
-            content
-                .background(backgroundMaterial, in: anyShape)
-                .overlay {
-                    anyShape.stroke(ThirdHandColor.separator, lineWidth: ThirdHandMetrics.hairline)
-                }
+        switch variant {
+        case .regular:
+            content.glassEffect(.regular, in: anyShape)
+        case .interactive:
+            content.glassEffect(.regular.interactive(), in: anyShape)
+        case .tintedUrgent:
+            content.glassEffect(.regular.tint(ThirdHandColor.horizonNow.opacity(0.15)), in: anyShape)
+        case .selected:
+            content.glassEffect(.regular.tint(ThirdHandColor.textPrimary.opacity(0.10)).interactive(), in: anyShape)
         }
     }
-
-    private var backgroundMaterial: Material { .regularMaterial }
 
     private var anyShape: AnyShape {
         switch shape {
@@ -93,13 +85,8 @@ extension View {
     }
 
     /// A glass cluster (§6.3): one container, never nested.
-    @ViewBuilder
     public func thirdHandGlassContainer(spacing: CGFloat = 8) -> some View {
-        if #available(iOS 26.0, *) {
-            GlassEffectContainer(spacing: spacing) { self }
-        } else {
-            self
-        }
+        GlassEffectContainer(spacing: spacing) { self }
     }
 }
 
@@ -130,7 +117,7 @@ public struct ThirdHandProminentButtonStyle: ButtonStyle {
     private var labelColor: Color { isEnabled ? ThirdHandColor.textOnAccent : ThirdHandColor.textTertiary }
 
     public func makeBody(configuration: Configuration) -> some View {
-        if #available(iOS 26.0, *), !reduceTransparency {
+        if !reduceTransparency {
             configuration.label
                 .font(ThirdHandTypography.buttonLabel)
                 .foregroundStyle(labelColor)

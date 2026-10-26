@@ -216,7 +216,7 @@ struct GlassIdentity: ViewModifier {
     @Environment(\.pulseMotion) private var motion
 
     func body(content: Content) -> some View {
-        if #available(iOS 26.0, *), let namespace, motion.allowsMatchedGeometry {
+        if let namespace, motion.allowsMatchedGeometry {
             content.glassEffectID(id, in: namespace)
         } else {
             content

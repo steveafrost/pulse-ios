@@ -75,6 +75,13 @@ public struct ThirdHandPaths: Sendable {
     /// the shared transport, and this file is ours alone.
     public var syncLogURL: URL { root.appendingPathComponent("sync.log") }
 
+    /// On-device placement decisions from the system language model.
+    ///
+    /// Device-local, not transport: placement is a judgement made on this phone
+    /// about this phone's board, so it must not ride the Mac mirror and overwrite
+    /// the panel's own rules. In the group root for the same reason as the cursor.
+    public var placementsURL: URL { root.appendingPathComponent("placements.json") }
+
     /// Creates the directory if it is missing. Safe to call repeatedly.
     @discardableResult
     public func ensureDirectory(fileManager: FileManager = .default) -> URL {

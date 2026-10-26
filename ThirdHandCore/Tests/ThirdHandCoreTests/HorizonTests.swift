@@ -55,11 +55,33 @@ struct HorizonTests {
         #expect(horizon(item(priority: .high, due: Fixture.date("2026-10-23T09:00:00.000Z"))) == .now)
     }
 
-    @Test("due today or in the past lands in now")
-    func dueTodayOrPastIsNow() {
+    @Test("due today or recently overdue lands in now")
+    func dueTodayOrRecentlyOverdueIsNow() {
         #expect(horizon(item(due: Fixture.date("2026-10-23T09:00:00.000Z"))) == .now)   // earlier today
         #expect(horizon(item(due: Fixture.date("2026-10-23T23:59:00.000Z"))) == .now)   // later today
-        #expect(horizon(item(due: Fixture.date("2026-10-20T09:00:00.000Z"))) == .now)   // overdue
+        #expect(horizon(item(due: Fixture.date("2026-10-20T09:00:00.000Z"))) == .now)   // 3 days overdue
+    }
+
+    /// Overdue is urgent for a while, then it is stale. This is a regression test:
+    /// every overdue item used to keep a permanent claim on Now, so a reminder the
+    /// user had abandoned months ago outranked one due today -- `classifyReminder`
+    /// marks anything past its date `.high`, and priority sorts high first. The
+    /// board was lying about what was pressing.
+    @Test("an item abandoned long past its date drops out of now")
+    func staleOverdueLeavesNow() {
+        // Exactly at the boundary: still Now, because 14 days is not yet "stale".
+        #expect(horizon(item(due: Fixture.date("2026-10-09T09:00:00.000Z"))) == .now)
+        // One day past it: Next.
+        #expect(horizon(item(due: Fixture.date("2026-10-08T09:00:00.000Z"))) == .next)
+        // Months overdue: still Next, never hidden and never Now.
+        #expect(horizon(item(due: Fixture.date("2026-06-25T09:00:00.000Z"))) == .next)
+    }
+
+    @Test("a stale overdue item outranks nothing: it is still on the board")
+    func staleOverdueStaysReachable() {
+        let stale = item(due: Fixture.date("2026-06-25T09:00:00.000Z"))
+        #expect(HorizonDerivation.horizon(of: stale, at: Fixture.now) != nil)
+        #expect(HorizonDerivation.isOnBoard(stale, at: Fixture.now))
     }
 
     @Test("due within three days lands in next")

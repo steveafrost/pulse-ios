@@ -53,6 +53,16 @@ public enum HorizonDerivation {
     /// How far ahead counts as `.next`.
     public static let nextWindowDays = 3
 
+    /// How long an overdue item keeps its claim on Now.
+    ///
+    /// A reminder that slipped past its date is urgent for a while -- it genuinely
+    /// did not get done. But "overdue" is not a permanent promotion to the top of
+    /// the board: after a fortnight the user has seen it and chosen not to do it,
+    /// and a 120-day-old "Water the plants" outranking "Call the dentist" due today
+    /// is the board lying about what is pressing. Past this window the item drops
+    /// to `.next` so it stays visible and reachable without displacing today.
+    public static let staleOverdueDays = 14
+
     /// The bucket an item belongs to, or `nil` when it is closed.
     public static func horizon(
         of item: ThirdHandItem,
@@ -93,7 +103,13 @@ public enum HorizonDerivation {
 
         let dueDay = calendar.startOfDay(for: due)
         let today = calendar.startOfDay(for: instant)
-        if dueDay <= today { return .now }
+        if dueDay <= today {
+            // Overdue is urgent for a while, then it is just stale. Without this,
+            // every item that ever slipped keeps a permanent claim on Now and the
+            // bucket fills with things the user has quietly abandoned.
+            let overdueDays = calendar.dateComponents([.day], from: dueDay, to: today).day ?? 0
+            return overdueDays > staleOverdueDays ? .next : .now
+        }
 
         let horizonEnd = calendar.date(byAdding: .day, value: nextWindowDays, to: today) ?? today
         if dueDay <= horizonEnd { return .next }
