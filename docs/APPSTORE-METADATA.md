@@ -99,7 +99,7 @@ BUILT FOR YOUR WEEK, NOT YOUR INBOX
 
 WIDGETS AND THE LOCK SCREEN
 
-Home Screen widgets in three sizes and all three Lock Screen families, plus a Live Activity for the meeting that is about to start. The widget reads the same board the app does, so it never gives a different answer.
+Home Screen widgets in two sizes and all three Lock Screen families, plus a Live Activity for the meeting that is about to start. The widget reads the same board the app does, so it never gives a different answer.
 
 YOUR DATA STAYS YOURS
 
@@ -365,11 +365,40 @@ cannot ship.
 
 `DESIGN.md` §12 lists 11 shots. The gaps:
 
-- **6.9" Live Activity and Lock Screen widgets (#9)** — waiting on the widget and
-  Live Activity target work landing in `ThirdHandWidgets/`.
+- **6.9" Live Activity and Lock Screen widgets (#9)** — the Home Screen half is
+  captured in `docs/screenshots-widgets/`. The Lock Screen accessory widgets and
+  the Live Activity still need a real device: placing a Lock Screen widget means
+  writing a poster archive under `PRBPosterExtensionDataStore/`, which is not
+  something to hand-edit on a simulator we then screenshot.
 - **iPad (#7, #8)** — captured; three shots live in `docs/screenshots-ipad/` and
   are uploaded as an `APP_IPAD_PRO_3GEN_129` set. The Home Screen widget shot is
-  still outstanding with the widget work.
+  now `docs/screenshots-widgets/02-home-widgets-ipad-13.png`.
+
+### Capturing the widget shots
+
+The Home Screen shots are reproducible without a GUI. `simctl` has no add-widget
+command, but `IconState.plist` under the simulator's `Library/SpringBoard/` is a
+plain plist and SpringBoard reads it at boot:
+
+1. `xcrun simctl shutdown $DEV`. Editing this while SpringBoard is live wedges it
+   (a black screen that survives `launchctl kickstart`; shut down and boot instead).
+2. In `iconLists[0]`, insert an entry with `elementType: widget`,
+   `widgetIdentifier: ThirdHandHomeWidget`, `bundleIdentifier:
+   com.steveafrost.thirdhand.widgets`, `gridSize: small` or `medium`, and fresh
+   `displayIdentifier` / `uniqueIdentifier` UUIDs.
+3. `xcrun simctl boot $DEV`, then `xcrun simctl io $DEV screenshot out.png`.
+
+The widget renders the app group's `board.json`, so launch the app once with
+`-ThirdHandDemoBoard` to seed it. `simctl status_bar override` supplies the
+9:41 / full battery / Wi-Fi bar §12 asks for.
+
+Two gaps remain. A Live Activity needs an item inside the one-hour window that
+`Classifier` and `WidgetPresentation` both use, and there is no headless way to
+customise a Lock Screen poster.
+
+The widget supports `.systemSmall` and `.systemMedium` only. `DESIGN.md` §11 and
+the App Store description below both promise a large size; issue #29 scoped the
+work to small and medium.
 - **Completion moment (#3)** — a mid-animation frame; better captured on device.
 - **Reduce Transparency (#11)** — needs an accessibility setting toggle we have
   not scripted yet.
@@ -392,7 +421,7 @@ Pulse reads your calendar and reminders and puts what actually needs you on one
 board, in four horizons: Now, Next, Later and Nice to Know. Done and snooze stick,
 snooze comes back on its own, and everything is reversible from Recently Closed.
 
-Home Screen widgets in three sizes, all three Lock Screen families, and a Live
+Home Screen widgets in two sizes, all three Lock Screen families, and a Live
 Activity for the meeting that is about to start.
 
 No account, no server, no analytics. Your data stays on your device and in your
