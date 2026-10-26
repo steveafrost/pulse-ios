@@ -25,6 +25,12 @@ EXPORT_PLIST  = File.join(ROOT, 'fastlane', 'ExportOptions.plist')
 DOTENV_PATH   = File.join(ROOT, 'fastlane', '.env')
 SIMULATOR     = 'iPhone 17 Pro'
 
+# The internal TestFlight group. Renamed from "Third Hand Beta" when the product
+# became Pulse. Both spellings are accepted on lookup so a lane run against an
+# account that still holds the old name adopts that group rather than creating a
+# second one beside it; only the first is used when one has to be created.
+BETA_GROUP_NAMES = ['Pulse Beta', 'Third Hand Beta'].freeze
+
 def read_setting(key)
   yml = File.read(File.join(ROOT, 'project.yml'))
   yml[/^\s*#{key}:\s*"?'?([^"\n']+)"?'?\s*$/, 1]&.strip
@@ -167,11 +173,14 @@ platform :ios do
     UI.user_error!('No App Store Connect credentials - see the `fastlane beta` error for the login command.') unless have_credentials?
 
     groups = JSON.parse(`asc testflight groups list --app-id #{app_id}`)['data'] || []
-    group = groups.find { |g| g['name'] == 'Third Hand Beta' }
+    # Renamed from "Third Hand Beta" to "Pulse Beta". Match either so a lane run
+    # against an account still holding the old name adopts that group instead of
+    # creating a duplicate alongside it. New groups are created under the new name.
+    group = groups.find { |g| BETA_GROUP_NAMES.include?(g['name']) }
 
     group ||= begin
-      UI.message('creating internal group "Third Hand Beta"')
-      JSON.parse(`asc testflight groups create --app-id #{app_id} --name 'Third Hand Beta' --internal`)['data']
+      UI.message("creating internal group #{BETA_GROUP_NAMES.first.inspect}")
+      JSON.parse(`asc testflight groups create --app-id #{app_id} --name '#{BETA_GROUP_NAMES.first}' --internal`)['data']
     end
 
     UI.success("beta group: #{group['id']} (#{group['name']})")
@@ -185,7 +194,7 @@ platform :ios do
 
     if ENV.fetch('THIRDHAND_BETA_TESTERS', '').strip.empty?
       UI.message('THIRDHAND_BETA_TESTERS unset - add internal testers in App Store Connect ' \
-                 '(TestFlight -> Internal Testing -> Third Hand Beta -> +).')
+                 "(TestFlight -> Internal Testing -> #{BETA_GROUP_NAMES.first} -> +).")
     end
     group
   end
