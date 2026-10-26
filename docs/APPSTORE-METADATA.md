@@ -265,7 +265,7 @@ submission, together with the date it was checked:
 | `APP_IPHONE_65` | iPhone 6.5" | 1242×2688 or 1284×2778 | Yes — fallback/compat |
 | `APP_IPHONE_61` | iPhone 6.1" | 1179×2556 | Optional |
 | `APP_IPHONE_58` | iPhone 5.8" | 1125×2436 | Not required |
-| `APP_IPAD_PRO_3GEN_129` | iPad Pro 13" | 2064×2752 | **No** — iPhone-only app |
+| `APP_IPAD_PRO_3GEN_129` | iPad Pro 13" | 2064×2752 | **Yes** — the app is universal |
 
 `APP_IPHONE_69` and `APP_IPHONE_66` are **rejected** by this API version
 (`Unknown display type`). So the 6.9" 1320×2868 captures produced here upload
@@ -367,7 +367,9 @@ cannot ship.
 
 - **6.9" Live Activity and Lock Screen widgets (#9)** — waiting on the widget and
   Live Activity target work landing in `ThirdHandWidgets/`.
-- **iPad (#7, #8)** — no iPad support; `UIDeviceFamily` is iPhone-only.
+- **iPad (#7, #8)** — captured; three shots live in `docs/screenshots-ipad/` and
+  are uploaded as an `APP_IPAD_PRO_3GEN_129` set. The Home Screen widget shot is
+  still outstanding with the widget work.
 - **Completion moment (#3)** — a mid-animation frame; better captured on device.
 - **Reduce Transparency (#11)** — needs an accessibility setting toggle we have
   not scripted yet.

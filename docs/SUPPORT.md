@@ -64,9 +64,12 @@ days they are pruned.
 
 ### Does Pulse work on iPad or Mac?
 
-Pulse is an iPhone app. It is not a Mac Catalyst app and has no iPad layout. The
-Mac side is a separate mirror that reads the iCloud snapshot; it is not on the App
-Store.
+Pulse runs on both iPhone and iPad. On iPhone it is portrait only; on iPad it
+supports all four orientations, and the board stays centred in a 720pt column
+rather than stretching across the screen. Pulse requires iOS 26 or later.
+
+Pulse is not a Mac Catalyst app. The Mac side is a separate mirror that reads the
+iCloud snapshot; it is not on the App Store.
 
 ### How do I report something I think is a security problem?
 

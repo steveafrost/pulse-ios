@@ -21,7 +21,7 @@ nothing in `asc` v0.18.2 can do it.
 | Secrets not committed | **pass** | §8 |
 | App Store Connect app record | **blocked: portal** | §9 |
 | TestFlight internal group | **blocked: portal** (follows §9) | §9 |
-| iPad screenshots | **not applicable** (iPhone-only) | §7 |
+| iPad screenshots | **pass** (3 uploaded, `APP_IPAD_PRO_3GEN_129`) | §7 |
 
 ---
 
@@ -43,7 +43,8 @@ $ xcodebuild test -scheme ThirdHand -destination 'platform=iOS Simulator,name=iP
 ```
 
 Toolchain: Xcode 27.0 (27A266a), iOS 27.0 simulator runtime, macOS on Apple
-silicon. Deployment target 18.0.
+silicon. Deployment target 18.0 as run here; `project.yml` has since moved the
+floor to 26.0 for `FoundationModels` (see `APPSTORE-METADATA.md` §12).
 
 Three warnings survive in the Release-adjacent build, all pre-existing and none
 release-blocking:
@@ -378,7 +379,9 @@ Three shots from `DESIGN.md` §12 are not captured:
 
 - **Widgets and Live Activity** — those targets are still in progress in
   `ThirdHandWidgets/`, so a capture would show a placeholder.
-- **iPad** — not applicable; `UIDeviceFamily` is `[1]`.
+- **iPad** — captured since this checklist was written; three shots live in
+  `docs/screenshots-ipad/`. `UIDeviceFamily` is `[1, 2]`, not `[1]` — the
+  iPhone-only claim in this section was wrong.
 - **Completion animation and Reduce Transparency** — need a mid-animation frame and
   an accessibility toggle that is not scripted yet.
 
@@ -479,7 +482,7 @@ Honest accounting of the gaps in this checklist:
 | TestFlight install on a real device | not run | needs an uploaded build and an invited tester |
 | App Privacy published | not run | portal-only; `asc` has no privacy subcommand |
 | Widget / Live Activity screenshots | not captured | target still in progress |
-| iPad screenshots | not applicable | `UIDeviceFamily = [1]` |
+| iPad screenshots | captured after this checklist | `UIDeviceFamily = [1, 2]` |
 | StoreKit / IAP review | not applicable | no purchases, no subscriptions |
 
 ## What "done" means here

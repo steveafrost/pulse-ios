@@ -221,7 +221,8 @@ Thanks for testing the first Pulse build. Five things matter most:
 5. THE PERMISSION FLOW. Fresh install, deny calendar, then grant it from the
    preamble. Nothing should dead-end.
 
-Known gaps: no iPad layout, and the Lock Screen widgets are still in progress.
+Known gaps: the Lock Screen widgets are still in progress. On iPad the board
+rotates and stays centred at 720pt, but it has had no iPad-specific layout pass.
 ```
 
 ---
