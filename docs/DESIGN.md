@@ -605,8 +605,12 @@ screenshot in 12. All twelve must pass before App Store submission.
 **Widgets.** `.systemSmall` (Pulse Now) shows the Now count in Rounded `.title`, the
 top item title over 2 lines and its source glyph. `.systemMedium` shows Now (≤2)
 and Next (≤2), title only, with a leading horizon glyph; a row tap deep-links
-`thirdhand://item/<id>`. `.systemLarge` shows all four headers with ≤3 rows each (title +
-due) and never scrolls or shows all.
+`thirdhand://item/<id>`.
+
+No `.systemLarge`. It was drawn here, but issue #29 scoped the widget to small and
+medium and the App Store copy has been corrected to match. A large widget would
+have to repeat four headers at ≤3 rows each, which is the board itself — the case
+for tapping through rather than reading on the Home Screen.
 
 **Lock Screen.** `.accessoryRectangular` = Now count plus the first item title on 2
 lines. `.accessoryInline` = "Pulse · 2 need you". `.accessoryCircular` = a `Gauge`
@@ -633,7 +637,7 @@ Color("SurfaceCard") }` and nothing else; widgets never use material or glass.
 | 5 | 6.1" 1179×2556 | Board at default Dynamic Type, all four sections visible |
 | 6 | 6.1" | Board at **AX3** — wrapped title, hidden detail, horizontal meta |
 | 7 | 13" 2064×2752 | Board centred at 720pt with canvas margins; detail sheet at `.large` |
-| 8 | 13" | Home Screen with the small, medium and large Pulse widgets |
+| 8 | 13" | Home Screen with the small and medium Pulse widgets |
 | 9 | 6.9" Lock Screen | All three Lock Screen widgets + Live Activity, expanded Dynamic Island |
 | 10–11 | 6.9" | Dark appearance of #1 (the tokens differ), then #1 with **Reduce Transparency on** to prove the material fallback |
 
